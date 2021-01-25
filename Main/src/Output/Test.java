@@ -9,6 +9,8 @@ import java.util.ArrayList;
 
 public class Test {
 
+    public static Board board;
+
     private static int[][] gameBoard = new int[][]{
 
             {2, 0, 2, 0, 2},
@@ -32,20 +34,22 @@ public class Test {
     public static void main(String[]args) {
 
         int currentPlayer = 1;
-        Board board = new Board(gameBoard);
+        board = new Board();
         System.out.println();
         printBoard(board.getGameBoard());
         System.out.println();
-        Move move = new Move(4, 0, MoveDirection.FORWARD, board, currentPlayer);
+        Move move = new Move(4, 0, MoveDirection.FORWARD, board.getGameBoard(), currentPlayer);
         if (move.checkMove()) {
             move.makeMove();
         }
         printBoard(board.getGameBoard());
         System.out.println();
-        PossibleMoves possibleMoves = new PossibleMoves(board, currentPlayer);
-        ArrayList<Board> possibleBoard = possibleMoves.getPossibleMoves();
-        for (Board b : possibleBoard) {
-            printBoard(b.getGameBoard());
+        System.out.println("-----------------");
+        System.out.println();
+        PossibleMoves possibleMoves = new PossibleMoves(board.getGameBoard(), currentPlayer);
+        ArrayList<int[][]> possibleBoard = possibleMoves.getPossibleMoves();
+        for (int[][] b : possibleBoard) {
+            printBoard(b);
             System.out.println();
         }
     }

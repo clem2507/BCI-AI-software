@@ -1,5 +1,7 @@
 package AI;
 
+import Game.PossibleMoves;
+
 import java.util.ArrayList;
 
 public class MCTS {
@@ -97,8 +99,8 @@ public class MCTS {
 
     public void Expansion(Node n, int currentPlayer) {
 
-        // TODO: find a way to expand the current node with its children in the BCI context
-        ArrayList<int[][]> children = null;
+        PossibleMoves possibleMoves = new PossibleMoves(n.getBoardState(), currentPlayer);
+        ArrayList<int[][]> children = possibleMoves.getPossibleMoves();
         for (int[][] child : children) {
             Node childNode = new Node(child, 0, 0);
             nodes.add(childNode);
@@ -131,8 +133,8 @@ public class MCTS {
                 else {
                     actualPlayer = 1;
                 }
-                // TODO: find a way to expand the current node with its children in the BCI context
-                ArrayList<int[][]> children = null;
+                PossibleMoves possibleMoves = new PossibleMoves(n.getBoardState(), currentPlayer);
+                ArrayList<int[][]> children = possibleMoves.getPossibleMoves();
                 int max = children.size();
                 int randomIndex = (int)(Math.random() * ((max)));
 

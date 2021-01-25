@@ -2,12 +2,15 @@ package Game;
 
 public class Board {
 
-    public int[][] gameBoard;
+    private int[][] gameBoard = new int[][]{
 
-    public Board(int[][] gameBoard) {
+            {2, 0, 2, 0, 2},
+            {0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0},
+            {1, 0, 1, 0, 1}
 
-        this.gameBoard = gameBoard;
-    }
+    };
 
     public void setBoard(int[][] currentBoard) {
         this.gameBoard = currentBoard;

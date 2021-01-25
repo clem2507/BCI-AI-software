@@ -1,18 +1,19 @@
 package Game;
 
 import Output.Test;
+import javafx.scene.text.Text;
 
 public class Move {
 
     private MoveDirection direction;
-    private Board currentBoard;
+    private int[][] currentBoard;
     private int i;
     private int j;
     private int currentPlayer;
     private int[][] newState;
 
 
-    public Move(int i, int j, MoveDirection move, Board currentBoard, int currentPlayer) {
+    public Move(int i, int j, MoveDirection move, int[][] currentBoard, int currentPlayer) {
 
         this.i = i;
         this.j = j;
@@ -186,55 +187,55 @@ public class Move {
     public boolean checkInSquare(MoveDirection move) {
 
         boolean check = false;
-        newState = currentBoard.getGameBoard();
+        newState = copyBoard(currentBoard);
         newState[i][j] = 0;
         switch (move) {
             case TOP_LEFT:
-                if (currentBoard.getGameBoard()[i-1][j-1] == 0) {
+                if (currentBoard[i-1][j-1] == 0) {
                     newState[i-1][j-1] = currentPlayer;
                     check = true;
                 }
                 break;
             case LEFT:
-                if (currentBoard.getGameBoard()[i][j-1] == 0) {
+                if (currentBoard[i][j-1] == 0) {
                     newState[i][j-1] = currentPlayer;
                     check = true;
                 }
                 break;
             case BOTTOM_LEFT:
-                if (currentBoard.getGameBoard()[i+1][j-1] == 0) {
+                if (currentBoard[i+1][j-1] == 0) {
                     newState[i+1][j-1] = currentPlayer;
                     check = true;
                 }
                 break;
             case TOP_RIGHT:
-                if (currentBoard.getGameBoard()[i-1][j+1] == 0) {
+                if (currentBoard[i-1][j+1] == 0) {
                     newState[i-1][j+1] = currentPlayer;
                     check = true;
                 }
                 break;
             case RIGHT:
-                if (currentBoard.getGameBoard()[i][j+1] == 0) {
+                if (currentBoard[i][j+1] == 0) {
                     newState[i][j+1] = currentPlayer;
                     check = true;
                 }
                 break;
             case BOTTOM_RIGHT:
-                if (currentBoard.getGameBoard()[i+1][j+1] == 0) {
+                if (currentBoard[i+1][j+1] == 0) {
                     newState[i+1][j+1] = currentPlayer;
                     check = true;
                 }
                 break;
             case FORWARD:
                 // TODO: carry the pushing move
-                if (currentBoard.getGameBoard()[i-1][j] == 0) {
+                if (currentBoard[i-1][j] == 0) {
                     newState[i-1][j] = currentPlayer;
                     check = true;
                 }
                 break;
             case BACKWARD:
                 // TODO: carry the pushing move
-                if (currentBoard.getGameBoard()[i+1][j] == 0) {
+                if (currentBoard[i+1][j] == 0) {
                     newState[i+1][j] = currentPlayer;
                     check = true;
                 }
@@ -245,7 +246,7 @@ public class Move {
 
     public void makeMove() {
 
-        int[][] newBoard = currentBoard.getGameBoard();
+        int[][] newBoard = copyBoard(currentBoard);
         newBoard[i][j] = 0;
         switch (direction) {
             case TOP_LEFT:
@@ -273,7 +274,18 @@ public class Move {
                 newBoard[i+1][j] = currentPlayer;
                 break;
         }
-        currentBoard.setBoard(newBoard);
+        Test.board.setBoard(newBoard);
+    }
+
+    public int[][] copyBoard(int[][] board) {
+
+        int[][] out = new int[5][5];
+        for (int k = 0; k < 5; k++) {
+            for (int l = 0; l < 5; l++) {
+                out[k][l] = board[k][l];
+            }
+        }
+        return out;
     }
 
     public int[][] getNewState() {
