@@ -1,7 +1,5 @@
 package Game;
 
-import Output.Test;
-
 import java.util.ArrayList;
 
 public class PossibleMoves {
@@ -19,8 +17,8 @@ public class PossibleMoves {
     public ArrayList<int[][]> getPossibleMoves() {
 
         ArrayList<int[][]> movesArray = new ArrayList<>();
-        for (int i = 0; i < 5; i++) {
-            for (int j = 0; j < 5; j++) {
+        for (int i = 1; i < currentBoard.length-1; i++) {
+            for (int j = 1; j < currentBoard.length-1; j++) {
                 if (currentBoard[i][j] == currentPlayer) {
                     for (MoveDirection dir : directionArray) {
                         Move move = new Move(i, j, dir, currentBoard, currentPlayer);
@@ -29,6 +27,18 @@ public class PossibleMoves {
                         }
                     }
                 }
+            }
+        }
+        return movesArray;
+    }
+
+    public ArrayList<int[][]> getPossibleMovesFromMarble(int i, int j) {
+
+        ArrayList<int[][]> movesArray = new ArrayList<>();
+        for (MoveDirection dir : directionArray) {
+            Move move = new Move(i, j, dir, currentBoard, Checkers.currentPlayer);
+            if (move.checkMove()) {
+                movesArray.add(move.getNewState());
             }
         }
         return movesArray;
