@@ -25,7 +25,7 @@ public class Checkers {
             }
         }
         for (int i = 1; i < board.length-1; i++) {
-            if (board[5][i] == 2) {
+            if (board[board.length-2][i] == 2) {
                 return true;
             }
         }

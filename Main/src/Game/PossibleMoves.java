@@ -6,7 +6,7 @@ public class PossibleMoves {
 
     private int[][] currentBoard;
     private int currentPlayer;
-    private MoveDirection[] directionArray = {MoveDirection.TOP_LEFT, MoveDirection.LEFT, MoveDirection.BOTTOM_LEFT, MoveDirection.TOP_RIGHT, MoveDirection.RIGHT, MoveDirection.BOTTOM_RIGHT, MoveDirection.FORWARD, MoveDirection.BACKWARD};
+    private MoveDirection[] directionArray = {MoveDirection.TOP_LEFT, MoveDirection.BOTTOM_LEFT, MoveDirection.TOP_RIGHT, MoveDirection.BOTTOM_RIGHT};
 
     public PossibleMoves(int[][] currentBoard, int currentPlayer) {
 

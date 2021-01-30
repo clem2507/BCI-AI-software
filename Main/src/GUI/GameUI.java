@@ -15,8 +15,10 @@ import javafx.stage.Stage;
 
 public class GameUI extends Application {
 
-    private int width = 700;
-    private int height = 700;
+    private int width = 975;
+    private int height = 975;
+
+    public static int squareSize = 80;
 
     public Group pane = new Group();
 
@@ -53,25 +55,9 @@ public class GameUI extends Application {
                         }
                     }
                     break;
-                case W:
-                    if (board.isSelected) {
-                        move = new Move(board.xSelected, board.ySelected, MoveDirection.FORWARD, board.getGameBoard(), Checkers.currentPlayer);
-                        if (move.checkMove()) {
-                            makeMove(move);
-                        }
-                    }
-                    break;
                 case E:
                     if (board.isSelected) {
                         move = new Move(board.xSelected, board.ySelected, MoveDirection.TOP_RIGHT, board.getGameBoard(), Checkers.currentPlayer);
-                        if (move.checkMove()) {
-                            makeMove(move);
-                        }
-                    }
-                    break;
-                case D:
-                    if (board.isSelected) {
-                        move = new Move(board.xSelected, board.ySelected, MoveDirection.RIGHT, board.getGameBoard(), Checkers.currentPlayer);
                         if (move.checkMove()) {
                             makeMove(move);
                         }
@@ -85,25 +71,9 @@ public class GameUI extends Application {
                         }
                     }
                     break;
-                case X:
-                    if (board.isSelected) {
-                        move = new Move(board.xSelected, board.ySelected, MoveDirection.BACKWARD, board.getGameBoard(), Checkers.currentPlayer);
-                        if (move.checkMove()) {
-                            makeMove(move);
-                        }
-                    }
-                    break;
                 case Z:
                     if (board.isSelected) {
                         move = new Move(board.xSelected, board.ySelected, MoveDirection.BOTTOM_LEFT, board.getGameBoard(), Checkers.currentPlayer);
-                        if (move.checkMove()) {
-                            makeMove(move);
-                        }
-                    }
-                    break;
-                case A:
-                    if (board.isSelected) {
-                        move = new Move(board.xSelected, board.ySelected, MoveDirection.LEFT, board.getGameBoard(), Checkers.currentPlayer);
                         if (move.checkMove()) {
                             makeMove(move);
                         }
@@ -124,7 +94,8 @@ public class GameUI extends Application {
 
         board.setBoard(move.getNewState());
         board.selected[board.xSelected][board.ySelected] = false;
-        board.drawPossibleMoves(true);
+        //board.drawPossibleMoves(true);
+        board.clearStrokes();
         board.drawAllMarbles();
         checkWin();
         if (Checkers.currentPlayer == 1) {
@@ -156,26 +127,26 @@ public class GameUI extends Application {
 
     public void displayBoard() {
 
-        for (int i = 0; i < 5; i++) {
-            for (int j = 0; j < 5; j++) {
-                Rectangle rect = new Rectangle((i + 1) * 100, (j + 1) * 100, 100, 100);
+        for (int i = 0; i < board.marbles.length; i++) {
+            for (int j = 0; j < board.marbles.length; j++) {
+                Rectangle rect = new Rectangle((i + 1) * squareSize, (j + 1) * squareSize, squareSize, squareSize);
                 rect.setStroke(Color.BLACK);
                 rect.setStrokeWidth(3);
                 if (i%2 == 0) {
                     if (j%2 == 0) {
-                        rect.setFill(Color.rgb(200, 200, 200, 1.0));
+                        rect.setFill(Color.rgb(255, 255, 255, 1.0));
                     }
                     else {
-                        rect.setFill(Color.rgb(255, 255, 255, 1.0));
+                        rect.setFill(Color.rgb(200, 200, 200, 1.0));
                     }
                     pane.getChildren().add(rect);
                 }
                 else {
                     if (j%2 == 0) {
-                        rect.setFill(Color.rgb(255, 255, 255, 1.0));
+                        rect.setFill(Color.rgb(200, 200, 200, 1.0));
                     }
                     else {
-                        rect.setFill(Color.rgb(200, 200, 200, 1.0));
+                        rect.setFill(Color.rgb(255, 255, 255, 1.0));
                     }
                     pane.getChildren().add(rect);
                 }
@@ -185,8 +156,8 @@ public class GameUI extends Application {
 
     public void displayMarbles() {
 
-        for (int i = 0; i < 5; i++) {
-            for (int j = 0; j < 5; j++) {
+        for (int i = 0; i < board.marbles.length; i++) {
+            for (int j = 0; j < board.marbles.length; j++) {
                 pane.getChildren().add(board.marbles[i][j]);
             }
         }

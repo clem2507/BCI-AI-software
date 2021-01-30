@@ -43,11 +43,14 @@ public class Move {
                     newState[i-1][j-1] = currentPlayer;
                     check = true;
                 }
-                break;
-            case LEFT:
-                if (currentBoard[i][j-1] == 0) {
-                    newState[i][j-1] = currentPlayer;
-                    check = true;
+                else if (currentBoard[i-1][j-1] == opponentPlayer) {
+                    if (currentPlayer == 1) {
+                        if (currentBoard[i - 2][j - 2] == 0) {
+                            newState[i - 1][j - 1] = 0;
+                            newState[i - 2][j - 2] = currentPlayer;
+                            check = true;
+                        }
+                    }
                 }
                 break;
             case BOTTOM_LEFT:
@@ -55,17 +58,29 @@ public class Move {
                     newState[i+1][j-1] = currentPlayer;
                     check = true;
                 }
+                else if (currentBoard[i+1][j-1] == opponentPlayer) {
+                    if (currentPlayer == 2) {
+                        if (currentBoard[i+2][j-2] == 0) {
+                            newState[i+1][j-1] = 0;
+                            newState[i+2][j-2] = currentPlayer;
+                            check = true;
+                        }
+                    }
+                }
                 break;
             case TOP_RIGHT:
                 if (currentBoard[i-1][j+1] == 0) {
                     newState[i-1][j+1] = currentPlayer;
                     check = true;
                 }
-                break;
-            case RIGHT:
-                if (currentBoard[i][j+1] == 0) {
-                    newState[i][j+1] = currentPlayer;
-                    check = true;
+                else if (currentBoard[i-1][j+1] == opponentPlayer) {
+                    if (currentPlayer == 1) {
+                        if (currentBoard[i - 2][j + 2] == 0) {
+                            newState[i - 1][j + 1] = 0;
+                            newState[i - 2][j + 2] = currentPlayer;
+                            check = true;
+                        }
+                    }
                 }
                 break;
             case BOTTOM_RIGHT:
@@ -73,30 +88,11 @@ public class Move {
                     newState[i+1][j+1] = currentPlayer;
                     check = true;
                 }
-                break;
-            case FORWARD:
-                if (currentBoard[i-1][j] != 3) {
-                    if (currentBoard[i-1][j] == 0) {
-                        newState[i-1][j] = currentPlayer;
-                        check = true;
-                    } else if (currentBoard[i-1][j] == opponentPlayer) {
-                        if (currentBoard[i-2][j] == 0) {
-                            newState[i-1][j] = 0;
-                            newState[i-2][j] = currentPlayer;
-                            check = true;
-                        }
-                    }
-                }
-                break;
-            case BACKWARD:
-                if (currentBoard[i+1][j] != 3) {
-                    if (currentBoard[i+1][j] == 0) {
-                        newState[i+1][j] = currentPlayer;
-                        check = true;
-                    } else if (currentBoard[i+1][j] == opponentPlayer) {
-                        if (currentBoard[i+2][j] == 0) {
-                            newState[i+1][j] = 0;
-                            newState[i+2][j] = currentPlayer;
+                else if (currentBoard[i+1][j+1] == opponentPlayer) {
+                    if (currentPlayer == 2) {
+                        if (currentBoard[i + 2][j + 2] == 0) {
+                            newState[i + 1][j + 1] = 0;
+                            newState[i + 2][j + 2] = currentPlayer;
                             check = true;
                         }
                     }

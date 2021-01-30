@@ -1,6 +1,9 @@
 package Output;
 
 import Game.Board;
+import Game.PossibleMoves;
+
+import java.util.ArrayList;
 
 public class Test {
 
@@ -18,7 +21,7 @@ public class Test {
 
     };
 
-    public static void printBoard(boolean[][] board) {
+    public static void printBoard(int[][] board) {
 
         for (int i = 0; i < board.length; i++) {
             for (int j = 0; j < board.length; j++) {
@@ -43,11 +46,11 @@ public class Test {
 //        System.out.println();
 //        System.out.println("-----------------");
 //        System.out.println();
-//        PossibleMoves possibleMoves = new PossibleMoves(board.getGameBoard(), currentPlayer);
-//        ArrayList<int[][]> possibleBoard = possibleMoves.getPossibleMovesFromMarble(5, 3);
-//        for (int[][] b : possibleBoard) {
-//            printBoard(b);
-//            System.out.println();
-//        }
+        PossibleMoves possibleMoves = new PossibleMoves(board.getGameBoard(), currentPlayer);
+        ArrayList<int[][]> possibleBoard = possibleMoves.getPossibleMovesFromMarble(4, 0);
+        for (int[][] b : possibleBoard) {
+            printBoard(b);
+            System.out.println();
+        }
     }
 }

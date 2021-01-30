@@ -1,6 +1,8 @@
 package Game;
 
+import GUI.GameUI;
 import GUI.Marble;
+import Output.Test;
 import javafx.scene.effect.Light;
 import javafx.scene.effect.Lighting;
 import javafx.scene.paint.Color;
@@ -10,6 +12,7 @@ import java.util.ArrayList;
 public class Board {
 
     public Marble[][] marbles;
+    private int numberOfMarblesOnBoard = 10;
 
     public boolean[][] selected;
 
@@ -20,17 +23,7 @@ public class Board {
     private Light.Point light;
     private Lighting lighting;
 
-    private int[][] gameBoard = new int[][]{
-
-            {3, 3, 3, 3, 3, 3, 3},
-            {3, 2, 0, 2, 0, 2, 3},
-            {3, 0, 0, 0, 0, 0, 3},
-            {3, 0, 0, 0, 0, 0, 3},
-            {3, 0, 0, 0, 0, 0, 3},
-            {3, 1, 0, 1, 0, 1, 3},
-            {3, 3, 3, 3, 3, 3, 3}
-
-    };
+    private int[][] gameBoard = createBoardArray(numberOfMarblesOnBoard);
 
     public Board() {
 
@@ -42,7 +35,7 @@ public class Board {
         lighting = new Lighting();
         lighting.setLight(light);
 
-        this.selected = new boolean[5][5];
+        this.selected = new boolean[gameBoard.length-2][gameBoard.length-2];
 
         createCircles();
         drawAllMarbles();
@@ -50,12 +43,12 @@ public class Board {
 
     public void createCircles() {
 
-        marbles = new Marble[5][5];
+        marbles = new Marble[gameBoard.length-2][gameBoard.length-2];
         for (int i = 0; i < marbles.length; i++) {
             for (int j = 0; j < marbles.length; j++) {
-                Marble marble = new Marble(35);
-                marble.setCenterX((j+1.5)*100);
-                marble.setCenterY((i+1.5)*100);
+                Marble marble = new Marble(25);
+                marble.setCenterX((j+1.5)*GameUI.squareSize);
+                marble.setCenterY((i+1.5)*GameUI.squareSize);
                 marble.setStrokeWidth(2);
                 marbles[i][j] = marble;
 
@@ -99,19 +92,19 @@ public class Board {
             case 0:
                 if (i%2 == 0) {
                     if (j % 2 == 0) {
-                        color = Color.rgb(200, 200, 200, 1.0);
+                        color = Color.rgb(255, 255, 255, 1.0);
                     }
                     else {
-                        color = Color.rgb(255, 255, 255, 1.0);
+                        color = Color.rgb(200, 200, 200, 1.0);
                     }
                     marbles[i][j].setEffect(null);
                 }
                 else {
                     if (j % 2 == 0) {
-                        color = Color.rgb(255, 255, 255, 1.0);
+                        color = Color.rgb(200, 200, 200, 1.0);
                     }
                     else {
-                        color = Color.rgb(200, 200, 200, 1.0);
+                        color = Color.rgb(255, 255, 255, 1.0);
                     }
                     marbles[i][j].setEffect(null);
                 }
@@ -152,6 +145,36 @@ public class Board {
                 }
             }
         }
+    }
+
+    public void clearStrokes() {
+
+        for (int i = 0; i < marbles.length; i++) {
+            for (int j = 0; j < marbles.length; j++) {
+                if (gameBoard[i+1][j+1] == 0) {
+                    marbles[i][j].setStroke(null);
+                }
+            }
+        }
+    }
+
+    public int[][] createBoardArray(int size) {
+
+        int[][] out = new int[size+2][size+2];
+        for (int i = 0; i < size+2; i++) {
+            for (int j = 0; j < size+2; j++) {
+                if (i==0 || j==size+1 || j==0 || i==size+1) {
+                    out[i][j] = 3;
+                }
+                else if (i == 1 && j%2==0) {
+                    out[i][j] = 2;
+                }
+                else if (i == size && j%2!=0) {
+                    out[i][j] = 1;
+                }
+            }
+        }
+        return out;
     }
 
     public int countSelected(){
