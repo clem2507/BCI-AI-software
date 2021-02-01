@@ -12,7 +12,7 @@ import java.util.ArrayList;
 public class Board {
 
     public Marble[][] marbles;
-    private int numberOfMarblesOnBoard = 10;
+    private int numberOfMarblesOnBoard;
 
     public boolean[][] selected;
 
@@ -23,9 +23,13 @@ public class Board {
     private Light.Point light;
     private Lighting lighting;
 
-    private int[][] gameBoard = createBoardArray(numberOfMarblesOnBoard);
+    private int[][] gameBoard;
 
-    public Board() {
+    public Board(int numberOfMarblesOnBoard) {
+
+        this.numberOfMarblesOnBoard = numberOfMarblesOnBoard;
+        this.gameBoard = createBoardArray(numberOfMarblesOnBoard);
+        this.selected = new boolean[gameBoard.length-2][gameBoard.length-2];
 
         light = new Light.Point();
         light.setColor(Color.WHITE);
@@ -34,8 +38,6 @@ public class Board {
         light.setZ(45);
         lighting = new Lighting();
         lighting.setLight(light);
-
-        this.selected = new boolean[gameBoard.length-2][gameBoard.length-2];
 
         createCircles();
         drawAllMarbles();
@@ -129,7 +131,7 @@ public class Board {
     public void drawPossibleMoves(boolean clear) {
 
         PossibleMoves possibleMoves = new PossibleMoves(gameBoard, Checkers.currentPlayer);
-        ArrayList<int[][]> movesArray = possibleMoves.getPossibleMovesFromMarble(xSelected, ySelected);
+        ArrayList<int[][]> movesArray = possibleMoves.getPossibleMovesFromMarble(xSelected+1, ySelected+1);
         for (int[][] board : movesArray) {
             for (int k = 1; k < board.length-1; k++) {
                 for (int l = 1; l < board.length-1; l++) {

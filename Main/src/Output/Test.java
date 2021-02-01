@@ -1,6 +1,9 @@
 package Output;
 
+import AI.MCTS;
 import Game.Board;
+import Game.Move;
+import Game.MoveDirection;
 import Game.PossibleMoves;
 
 import java.util.ArrayList;
@@ -25,7 +28,7 @@ public class Test {
 
         for (int i = 0; i < board.length; i++) {
             for (int j = 0; j < board.length; j++) {
-                System.out.print(board[i][j] + " ");
+                System.out.print(board[i][j] + "  ");
             }
             System.out.println();
         }
@@ -34,23 +37,28 @@ public class Test {
     public static void main(String[]args) {
 
         int currentPlayer = 1;
-        board = new Board();
-//        System.out.println();
-//        printBoard(board.getGameBoard());
-//        System.out.println();
-//        Move move = new Move(5, 1, MoveDirection.FORWARD, board.getGameBoard(), currentPlayer);
-//        if (move.checkMove()) {
-//            board.setBoard(move.getNewState());
-//        }
-//        printBoard(board.getGameBoard());
-//        System.out.println();
+        board = new Board(6);
+        System.out.println();
+        printBoard(board.getGameBoard());
+        System.out.println();
+        Move move = new Move(6, 1, MoveDirection.TOP_RIGHT, board.getGameBoard(), currentPlayer);
+        if (move.checkMove()) {
+            board.setBoard(move.getNewState());
+        }
+        printBoard(board.getGameBoard());
+        System.out.println();
 //        System.out.println("-----------------");
 //        System.out.println();
-        PossibleMoves possibleMoves = new PossibleMoves(board.getGameBoard(), currentPlayer);
-        ArrayList<int[][]> possibleBoard = possibleMoves.getPossibleMovesFromMarble(4, 0);
-        for (int[][] b : possibleBoard) {
-            printBoard(b);
-            System.out.println();
-        }
+//        PossibleMoves possibleMoves = new PossibleMoves(board.getGameBoard(), currentPlayer);
+//        ArrayList<int[][]> possibleBoard = possibleMoves.getPossibleMoves();
+//        for (int[][] b : possibleBoard) {
+//            printBoard(b);
+//            System.out.println();
+//        }
+
+//        MCTS mcts = new MCTS(board.getGameBoard(), currentPlayer, 2000, 10);
+//        mcts.start();
+//        System.out.println();
+//        Test.printBoard(mcts.getBestMove());
     }
 }

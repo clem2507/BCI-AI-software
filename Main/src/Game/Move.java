@@ -13,8 +13,8 @@ public class Move {
 
     public Move(int i, int j, MoveDirection move, int[][] currentBoard, int currentPlayer) {
 
-        this.i = i+1;
-        this.j = j+1;
+        this.i = i;
+        this.j = j;
         this.direction = move;
         this.currentBoard = currentBoard;
         this.currentPlayer = currentPlayer;

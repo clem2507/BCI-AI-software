@@ -15,10 +15,13 @@ import javafx.stage.Stage;
 
 public class GameUI extends Application {
 
-    private int width = 975;
-    private int height = 975;
+    private int numberOfMarblesOnBoard = 10;
 
     public static int squareSize = 80;
+
+    private final int WIDTH = (numberOfMarblesOnBoard*squareSize)+(2*squareSize);
+    private final int HEIGHT = (numberOfMarblesOnBoard*squareSize)+(2*squareSize);
+
 
     public Group pane = new Group();
 
@@ -28,12 +31,12 @@ public class GameUI extends Application {
     @Override
     public void start(Stage primaryStage) {
 
-        this.board = new Board();
+        this.board = new Board(numberOfMarblesOnBoard);
 
         displayBoard();
         displayMarbles();
 
-        Scene scene = new Scene(pane ,width, height);
+        Scene scene = new Scene(pane ,WIDTH, HEIGHT);
         primaryStage.setResizable(false);
         primaryStage.setTitle("checkers");
         primaryStage.setScene(scene);
@@ -49,7 +52,7 @@ public class GameUI extends Application {
                     break;
                 case Q:
                     if (board.isSelected) {
-                        move = new Move(board.xSelected, board.ySelected, MoveDirection.TOP_LEFT, board.getGameBoard(), Checkers.currentPlayer);
+                        move = new Move(board.xSelected+1, board.ySelected+1, MoveDirection.TOP_LEFT, board.getGameBoard(), Checkers.currentPlayer);
                         if (move.checkMove()) {
                             makeMove(move);
                         }
@@ -57,7 +60,7 @@ public class GameUI extends Application {
                     break;
                 case E:
                     if (board.isSelected) {
-                        move = new Move(board.xSelected, board.ySelected, MoveDirection.TOP_RIGHT, board.getGameBoard(), Checkers.currentPlayer);
+                        move = new Move(board.xSelected+1, board.ySelected+1, MoveDirection.TOP_RIGHT, board.getGameBoard(), Checkers.currentPlayer);
                         if (move.checkMove()) {
                             makeMove(move);
                         }
@@ -65,7 +68,7 @@ public class GameUI extends Application {
                     break;
                 case C:
                     if (board.isSelected) {
-                        move = new Move(board.xSelected, board.ySelected, MoveDirection.BOTTOM_RIGHT, board.getGameBoard(), Checkers.currentPlayer);
+                        move = new Move(board.xSelected+1, board.ySelected+1, MoveDirection.BOTTOM_RIGHT, board.getGameBoard(), Checkers.currentPlayer);
                         if (move.checkMove()) {
                             makeMove(move);
                         }
@@ -73,7 +76,7 @@ public class GameUI extends Application {
                     break;
                 case Z:
                     if (board.isSelected) {
-                        move = new Move(board.xSelected, board.ySelected, MoveDirection.BOTTOM_LEFT, board.getGameBoard(), Checkers.currentPlayer);
+                        move = new Move(board.xSelected+1, board.ySelected+1, MoveDirection.BOTTOM_LEFT, board.getGameBoard(), Checkers.currentPlayer);
                         if (move.checkMove()) {
                             makeMove(move);
                         }
