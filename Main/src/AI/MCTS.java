@@ -16,6 +16,7 @@ public class MCTS {
 
     private ArrayList<Edge> edges = new ArrayList<>();
     private ArrayList<Node> nodes = new ArrayList<>();
+    private ArrayList<int[][]> fourBestNodes = new ArrayList<>();
 
     private Node root;
     private double rootScore;
@@ -47,15 +48,24 @@ public class MCTS {
 //            }
 //            System.out.println();
             count++;
-            //System.out.println("c = " + count);
         }
         ArrayList<Node> rootChildren = getChildren(root);
-        double maxSimulation = 0;
-        for (Node child : rootChildren) {
-            if (child.getTotalSimulation() > maxSimulation) {
-                maxSimulation = child.getTotalSimulation();
-                bestMove = child.getBoardState();
+        int i = 0;
+        while (i < 4) {
+            double maxSimulation = 0;
+            Node bestChild = null;
+            for (Node child : rootChildren) {
+                if (child.getTotalSimulation() > maxSimulation) {
+                    maxSimulation = child.getTotalSimulation();
+                    bestMove = child.getBoardState();
+                    bestChild = child;
+                }
             }
+            //if (isValidated(bestMove)) {
+                fourBestNodes.add(bestMove);
+                i++;
+            //}
+            rootChildren.remove(bestChild);
         }
         System.out.println("Simulations = " + nodes.get(0).getTotalSimulation());
         System.out.println();
@@ -123,15 +133,7 @@ public class MCTS {
                 int randomIndex = (int) (Math.random() * ((max)));
                 Simulation(getChildren(n).get(randomIndex), currentPlayer);
             }
-            else {
-                //System.out.println("pas ok");
-                //Selection();
-                //backPropagation(n, 0);
-            }
         }
-        //else {
-            //Selection();
-        //}
     }
 
     public void Simulation(Node n, int currentPlayer) {
@@ -160,6 +162,7 @@ public class MCTS {
                 }
                 countMoves++;
             }
+            //System.out.println("countMoves = " + countMoves);
             if (actualPlayer == currentPlayer) {
                 // TODO: find a better weighting function for the scores
                 if (countMoves > 0) {
@@ -179,6 +182,7 @@ public class MCTS {
                 }
             }
         }
+        //System.out.println();
         n.setTotalSimulation(n.getTotalSimulation() + 1);
         n.setTotalWin(n.getTotalScore() + simulationScore);
 
@@ -205,6 +209,24 @@ public class MCTS {
         }
         root.setTotalWin(sumScore);
         root.setTotalSimulation(sumSimulation);
+    }
+
+    public boolean isValidated(int[][] state) {
+
+        for (int[][] board : fourBestNodes) {
+            int count = 0;
+            for (int i = 1; i < state.length-1; i++) {
+                for (int j = 1; j < state.length-1; j++) {
+                    if (board[i][j] == currentPlayer && state[i][j] == currentPlayer) {
+                        count++;
+                    }
+                }
+            }
+            if (count == 4) {
+                return false;
+            }
+        }
+        return true;
     }
 
 //    public double weightingFunction(double rootScore, double currentScore) {
@@ -248,6 +270,10 @@ public class MCTS {
 
     public int[][] getBestMove() {
         return bestMove;
+    }
+
+    public ArrayList<int[][]> getFourBestNodes() {
+        return fourBestNodes;
     }
 }
 

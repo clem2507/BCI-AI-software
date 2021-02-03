@@ -1,6 +1,9 @@
 package Game;
 
 import AI.MCTS;
+import GUI.GameUI;
+
+import java.util.ArrayList;
 
 public class Checkers {
 
@@ -9,6 +12,9 @@ public class Checkers {
     private int sampleSize = 10;
     public static int currentPlayer = 1;
 
+    private boolean flag = true;
+    private ArrayList<int[][]> fourBestMoves;
+
     public Checkers(Board board) {
 
         this.board = board;
@@ -16,19 +22,42 @@ public class Checkers {
 
     public void runGame() {
 
-        while(!isVictorious(board.getGameBoard())) {
-
-//            MCTS mcts = new MCTS(board.getGameBoard(), currentPlayer, timer, sampleSize);
-//            mcts.start();
-//            board.setBoard(mcts.getBestMove());
-//            board.drawAllMarbles();
+//        while(!isVictorious(board.getGameBoard())) {
 //
-//            if (currentPlayer == 1) {
-//                currentPlayer = 2;
+//            if (flag) {
+//                System.out.println("c");
+//                MCTS mcts = new MCTS(board.getGameBoard(), currentPlayer, timer, sampleSize);
+//                mcts.start();
+//                //board.setBoard(mcts.getBestMove());
+//                fourBestMoves = mcts.getFourBestNodes();
+//                board.drawPossibleMovesFromMCTS(fourBestMoves, false);
+//                board.drawAllMarbles();
+//
+//                if (currentPlayer == 1) {
+//                    currentPlayer = 2;
+//                } else {
+//                    currentPlayer = 1;
+//                }
+//                flag = false;
 //            }
-//            else {
-//                currentPlayer = 1;
-//            }
+//        }
+    }
+
+    public void runMCTS() {
+
+        MCTS mcts = new MCTS(board.getGameBoard(), currentPlayer, timer, sampleSize);
+        mcts.start();
+        //board.setBoard(mcts.getBestMove());
+        fourBestMoves = mcts.getFourBestNodes();
+        board.drawAllMarbles();
+        GameUI.readyText.setText("Ready!\n\nChoose between move\n1, 2, 3 or 4\n\nPress SPACE to update board");
+        //board.drawPossibleMovesFromMCTS(fourBestMoves, false);
+
+
+        if (currentPlayer == 1) {
+            currentPlayer = 2;
+        } else {
+            currentPlayer = 1;
         }
     }
 
@@ -45,5 +74,21 @@ public class Checkers {
             }
         }
         return false;
+    }
+
+    public void setFlag(boolean flag) {
+        this.flag = flag;
+    }
+
+    public boolean isFlag() {
+        return flag;
+    }
+
+    public ArrayList<int[][]> getFourBestMoves() {
+        return fourBestMoves;
+    }
+
+    public void setFourBestMoves(ArrayList<int[][]> fourBestMoves) {
+        this.fourBestMoves = fourBestMoves;
     }
 }

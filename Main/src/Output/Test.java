@@ -38,15 +38,15 @@ public class Test {
 
         int currentPlayer = 1;
         board = new Board(6);
-        System.out.println();
-        printBoard(board.getGameBoard());
-        System.out.println();
-        Move move = new Move(6, 1, MoveDirection.TOP_RIGHT, board.getGameBoard(), currentPlayer);
-        if (move.checkMove()) {
-            board.setBoard(move.getNewState());
-        }
-        printBoard(board.getGameBoard());
-        System.out.println();
+//        System.out.println();
+//        printBoard(board.getGameBoard());
+//        System.out.println();
+//        Move move = new Move(6, 1, MoveDirection.TOP_RIGHT, board.getGameBoard(), currentPlayer);
+//        if (move.checkMove()) {
+//            board.setBoard(move.getNewState());
+//        }
+//        printBoard(board.getGameBoard());
+//        System.out.println();
 //        System.out.println("-----------------");
 //        System.out.println();
 //        PossibleMoves possibleMoves = new PossibleMoves(board.getGameBoard(), currentPlayer);
@@ -56,9 +56,9 @@ public class Test {
 //            System.out.println();
 //        }
 
-//        MCTS mcts = new MCTS(board.getGameBoard(), currentPlayer, 2000, 10);
-//        mcts.start();
-//        System.out.println();
-//        Test.printBoard(mcts.getBestMove());
+        MCTS mcts = new MCTS(board.getGameBoard(), currentPlayer, 2000, 10);
+        mcts.start();
+        System.out.println();
+        Test.printBoard(mcts.getBestMove());
     }
 }

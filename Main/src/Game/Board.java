@@ -12,7 +12,6 @@ import java.util.ArrayList;
 public class Board {
 
     public Marble[][] marbles;
-    private int numberOfMarblesOnBoard;
 
     public boolean[][] selected;
 
@@ -27,8 +26,8 @@ public class Board {
 
     public Board(int numberOfMarblesOnBoard) {
 
-        this.numberOfMarblesOnBoard = numberOfMarblesOnBoard;
-        this.gameBoard = createBoardArray(numberOfMarblesOnBoard);
+        //this.gameBoard = createBoardArray(numberOfMarblesOnBoard);
+        this.gameBoard = createSimpleBoardArray(numberOfMarblesOnBoard);
         this.selected = new boolean[gameBoard.length-2][gameBoard.length-2];
 
         light = new Light.Point();
@@ -51,7 +50,7 @@ public class Board {
                 Marble marble = new Marble(25);
                 marble.setCenterX((j+1.5)*GameUI.squareSize);
                 marble.setCenterY((i+1.5)*GameUI.squareSize);
-                marble.setStrokeWidth(2);
+                marble.setStrokeWidth(3);
                 marbles[i][j] = marble;
 
                 marble.x = i;
@@ -149,6 +148,113 @@ public class Board {
         }
     }
 
+    public void drawPossibleMoveFromMCTS(int[][] board, boolean clear) {
+
+        int opponentPlayer = Checkers.currentPlayer;
+        for (int i = 1; i < board.length-1; i++) {
+            for (int j = 1; j < board.length-1; j++) {
+                if (board[i][j] != gameBoard[i][j]) {
+                    if (!clear) {
+                        if (board[i][j] != 0) {
+                            marbles[i-1][j-1].setStroke(Color.RED);
+                        } else {
+                            if (gameBoard[i][j] != opponentPlayer) {
+                                marbles[i-1][j-1].setFill(Color.RED);
+                            }
+                        }
+                    }
+                    else {
+                        marbles[i-1][j-1].setStroke(null);
+                        drawAllMarbles();
+                    }
+                }
+            }
+        }
+    }
+
+//    public void drawPossibleMovesFromMCTS(ArrayList<int[][]> list, boolean clear) {
+//
+//        int opponentPlayer;
+//        if (Checkers.currentPlayer == 1) {
+//            opponentPlayer = 2;
+//        }
+//        else {
+//            opponentPlayer = 1;
+//        }
+//        int count = 0;
+//        for (int[][] board : list) {
+//            for (int i = 1; i < board.length-1; i++) {
+//                for (int j = 1; j < board.length-1; j++) {
+//                    if (board[i][j] != gameBoard[i][j]) {
+//                        switch (count) {
+//                            case 0:
+//                                if (!clear) {
+//                                    if (board[i][j] != 0) {
+//                                        marbles[i-1][j-1].setStroke(Color.RED);
+//                                    }
+//                                    else {
+//                                        if (gameBoard[i][j] != opponentPlayer) {
+//                                            marbles[i-1][j-1].setFill(Color.RED);
+//                                        }
+//                                    }
+//                                }
+//                                else {
+//                                    marbles[i-1][j-1].setStroke(null);
+//                                }
+//                                break;
+//                            case 1:
+//                                if (!clear) {
+//                                    if (board[i][j] != 0) {
+//                                        marbles[i-1][j-1].setStroke(Color.BLUE);
+//                                    }
+//                                    else {
+//                                        if (gameBoard[i][j] != opponentPlayer) {
+//                                            marbles[i-1][j-1].setFill(Color.BLUE);
+//                                        }
+//                                    }
+//                                }
+//                                else {
+//                                    marbles[i-1][j-1].setStroke(null);
+//                                }
+//                                break;
+//                            case 2:
+//                                if (!clear) {
+//                                    if (board[i][j] != 0) {
+//                                        marbles[i-1][j-1].setStroke(Color.GREEN);
+//                                    }
+//                                    else {
+//                                        if (gameBoard[i][j] != opponentPlayer) {
+//                                            marbles[i-1][j-1].setFill(Color.GREEN);
+//                                        }
+//                                    }
+//                                }
+//                                else {
+//                                    marbles[i-1][j-1].setStroke(null);
+//                                }
+//                                break;
+//                            case 3:
+//                                if (!clear) {
+//                                    if (board[i][j] != 0) {
+//                                        marbles[i-1][j-1].setStroke(Color.PURPLE);
+//                                    }
+//                                    else {
+//                                        if (gameBoard[i][j] != opponentPlayer) {
+//                                            marbles[i-1][j-1].setFill(Color.PURPLE);
+//                                        }
+//                                    }
+//                                }
+//                                else {
+//                                    marbles[i-1][j-1].setStroke(null);
+//                                }
+//                                break;
+//                        }
+//                    }
+//                }
+//            }
+//            count++;
+//        }
+//    }
+
     public void clearStrokes() {
 
         for (int i = 0; i < marbles.length; i++) {
@@ -160,7 +266,7 @@ public class Board {
         }
     }
 
-    public int[][] createBoardArray(int size) {
+    public int[][] createSimpleBoardArray(int size) {
 
         int[][] out = new int[size+2][size+2];
         for (int i = 0; i < size+2; i++) {
@@ -173,6 +279,43 @@ public class Board {
                 }
                 else if (i == size && j%2!=0) {
                     out[i][j] = 1;
+                }
+            }
+        }
+        return out;
+    }
+
+    public int[][] createBoardArray(int size) {
+
+        int[][] out = new int[size+2][size+2];
+        for (int i = 0; i < size+2; i++) {
+            for (int j = 0; j < size+2; j++) {
+                if (i==0 || j==size+1 || j==0 || i==size+1) {
+                    out[i][j] = 3;
+                }
+                else if (i < size/2) {
+                    if (i%2==0) {
+                        if (j%2!=0) {
+                            out[i][j] = 2;
+                        }
+                    }
+                    else {
+                        if (j%2==0) {
+                            out[i][j] = 2;
+                        }
+                    }
+                }
+                else if (i > (size/2)+1) {
+                    if (i%2==0) {
+                        if (j%2!=0) {
+                            out[i][j] = 1;
+                        }
+                    }
+                    else {
+                        if (j%2==0) {
+                            out[i][j] = 1;
+                        }
+                    }
                 }
             }
         }
