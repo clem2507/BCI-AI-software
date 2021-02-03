@@ -3,6 +3,7 @@ package Game;
 import GUI.GameUI;
 import GUI.Marble;
 import Output.Test;
+import javafx.scene.control.CheckBox;
 import javafx.scene.effect.Light;
 import javafx.scene.effect.Lighting;
 import javafx.scene.paint.Color;
@@ -150,7 +151,13 @@ public class Board {
 
     public void drawPossibleMoveFromMCTS(int[][] board, boolean clear) {
 
-        int opponentPlayer = Checkers.currentPlayer;
+        int opponentPlayer;
+        if (Checkers.currentPlayer == 1) {
+            opponentPlayer = 2;
+        }
+        else {
+            opponentPlayer = 1;
+        }
         for (int i = 1; i < board.length-1; i++) {
             for (int j = 1; j < board.length-1; j++) {
                 if (board[i][j] != gameBoard[i][j]) {
@@ -171,89 +178,6 @@ public class Board {
             }
         }
     }
-
-//    public void drawPossibleMovesFromMCTS(ArrayList<int[][]> list, boolean clear) {
-//
-//        int opponentPlayer;
-//        if (Checkers.currentPlayer == 1) {
-//            opponentPlayer = 2;
-//        }
-//        else {
-//            opponentPlayer = 1;
-//        }
-//        int count = 0;
-//        for (int[][] board : list) {
-//            for (int i = 1; i < board.length-1; i++) {
-//                for (int j = 1; j < board.length-1; j++) {
-//                    if (board[i][j] != gameBoard[i][j]) {
-//                        switch (count) {
-//                            case 0:
-//                                if (!clear) {
-//                                    if (board[i][j] != 0) {
-//                                        marbles[i-1][j-1].setStroke(Color.RED);
-//                                    }
-//                                    else {
-//                                        if (gameBoard[i][j] != opponentPlayer) {
-//                                            marbles[i-1][j-1].setFill(Color.RED);
-//                                        }
-//                                    }
-//                                }
-//                                else {
-//                                    marbles[i-1][j-1].setStroke(null);
-//                                }
-//                                break;
-//                            case 1:
-//                                if (!clear) {
-//                                    if (board[i][j] != 0) {
-//                                        marbles[i-1][j-1].setStroke(Color.BLUE);
-//                                    }
-//                                    else {
-//                                        if (gameBoard[i][j] != opponentPlayer) {
-//                                            marbles[i-1][j-1].setFill(Color.BLUE);
-//                                        }
-//                                    }
-//                                }
-//                                else {
-//                                    marbles[i-1][j-1].setStroke(null);
-//                                }
-//                                break;
-//                            case 2:
-//                                if (!clear) {
-//                                    if (board[i][j] != 0) {
-//                                        marbles[i-1][j-1].setStroke(Color.GREEN);
-//                                    }
-//                                    else {
-//                                        if (gameBoard[i][j] != opponentPlayer) {
-//                                            marbles[i-1][j-1].setFill(Color.GREEN);
-//                                        }
-//                                    }
-//                                }
-//                                else {
-//                                    marbles[i-1][j-1].setStroke(null);
-//                                }
-//                                break;
-//                            case 3:
-//                                if (!clear) {
-//                                    if (board[i][j] != 0) {
-//                                        marbles[i-1][j-1].setStroke(Color.PURPLE);
-//                                    }
-//                                    else {
-//                                        if (gameBoard[i][j] != opponentPlayer) {
-//                                            marbles[i-1][j-1].setFill(Color.PURPLE);
-//                                        }
-//                                    }
-//                                }
-//                                else {
-//                                    marbles[i-1][j-1].setStroke(null);
-//                                }
-//                                break;
-//                        }
-//                    }
-//                }
-//            }
-//            count++;
-//        }
-//    }
 
     public void clearStrokes() {
 

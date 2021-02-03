@@ -22,25 +22,6 @@ public class Checkers {
 
     public void runGame() {
 
-//        while(!isVictorious(board.getGameBoard())) {
-//
-//            if (flag) {
-//                System.out.println("c");
-//                MCTS mcts = new MCTS(board.getGameBoard(), currentPlayer, timer, sampleSize);
-//                mcts.start();
-//                //board.setBoard(mcts.getBestMove());
-//                fourBestMoves = mcts.getFourBestNodes();
-//                board.drawPossibleMovesFromMCTS(fourBestMoves, false);
-//                board.drawAllMarbles();
-//
-//                if (currentPlayer == 1) {
-//                    currentPlayer = 2;
-//                } else {
-//                    currentPlayer = 1;
-//                }
-//                flag = false;
-//            }
-//        }
     }
 
     public void runMCTS() {
@@ -52,13 +33,6 @@ public class Checkers {
         board.drawAllMarbles();
         GameUI.readyText.setText("Ready!\n\nChoose between move\n1, 2, 3 or 4\n\nPress SPACE to update board");
         //board.drawPossibleMovesFromMCTS(fourBestMoves, false);
-
-
-        if (currentPlayer == 1) {
-            currentPlayer = 2;
-        } else {
-            currentPlayer = 1;
-        }
     }
 
     public static boolean isVictorious(int[][] board) {
