@@ -1,4 +1,4 @@
-package Game;
+package Checkers.Game;
 
 public enum MoveDirection {
 

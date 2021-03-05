@@ -1,53 +1,69 @@
 package AI;
 
-import GUI.GameUI;
-import Game.Board;
-import Game.Checkers;
-import Game.PossibleMoves;
-import Output.Test;
+import Abalone.Game.Abalone;
+import Abalone.Game.GetPossibleMoves;
+import Checkers.Game.Checkers;
+import Checkers.Game.PossibleMoves;
 
-import java.security.SecureRandom;
 import java.util.ArrayList;
 
 public class MCTS {
 
-    private int[][] bestMove;
-    private int currentPlayer;
+    private final GameSelector game;
+
+    private final int currentPlayer;
+    private int iterations;
+    private int sampleSize;
+
+    private double stopCondition;
+
+    private boolean isCheckers = false;
+    private boolean isAbalone = false;
+
+    private Node root;
 
     private ArrayList<Edge> edges = new ArrayList<>();
     private ArrayList<Node> nodes = new ArrayList<>();
     private ArrayList<int[][]> fourBestNodes = new ArrayList<>();
 
-    private Node root;
-    private double rootScore;
+    private int[][] bestMove;
 
-    private int count = 0;
 
-    private double timer;
-    private int sampleSize;
-    //private int numOfPlays;
+    public MCTS(GameSelector game) {
 
-    // Current MCTS constructor
-    public MCTS(int[][] rootState, int currentPlayer, float timer, int sampleSize) {
+        this.game = game;
 
-        this.currentPlayer = currentPlayer;
-        this.root = new Node(rootState, 0, 0);
+        if (game.getClass().isInstance(new Checkers(null))) {
+            this.root = new Node(this.game.getCheckersBoard().getGameBoard(), 0, 0);
+            isCheckers = true;
+        }
+        else if (game.getClass().isInstance(new Abalone(null))) {
+            this.root = new Node(this.game.getAbaloneBoard().getGameBoard(), 0, 0);
+            isAbalone = true;
+        }
+
+        this.currentPlayer = this.game.getCurrentPlayer();
         this.nodes.add(root);
-        this.timer = timer;
-        this.sampleSize = sampleSize;
+        setBestConfiguration();
+    }
+
+    // TODO: find a way to balance the MCTS configuration
+    public void setBestConfiguration() {
+
+        sampleSize = 10;
+        stopCondition = 2000;
     }
 
     public void start() {
 
         long b_time = System.currentTimeMillis();
-        double stopCondition = timer;
         while ((System.currentTimeMillis() - b_time) < stopCondition) {
             Selection();
 //            for (Node n : nodes) {
 //                System.out.print(n.getTotalSimulation() + ", ");
 //            }
 //            System.out.println();
-            count++;
+            iterations++;
         }
         ArrayList<Node> rootChildren = getChildren(root);
         int i = 0;
@@ -61,11 +77,9 @@ public class MCTS {
                     bestChild = child;
                 }
             }
-            //if (isValidated(bestMove)) {
-                fourBestNodes.add(bestMove);
-                i++;
-            //}
+            fourBestNodes.add(bestMove);
             rootChildren.remove(bestChild);
+            i++;
         }
         System.out.println("Simulations = " + nodes.get(0).getTotalSimulation());
         System.out.println();
@@ -104,7 +118,7 @@ public class MCTS {
     public void Selection() {
         Node n = root;
         int actualPlayer = currentPlayer;
-        if (count > 0) {
+        if (iterations > 0) {
             while (getChildren(n).size() > 0) {
                 n = findBestNodeWithUCT(n);
                 if (actualPlayer == 1) {
@@ -119,8 +133,17 @@ public class MCTS {
 
     public void Expansion(Node n, int currentPlayer) {
 
-        PossibleMoves possibleMoves = new PossibleMoves(n.getBoardState(), currentPlayer);
-        ArrayList<int[][]> children = possibleMoves.getPossibleMoves();
+        ArrayList<int[][]> children = new ArrayList<>();
+
+        if (isCheckers) {
+            PossibleMoves possibleMoves = new PossibleMoves(n.getBoardState(), currentPlayer);
+            children = possibleMoves.getPossibleMoves();
+        }
+        else if (isAbalone) {
+            GetPossibleMoves possibleMoves = new GetPossibleMoves();
+            children = possibleMoves.getPossibleMoves(n.getBoardState(), currentPlayer);
+        }
+
         for (int[][] child : children) {
             Node childNode = new Node(child, 0, 0);
             nodes.add(childNode);
@@ -139,14 +162,23 @@ public class MCTS {
     public void Simulation(Node n, int currentPlayer) {
 
         double simulationScore = 0;
-        int numberOfSample = sampleSize;
-        for (int i = 0; i < numberOfSample; i++) {
+        for (int i = 0; i < sampleSize; i++) {
             int actualPlayer = currentPlayer;
-            int[][] actualBoard = n.getBoardState();
             int countMoves = 0;
-            while (!Checkers.isVictorious(actualBoard)) {
-                PossibleMoves possibleMoves = new PossibleMoves(actualBoard, actualPlayer);
-                ArrayList<int[][]> children = possibleMoves.getPossibleMoves();
+            int[][] actualBoard = n.getBoardState();
+            while (!game.isVictorious(actualBoard)) {
+
+                ArrayList<int[][]> children = new ArrayList<>();
+
+                if (isCheckers) {
+                    PossibleMoves possibleMoves = new PossibleMoves(actualBoard, actualPlayer);
+                    children = possibleMoves.getPossibleMoves();
+                }
+                else if (isAbalone) {
+                    GetPossibleMoves possibleMoves = new GetPossibleMoves();
+                    children = possibleMoves.getPossibleMoves(actualBoard, actualPlayer);
+                }
+
                 int max = children.size();
                 int randomIndex = (int) (Math.random() * (max));
 
@@ -156,33 +188,21 @@ public class MCTS {
 
                 if (actualPlayer == 1) {
                     actualPlayer = 2;
-                }
-                else {
+                } else {
                     actualPlayer = 1;
                 }
+
                 countMoves++;
             }
-            //System.out.println("countMoves = " + countMoves);
             if (actualPlayer == currentPlayer) {
                 // TODO: find a better weighting function for the scores
-                if (countMoves > 0) {
-                    simulationScore-=((double) 1/countMoves);
-                }
-                else {
-                    simulationScore--;
-                }
+                simulationScore--;
             }
             else {
                 // TODO: find a better weighting function for the scores
-                if (countMoves > 0) {
-                    simulationScore+=((double) 1/countMoves);
-                }
-                else {
-                    simulationScore++;
-                }
+                simulationScore++;
             }
         }
-        //System.out.println();
         n.setTotalSimulation(n.getTotalSimulation() + 1);
         n.setTotalWin(n.getTotalScore() + simulationScore);
 
@@ -191,12 +211,12 @@ public class MCTS {
 
     public void backPropagation(Node n, double simulationScore) {
 
-        int back = 0;
+        //int back = 0;
         while (getParent(n) != null) {
             n = getParent(n);
             n.setTotalSimulation(n.getTotalSimulation() + 1);
             n.setTotalWin(n.getTotalScore() + simulationScore);
-            back++;
+            //back++;
         }
         //System.out.println("back = " + back);
 
@@ -211,24 +231,6 @@ public class MCTS {
         root.setTotalSimulation(sumSimulation);
     }
 
-    public boolean isValidated(int[][] state) {
-
-        for (int[][] board : fourBestNodes) {
-            int count = 0;
-            for (int i = 1; i < state.length-1; i++) {
-                for (int j = 1; j < state.length-1; j++) {
-                    if (board[i][j] == currentPlayer && state[i][j] == currentPlayer) {
-                        count++;
-                    }
-                }
-            }
-            if (count == 4) {
-                return false;
-            }
-        }
-        return true;
-    }
-
 //    public double weightingFunction(double rootScore, double currentScore) {
 //
 //        double score;
@@ -238,12 +240,6 @@ public class MCTS {
 //            score = -(Math.sqrt(Math.abs(currentScore-rootScore))/5);
 //        }
 //        return score;
-//    }
-
-//    public int computeSampleSize(double timer) {
-//
-//        timer = timer/1000;
-//        return (int) Math.ceil(timer);
 //    }
 
     public ArrayList<Node> getChildren(Node n) {
@@ -276,4 +272,3 @@ public class MCTS {
         return fourBestNodes;
     }
 }
-

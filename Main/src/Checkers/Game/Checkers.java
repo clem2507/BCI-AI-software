@@ -1,15 +1,15 @@
-package Game;
+package Checkers.Game;
 
+import AI.GameSelector;
 import AI.MCTS;
-import GUI.GameUI;
+import Abalone.Game.BoardUI;
+import Checkers.GUI.GameUI;
 
 import java.util.ArrayList;
 
-public class Checkers {
+public class Checkers implements GameSelector {
 
     private Board board;
-    private int timer = 2000;
-    private int sampleSize = 10;
     public static int currentPlayer = 1;
 
     private boolean flag = true;
@@ -20,13 +20,9 @@ public class Checkers {
         this.board = board;
     }
 
-    public void runGame() {
-
-    }
-
     public void runMCTS() {
 
-        MCTS mcts = new MCTS(board.getGameBoard(), currentPlayer, timer, sampleSize);
+        MCTS mcts = new MCTS(this);
         mcts.start();
         //board.setBoard(mcts.getBestMove());
         fourBestMoves = mcts.getFourBestNodes();
@@ -35,7 +31,8 @@ public class Checkers {
         //board.drawPossibleMovesFromMCTS(fourBestMoves, false);
     }
 
-    public static boolean isVictorious(int[][] board) {
+    @Override
+    public boolean isVictorious(int[][] board) {
 
         for (int i = 1; i < board.length-1; i++) {
             if (board[1][i] == 1) {
@@ -64,5 +61,20 @@ public class Checkers {
 
     public void setFourBestMoves(ArrayList<int[][]> fourBestMoves) {
         this.fourBestMoves = fourBestMoves;
+    }
+
+    @Override
+    public Board getCheckersBoard() {
+        return board;
+    }
+
+    @Override
+    public BoardUI getAbaloneBoard() {
+        return null;
+    }
+
+    @Override
+    public int getCurrentPlayer() {
+        return currentPlayer;
     }
 }

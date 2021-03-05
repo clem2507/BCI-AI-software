@@ -1,12 +1,9 @@
-package Output;
+package Checkers.Output;
 
+import AI.GameSelector;
 import AI.MCTS;
-import Game.Board;
-import Game.Move;
-import Game.MoveDirection;
-import Game.PossibleMoves;
-
-import java.util.ArrayList;
+import Checkers.Game.Board;
+import Checkers.Game.Checkers;
 
 public class Test {
 
@@ -56,9 +53,9 @@ public class Test {
 //            System.out.println();
 //        }
 
-        MCTS mcts = new MCTS(board.getGameBoard(), currentPlayer, 2000, 10);
-        mcts.start();
-        System.out.println();
-        Test.printBoard(mcts.getBestMove());
+//        MCTS mcts = new MCTS(board.getGameBoard(), currentPlayer, 2000, 10, "Checkers");
+//        mcts.start();
+//        System.out.println();
+//        Test.printBoard(mcts.getBestMove());
     }
 }

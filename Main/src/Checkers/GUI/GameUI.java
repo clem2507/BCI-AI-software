@@ -1,14 +1,12 @@
-package GUI;
+package Checkers.GUI;
 
-import Game.Board;
-import Game.Checkers;
-import Game.Move;
-import Game.MoveDirection;
-import Output.Test;
+import Checkers.Game.Board;
+import Checkers.Game.Checkers;
+import Checkers.Game.Move;
+import Checkers.Game.MoveDirection;
 import javafx.application.Application;
 import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.input.KeyCode;
 import javafx.scene.paint.Color;
@@ -23,7 +21,7 @@ import java.util.ArrayList;
 
 public class GameUI extends Application {
 
-    private int numberOfMarblesOnBoard = 8;
+    private int numberOfMarblesOnBoard = 6;
 
     public static int squareSize = 80;
 
@@ -185,8 +183,8 @@ public class GameUI extends Application {
                     if (done) {
                         checkers.runMCTS();
                         done = false;
+                        flag = true;
                     }
-                    flag = true;
                     break;
                 case ESCAPE:
                     System.exit(0);
@@ -270,13 +268,13 @@ public class GameUI extends Application {
 
     public void checkWin() {
 
-        if (Checkers.isVictorious(board.getGameBoard())) {
+        if (checkers.isVictorious(board.getGameBoard())) {
             try {
                 Thread.sleep(2000);
             } catch (InterruptedException ie) {
                 Thread.currentThread().interrupt();
             }
-            System.out.println("Game is over");
+            System.out.println("Checkers.Game is over");
             if (Checkers.currentPlayer == 1) {
                 System.out.println("Player 1 won - white");
             }

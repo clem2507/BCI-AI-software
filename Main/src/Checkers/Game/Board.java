@@ -1,9 +1,7 @@
-package Game;
+package Checkers.Game;
 
-import GUI.GameUI;
-import GUI.Marble;
-import Output.Test;
-import javafx.scene.control.CheckBox;
+import Checkers.GUI.GameUI;
+import Checkers.GUI.Marble;
 import javafx.scene.effect.Light;
 import javafx.scene.effect.Lighting;
 import javafx.scene.paint.Color;
