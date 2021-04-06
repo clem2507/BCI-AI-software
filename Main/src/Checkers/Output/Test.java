@@ -34,7 +34,7 @@ public class Test {
     public static void main(String[]args) {
 
         int currentPlayer = 1;
-        board = new Board(6);
+        board = new Board(6, false);
 //        System.out.println();
 //        printBoard(board.getGameBoard());
 //        System.out.println();

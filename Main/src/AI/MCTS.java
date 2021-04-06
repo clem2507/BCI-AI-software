@@ -28,7 +28,6 @@ public class MCTS {
 
     private int[][] bestMove;
 
-
     public MCTS(GameSelector game) {
 
         this.game = game;
@@ -51,7 +50,7 @@ public class MCTS {
     public void setBestConfiguration() {
 
         sampleSize = 10;
-        stopCondition = 2000;
+        stopCondition = 2500;
     }
 
     public void start() {
@@ -121,11 +120,7 @@ public class MCTS {
         if (iterations > 0) {
             while (getChildren(n).size() > 0) {
                 n = findBestNodeWithUCT(n);
-                if (actualPlayer == 1) {
-                    actualPlayer = 2;
-                } else {
-                    actualPlayer = 1;
-                }
+                actualPlayer = changeCurrentPlayer(actualPlayer);
             }
         }
         Expansion(n, actualPlayer);
@@ -150,12 +145,11 @@ public class MCTS {
             Edge edge = new Edge(n, childNode);
             edges.add(edge);
         }
-        if (this.currentPlayer == currentPlayer) {
-            if (children.size() > 0) {
-                int max = children.size();
-                int randomIndex = (int) (Math.random() * ((max)));
-                Simulation(getChildren(n).get(randomIndex), currentPlayer);
-            }
+
+        if (children.size() > 0) {
+            int max = children.size();
+            int randomIndex = (int) (Math.random() * ((max)));
+            Simulation(getChildren(n).get(randomIndex), currentPlayer);
         }
     }
 
@@ -166,7 +160,7 @@ public class MCTS {
             int actualPlayer = currentPlayer;
             int countMoves = 0;
             int[][] actualBoard = n.getBoardState();
-            while (!game.isVictorious(actualBoard)) {
+            while (!game.isDone(actualBoard)) {
 
                 ArrayList<int[][]> children = new ArrayList<>();
 
@@ -185,27 +179,18 @@ public class MCTS {
                 if (children.size() > 0) {
                     actualBoard = children.get(randomIndex);
                 }
-
-                if (actualPlayer == 1) {
-                    actualPlayer = 2;
-                } else {
-                    actualPlayer = 1;
-                }
-
+                actualPlayer = changeCurrentPlayer(actualPlayer);
                 countMoves++;
             }
-            if (actualPlayer == currentPlayer) {
-                // TODO: find a better weighting function for the scores
-                simulationScore--;
-            }
-            else {
-                // TODO: find a better weighting function for the scores
+            if (game.isVictorious(actualBoard, this.currentPlayer)) {
                 simulationScore++;
             }
+            else {
+                simulationScore--;
+            }
         }
-        n.setTotalSimulation(n.getTotalSimulation() + 1);
+        n.setTotalSimulation(n.getTotalSimulation()+1);
         n.setTotalWin(n.getTotalScore() + simulationScore);
-
         backPropagation(n, simulationScore);
     }
 
@@ -241,6 +226,16 @@ public class MCTS {
 //        }
 //        return score;
 //    }
+
+    public int changeCurrentPlayer(int currentPlayer) {
+
+        if (currentPlayer == 1) {
+            return 2;
+        }
+        else {
+            return 1;
+        }
+    }
 
     public ArrayList<Node> getChildren(Node n) {
 

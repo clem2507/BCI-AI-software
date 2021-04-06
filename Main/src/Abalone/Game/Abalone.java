@@ -28,7 +28,7 @@ public class Abalone extends GameSelector {
     }
 
     @Override
-    public boolean isVictorious(int[][] actualBoard) {
+    public boolean isDone(int[][] actualBoard) {
         int countP1 = 0;
         int countP2 = 0;
         for (int i = 0; i < actualBoard.length; i++) {
@@ -47,5 +47,11 @@ public class Abalone extends GameSelector {
         else {
             return false;
         }
+    }
+
+    // TODO - Needs to be implemented
+    @Override
+    public boolean isVictorious(int[][] actualBoard, int player) {
+        return false;
     }
 }

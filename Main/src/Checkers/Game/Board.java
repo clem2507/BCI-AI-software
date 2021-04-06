@@ -13,8 +13,9 @@ public class Board {
     public Marble[][] marbles;
 
     public boolean[][] selected;
-
     public boolean isSelected;
+    public boolean isSelectable;
+
     public int xSelected;
     public int ySelected;
 
@@ -23,11 +24,16 @@ public class Board {
 
     private int[][] gameBoard;
 
-    public Board(int numberOfMarblesOnBoard) {
+    public Board(int numberOfMarblesOnBoard, boolean completeBoard) {
 
-        //this.gameBoard = createBoardArray(numberOfMarblesOnBoard);
-        this.gameBoard = createSimpleBoardArray(numberOfMarblesOnBoard);
+        if (completeBoard) {
+            this.gameBoard = createBoardArray(numberOfMarblesOnBoard);
+        }
+        else {
+            this.gameBoard = createSimpleBoardArray(numberOfMarblesOnBoard);
+        }
         this.selected = new boolean[gameBoard.length-2][gameBoard.length-2];
+        this.isSelectable = true;
 
         light = new Light.Point();
         light.setColor(Color.WHITE);
@@ -58,14 +64,14 @@ public class Board {
                 int finalI = i;
                 int finalJ = j;
                 marble.setOnMouseClicked(e -> {
-                    if (gameBoard[marble.x+1][marble.y+1] == Checkers.currentPlayer && !selected[marble.x][marble.y] && countSelected() < 1) {
+                    if (gameBoard[marble.x+1][marble.y+1] == Checkers.currentPlayer && !selected[marble.x][marble.y] && countSelected() < 1 && isSelectable) {
                         selected[marble.x][marble.y] = true;
                         isSelected = true;
                         xSelected = finalI;
                         ySelected = finalJ;
                         drawPossibleMoves(false);
                         drawAllMarbles();
-                    } else if (selected[marble.x][marble.y] && gameBoard[marble.x+1][marble.y+1] == Checkers.currentPlayer) {
+                    } else if (selected[marble.x][marble.y] && gameBoard[marble.x+1][marble.y+1] == Checkers.currentPlayer && isSelectable) {
                         selected[marble.x][marble.y] = false;
                         isSelected = false;
                         drawPossibleMoves(true);
@@ -181,9 +187,7 @@ public class Board {
 
         for (int i = 0; i < marbles.length; i++) {
             for (int j = 0; j < marbles.length; j++) {
-                if (gameBoard[i+1][j+1] == 0) {
-                    marbles[i][j].setStroke(null);
-                }
+                marbles[i][j].setStroke(null);
             }
         }
     }

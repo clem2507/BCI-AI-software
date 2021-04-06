@@ -21,10 +21,10 @@ import java.util.ArrayList;
 
 public class GameUI extends Application {
 
-    private int numberOfMarblesOnBoard = 6;
+    private Scene scene;
 
     public static int squareSize = 80;
-
+    private final int numberOfMarblesOnBoard = 6;
     private final int WIDTH = (numberOfMarblesOnBoard*squareSize)+(2*squareSize) + 250;
     private final int HEIGHT = (numberOfMarblesOnBoard*squareSize)+(2*squareSize);
 
@@ -53,7 +53,7 @@ public class GameUI extends Application {
     @Override
     public void start(Stage primaryStage) {
 
-        this.board = new Board(numberOfMarblesOnBoard);
+        this.board = new Board(numberOfMarblesOnBoard, true);
         this.checkers = new Checkers(this.board);
 
         displayBoard();
@@ -143,12 +143,17 @@ public class GameUI extends Application {
 
         pane.getChildren().add(readyText);
 
-        Scene scene = new Scene(pane ,WIDTH, HEIGHT);
+        scene = new Scene(pane ,WIDTH, HEIGHT);
         primaryStage.setResizable(false);
         primaryStage.setTitle("checkers");
         primaryStage.setScene(scene);
         primaryStage.centerOnScreen();
         primaryStage.show();
+
+        controller();
+    }
+
+    public void controller() {
 
         scene.setOnKeyPressed(t -> {
             Move move;
@@ -177,20 +182,25 @@ public class GameUI extends Application {
                 case SPACE:
                     if (flag) {
                         makeMoveWithMCTS();
+                        checkWin();
+                        board.isSelectable = true;
                     }
                     break;
                 case ENTER:
                     if (done) {
-                        checkers.runMCTS();
-                        done = false;
-                        flag = true;
+                        new Thread(() -> {
+                            board.isSelectable = false;
+                            checkers.runMCTS();
+                            done = false;
+                            flag = true;
+                        }).start();
                     }
                     break;
                 case ESCAPE:
                     System.exit(0);
                     break;
                 case Q:
-                    if (board.isSelected) {
+                    if (board.isSelected && !flag) {
                         move = new Move(board.xSelected+1, board.ySelected+1, MoveDirection.TOP_LEFT, board.getGameBoard(), Checkers.currentPlayer);
                         if (move.checkMove()) {
                             makeMove(move);
@@ -198,7 +208,7 @@ public class GameUI extends Application {
                     }
                     break;
                 case E:
-                    if (board.isSelected) {
+                    if (board.isSelected && !flag) {
                         move = new Move(board.xSelected+1, board.ySelected+1, MoveDirection.TOP_RIGHT, board.getGameBoard(), Checkers.currentPlayer);
                         if (move.checkMove()) {
                             makeMove(move);
@@ -206,7 +216,7 @@ public class GameUI extends Application {
                     }
                     break;
                 case C:
-                    if (board.isSelected) {
+                    if (board.isSelected && !flag) {
                         move = new Move(board.xSelected+1, board.ySelected+1, MoveDirection.BOTTOM_RIGHT, board.getGameBoard(), Checkers.currentPlayer);
                         if (move.checkMove()) {
                             makeMove(move);
@@ -214,7 +224,7 @@ public class GameUI extends Application {
                     }
                     break;
                 case Z:
-                    if (board.isSelected) {
+                    if (board.isSelected && !flag) {
                         move = new Move(board.xSelected+1, board.ySelected+1, MoveDirection.BOTTOM_LEFT, board.getGameBoard(), Checkers.currentPlayer);
                         if (move.checkMove()) {
                             makeMove(move);
@@ -257,7 +267,7 @@ public class GameUI extends Application {
         readyText.setText("Press ENTER to start MCTS");
         done = true;
         flag = false;
-
+        checkWin();
         if (Checkers.currentPlayer == 1) {
             Checkers.currentPlayer = 2;
         }
@@ -268,20 +278,22 @@ public class GameUI extends Application {
 
     public void checkWin() {
 
-        if (checkers.isVictorious(board.getGameBoard())) {
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException ie) {
-                Thread.currentThread().interrupt();
-            }
-            System.out.println("Checkers.Game is over");
-            if (Checkers.currentPlayer == 1) {
-                System.out.println("Player 1 won - white");
-            }
-            else {
-                System.out.println("Player 2 won - black");
-            }
-            System.exit(0);
+        if (checkers.isDone(board.getGameBoard())) {
+            new Thread(() -> {
+                try {
+                    System.out.println("Checkers game is over");
+                    if (Checkers.currentPlayer == 2) {
+                        System.out.println("Player 1 won - white");
+                    }
+                    else {
+                        System.out.println("Player 2 won - black");
+                    }
+                    Thread.sleep(2000);
+                    System.exit(0);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }).start();
         }
     }
 

@@ -9,5 +9,6 @@ public abstract class GameSelector {
     public abstract int getCurrentPlayer();
     public abstract BoardUI getAbaloneBoard();
     public abstract Board getCheckersBoard();
-    public abstract boolean isVictorious(int[][] actualBoard);
+    public abstract boolean isDone(int[][] actualBoard);
+    public abstract boolean isVictorious(int[][] actualBoard, int player);
 }
