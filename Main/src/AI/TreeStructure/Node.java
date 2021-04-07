@@ -1,10 +1,11 @@
-package AI;
+package AI.TreeStructure;
 
 public class Node{
 
     private int[][] boardState;
     private int totalSimulation;
     private double totalScore;
+    private double score;
 
     private Node root = null;
 
@@ -12,6 +13,11 @@ public class Node{
         this.boardState = boardState;
         this.totalSimulation = totalSimulation;
         this.totalScore = totalScore;
+    }
+
+    public Node(int[][] boardState, double score) {
+        this.boardState = boardState;
+        this.score = score;
     }
 
     public int[][] getBoardState() {
@@ -32,6 +38,14 @@ public class Node{
 
     public double getTotalScore() {
         return totalScore;
+    }
+
+    public double getScore() {
+        return score;
+    }
+
+    public void setScore(double score) {
+        this.score = score;
     }
 
     public void setTotalWin(double totalScore) {

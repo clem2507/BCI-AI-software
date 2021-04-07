@@ -1,9 +1,12 @@
 package Checkers.Output;
 
-import AI.GameSelector;
-import AI.MCTS;
+import AI.AlphaBetaTreeSearch.ABTS;
+import AI.EvaluationFunction.SimplifiedCheckersEvalFunction;
+import AI.TreeStructure.GameTree;
 import Checkers.Game.Board;
 import Checkers.Game.Checkers;
+
+import java.util.Arrays;
 
 public class Test {
 
@@ -11,13 +14,14 @@ public class Test {
 
     private static int[][] gameBoard = new int[][]{
 
-            {3, 3, 3, 3, 3, 3, 3},
-            {3, 2, 0, 2, 0, 2, 3},
-            {3, 0, 0, 0, 0, 0, 3},
-            {3, 0, 0, 0, 0, 0, 3},
-            {3, 0, 0, 0, 0, 0, 3},
-            {3, 1, 0, 1, 0, 1, 3},
-            {3, 3, 3, 3, 3, 3, 3}
+            {3, 3, 3, 3, 3, 3, 3, 3},
+            {3, 0, 2, 0, 2, 0, 2, 3},
+            {3, 0, 0, 0, 0, 0, 0, 3},
+            {3, 0, 0, 0, 0, 0, 0, 3},
+            {3, 0, 0, 0, 0, 0, 0, 3},
+            {3, 0, 0, 0, 0, 0, 0, 3},
+            {3, 1, 0, 1, 0, 1, 0, 3},
+            {3, 3, 3, 3, 3, 3, 3, 3}
 
     };
 
@@ -33,7 +37,7 @@ public class Test {
 
     public static void main(String[]args) {
 
-        int currentPlayer = 1;
+//        int currentPlayer = 1;
         board = new Board(6, false);
 //        System.out.println();
 //        printBoard(board.getGameBoard());
@@ -57,5 +61,16 @@ public class Test {
 //        mcts.start();
 //        System.out.println();
 //        Test.printBoard(mcts.getBestMove());
+
+        GameTree gameTree = new GameTree(new Checkers(board), 5);
+        System.out.println("Total # of nodes in GT = " + gameTree.getNodes().size());
+        ABTS abts = new ABTS(gameTree);
+        abts.start();
+        for (int[][] arr : abts.getFourBestNodes()) {
+            System.out.println(Arrays.deepToString(arr));
+        }
+
+//        SimplifiedCheckersEvalFunction f = new SimplifiedCheckersEvalFunction(gameBoard, 1);
+//        System.out.println(f.evaluate());
     }
 }

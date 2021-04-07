@@ -1,9 +1,13 @@
-package AI;
+package AI.MonteCarloTreeSearch;
 
+import AI.GameSelector;
+import AI.TreeStructure.Edge;
+import AI.TreeStructure.Node;
+import AI.Util;
 import Abalone.Game.Abalone;
 import Abalone.Game.GetPossibleMoves;
 import Checkers.Game.Checkers;
-import Checkers.Game.PossibleMoves;
+import AI.PossibleMoves.CheckersPossibleMoves;
 
 import java.util.ArrayList;
 
@@ -49,8 +53,8 @@ public class MCTS {
     // TODO: find a way to balance the MCTS configuration
     public void setBestConfiguration() {
 
-        sampleSize = 10;
-        stopCondition = 2500;
+        sampleSize = 5;
+        stopCondition = 5000;
     }
 
     public void start() {
@@ -58,10 +62,10 @@ public class MCTS {
         long b_time = System.currentTimeMillis();
         while ((System.currentTimeMillis() - b_time) < stopCondition) {
             Selection();
-//            for (Node n : nodes) {
-//                System.out.print(n.getTotalSimulation() + ", ");
-//            }
-//            System.out.println();
+            for (Node n : nodes) {
+                System.out.print(n.getTotalSimulation() + ", ");
+            }
+            System.out.println();
             iterations++;
         }
         ArrayList<Node> rootChildren = getChildren(root);
@@ -120,7 +124,7 @@ public class MCTS {
         if (iterations > 0) {
             while (getChildren(n).size() > 0) {
                 n = findBestNodeWithUCT(n);
-                actualPlayer = changeCurrentPlayer(actualPlayer);
+                actualPlayer = Util.changeCurrentPlayer(actualPlayer);
             }
         }
         Expansion(n, actualPlayer);
@@ -131,7 +135,7 @@ public class MCTS {
         ArrayList<int[][]> children = new ArrayList<>();
 
         if (isCheckers) {
-            PossibleMoves possibleMoves = new PossibleMoves(n.getBoardState(), currentPlayer);
+            CheckersPossibleMoves possibleMoves = new CheckersPossibleMoves(n.getBoardState(), currentPlayer);
             children = possibleMoves.getPossibleMoves();
         }
         else if (isAbalone) {
@@ -151,6 +155,9 @@ public class MCTS {
             int randomIndex = (int) (Math.random() * ((max)));
             Simulation(getChildren(n).get(randomIndex), currentPlayer);
         }
+        else {
+            Simulation(n, currentPlayer);
+        }
     }
 
     public void Simulation(Node n, int currentPlayer) {
@@ -165,7 +172,7 @@ public class MCTS {
                 ArrayList<int[][]> children = new ArrayList<>();
 
                 if (isCheckers) {
-                    PossibleMoves possibleMoves = new PossibleMoves(actualBoard, actualPlayer);
+                    CheckersPossibleMoves possibleMoves = new CheckersPossibleMoves(actualBoard, actualPlayer);
                     children = possibleMoves.getPossibleMoves();
                 }
                 else if (isAbalone) {
@@ -179,7 +186,7 @@ public class MCTS {
                 if (children.size() > 0) {
                     actualBoard = children.get(randomIndex);
                 }
-                actualPlayer = changeCurrentPlayer(actualPlayer);
+                actualPlayer = Util.changeCurrentPlayer(actualPlayer);
                 countMoves++;
             }
             if (game.isVictorious(actualBoard, this.currentPlayer)) {
@@ -226,16 +233,6 @@ public class MCTS {
 //        }
 //        return score;
 //    }
-
-    public int changeCurrentPlayer(int currentPlayer) {
-
-        if (currentPlayer == 1) {
-            return 2;
-        }
-        else {
-            return 1;
-        }
-    }
 
     public ArrayList<Node> getChildren(Node n) {
 

@@ -1,5 +1,6 @@
 package Checkers.GUI;
 
+import AI.Util;
 import Checkers.Game.Board;
 import Checkers.Game.Checkers;
 import Checkers.Game.Move;
@@ -18,6 +19,7 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class GameUI extends Application {
 
@@ -47,13 +49,14 @@ public class GameUI extends Application {
 
     private boolean flag = false;
     private boolean done = true;
+    private boolean isMCTS = true;
 
     private int choice;
 
     @Override
     public void start(Stage primaryStage) {
 
-        this.board = new Board(numberOfMarblesOnBoard, true);
+        this.board = new Board(numberOfMarblesOnBoard, false);
         this.checkers = new Checkers(this.board);
 
         displayBoard();
@@ -136,7 +139,12 @@ public class GameUI extends Application {
 
         pane.getChildren().addAll(move1, move2, move3, move4);
 
-        readyText = new Text("Press ENTER to start MCTS");
+        if (isMCTS) {
+            readyText = new Text("Press ENTER to start MCTS");
+        }
+        else {
+            readyText = new Text("Press ENTER to start ABTS");
+        }
         readyText.setTranslateX(WIDTH - 280);
         readyText.setTranslateY(500);
         readyText.setFont(Font.font("Arial", FontWeight.BOLD, FontPosture.REGULAR, 18));
@@ -181,16 +189,23 @@ public class GameUI extends Application {
                     break;
                 case SPACE:
                     if (flag) {
-                        makeMoveWithMCTS();
-                        checkWin();
+                        makeMoveWithAI();
                         board.isSelectable = true;
                     }
                     break;
                 case ENTER:
-                    if (done) {
+                    if (done && isMCTS) {
                         new Thread(() -> {
                             board.isSelectable = false;
                             checkers.runMCTS();
+                            done = false;
+                            flag = true;
+                        }).start();
+                    }
+                    else if (done) {
+                        new Thread(() -> {
+                            board.isSelectable = false;
+                            checkers.runABTS();
                             done = false;
                             flag = true;
                         }).start();
@@ -251,29 +266,30 @@ public class GameUI extends Application {
         }
     }
 
-    public void makeMoveWithMCTS() {
+    public void makeMoveWithAI() {
 
         board.setBoard(checkers.getFourBestMoves().get(choice));
         board.drawAllMarbles();
-        board.drawPossibleMoveFromMCTS(checkers.getFourBestMoves().get(0), true);
-        board.drawPossibleMoveFromMCTS(checkers.getFourBestMoves().get(1), true);
-        board.drawPossibleMoveFromMCTS(checkers.getFourBestMoves().get(2), true);
-        board.drawPossibleMoveFromMCTS(checkers.getFourBestMoves().get(3), true);
+        board.drawPossibleMoveFromAI(checkers.getFourBestMoves().get(0), true);
+        board.drawPossibleMoveFromAI(checkers.getFourBestMoves().get(1), true);
+        board.drawPossibleMoveFromAI(checkers.getFourBestMoves().get(2), true);
+        board.drawPossibleMoveFromAI(checkers.getFourBestMoves().get(3), true);
+        board.clearStrokes();
         box1.setSelected(false);
         box2.setSelected(false);
         box3.setSelected(false);
         box4.setSelected(false);
         checkers.getFourBestMoves().clear();
-        readyText.setText("Press ENTER to start MCTS");
+        if (isMCTS) {
+            readyText.setText("Press ENTER to start MCTS");
+        }
+        else {
+            readyText.setText("Press ENTER to start ABTS");
+        }
         done = true;
         flag = false;
         checkWin();
-        if (Checkers.currentPlayer == 1) {
-            Checkers.currentPlayer = 2;
-        }
-        else {
-            Checkers.currentPlayer = 1;
-        }
+        Checkers.currentPlayer = Util.changeCurrentPlayer(Checkers.currentPlayer);
     }
 
     public void checkWin() {
@@ -284,9 +300,11 @@ public class GameUI extends Application {
                     System.out.println("Checkers game is over");
                     if (Checkers.currentPlayer == 2) {
                         System.out.println("Player 1 won - white");
+                        readyText.setText("Player 1 won - white");
                     }
                     else {
                         System.out.println("Player 2 won - black");
+                        readyText.setText("Player 2 won - black");
                     }
                     Thread.sleep(2000);
                     System.exit(0);
@@ -328,11 +346,11 @@ public class GameUI extends Application {
 
     public void showSelection(int choice, ArrayList<int[][]> list) {
 
-        board.drawPossibleMoveFromMCTS(list.get(0), true);
-        board.drawPossibleMoveFromMCTS(list.get(1), true);
-        board.drawPossibleMoveFromMCTS(list.get(2), true);
-        board.drawPossibleMoveFromMCTS(list.get(3), true);
-        board.drawPossibleMoveFromMCTS(list.get(choice), false);
+        board.drawPossibleMoveFromAI(list.get(0), true);
+        board.drawPossibleMoveFromAI(list.get(1), true);
+        board.drawPossibleMoveFromAI(list.get(2), true);
+        board.drawPossibleMoveFromAI(list.get(3), true);
+        board.drawPossibleMoveFromAI(list.get(choice), false);
         box1.setSelected(false);
         box2.setSelected(false);
         box3.setSelected(false);

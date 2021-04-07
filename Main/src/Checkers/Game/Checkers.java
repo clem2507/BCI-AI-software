@@ -1,7 +1,10 @@
 package Checkers.Game;
 
+import AI.AlphaBetaTreeSearch.ABTS;
 import AI.GameSelector;
-import AI.MCTS;
+import AI.MonteCarloTreeSearch.MCTS;
+import AI.TreeStructure.GameTree;
+import AI.Util;
 import Abalone.Game.BoardUI;
 import Checkers.GUI.GameUI;
 
@@ -28,6 +31,16 @@ public class Checkers extends GameSelector {
         GameUI.readyText.setText("Ready!\n\nChoose between move\n1, 2, 3 or 4\n\nPress SPACE to update board");
     }
 
+    public void runABTS() {
+
+        GameTree gameTree = new GameTree(this, 3);
+        ABTS abts = new ABTS(gameTree);
+        abts.start();
+        fourBestMoves = abts.getFourBestNodes();
+        board.drawAllMarbles();
+        GameUI.readyText.setText("Ready!\n\nChoose between move\n1, 2, 3 or 4\n\nPress SPACE to update board");
+    }
+
     @Override
     public boolean isDone(int[][] board) {
 
@@ -41,7 +54,7 @@ public class Checkers extends GameSelector {
                 return true;
             }
         }
-        if (countMarbles(board, 1) == 0 || countMarbles(board, 2) == 0) {
+        if (Util.countMarbles(board, 1) == 0 || Util.countMarbles(board, 2) == 0) {
             return true;
         }
         return false;
@@ -64,23 +77,10 @@ public class Checkers extends GameSelector {
                 }
             }
         }
-        if (countMarbles(board, player) == 0) {
-            return false;
+        if (Util.countMarbles(board, Util.changeCurrentPlayer(player)) == 0) {
+            return true;
         }
         return false;
-    }
-
-    public int countMarbles(int[][] board, int player) {
-
-        int count = 0;
-        for (int i = 1; i < board.length-1; i++) {
-            for (int j = 1; j < board.length-1; j++) {
-                if (board[i][j]==player) {
-                    count++;
-                }
-            }
-        }
-        return count;
     }
 
     public void setFlag(boolean flag) {

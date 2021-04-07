@@ -1,6 +1,7 @@
 package Abalone.GUI;
 
-import AI.MCTS;
+import AI.MonteCarloTreeSearch.MCTS;
+import Abalone.Game.Abalone;
 import Abalone.Game.BoardUI;
 import javafx.application.Application;
 import javafx.embed.swing.SwingFXUtils;
@@ -43,7 +44,8 @@ public class Hexagon extends Application {
     public boolean done = true;
     public boolean flag = false;
 
-    public MCTS mcts;
+    private MCTS mcts;
+    private Abalone abalone;
 
     // Hexagon should access Board to obtain Marbles positions, color, etc
     // Board is a backend-only class, while Hexagon is so far the only UI class in the game (thus, we can consider renaming it)
@@ -62,6 +64,8 @@ public class Hexagon extends Application {
         //Creating an object of Board, which constructs a board
         board = new BoardUI();
         pane.setCenter(board.hexagon);
+
+        abalone = new Abalone(this.board);
 
         for (int i = 0; i < 9; i++) {
             for (int j = 0; j < 9; j++)
@@ -90,18 +94,22 @@ public class Hexagon extends Application {
                 KeyCode key = t.getCode();
                 switch (key) {
                     case ESCAPE:
-                        primaryStage.close();
+                        System.exit(0);
                         break;
                     case ENTER:
                         if (done) {
-                            //mcts = new MCTS(board.getBoard(), currentPlayer, 5000, 10, "Abalone");
+                            mcts = new MCTS(abalone);
                             mcts.start();
-                            done = false;
-                            flag = true;
+                            new Thread(() -> {
+                                abalone.runMCTS();
+                                done = false;
+                                flag = true;
+                            }).start();
                         }
                     case SPACE:
                         if (flag) {
-                            makeMove();
+//                            makeMoveWithMCTS();
+//                            checkWin();
                             flag = false;
                             done = true;
                         }
@@ -109,6 +117,21 @@ public class Hexagon extends Application {
                     case DIGIT1:
                         if (flag) {
                             showSelection(0, mcts.getFourBestNodes());
+                        }
+                        break;
+                    case DIGIT2:
+                        if (flag) {
+                            showSelection(1, mcts.getFourBestNodes());
+                        }
+                        break;
+                    case DIGIT3:
+                        if (flag) {
+                            showSelection(2, mcts.getFourBestNodes());
+                        }
+                        break;
+                    case DIGIT4:
+                        if (flag) {
+                            showSelection(3, mcts.getFourBestNodes());
                         }
                         break;
                     }

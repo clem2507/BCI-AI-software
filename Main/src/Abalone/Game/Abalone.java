@@ -1,15 +1,28 @@
 package Abalone.Game;
 
 import AI.GameSelector;
+import AI.MonteCarloTreeSearch.MCTS;
 import Checkers.Game.Board;
+
+import java.util.ArrayList;
 
 public class Abalone extends GameSelector {
 
     private BoardUI board;
+    private ArrayList<int[][]> fourBestMoves;
 
     public Abalone(BoardUI board) {
 
         this.board = board;
+    }
+
+    public void runMCTS() {
+
+        MCTS mcts = new MCTS(this);
+        mcts.start();
+        fourBestMoves = mcts.getFourBestNodes();
+        board.drawAllCells();
+//        Hexagon.readyText.setText("Ready!\n\nChoose between move\n1, 2, 3 or 4\n\nPress SPACE to update board");
     }
 
     @Override

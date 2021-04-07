@@ -1,5 +1,7 @@
 package Checkers.Game;
 
+import AI.PossibleMoves.CheckersPossibleMoves;
+import AI.Util;
 import Checkers.GUI.GameUI;
 import Checkers.GUI.Marble;
 import javafx.scene.effect.Light;
@@ -7,6 +9,7 @@ import javafx.scene.effect.Lighting;
 import javafx.scene.paint.Color;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Board {
 
@@ -134,7 +137,7 @@ public class Board {
 
     public void drawPossibleMoves(boolean clear) {
 
-        PossibleMoves possibleMoves = new PossibleMoves(gameBoard, Checkers.currentPlayer);
+        CheckersPossibleMoves possibleMoves = new CheckersPossibleMoves(gameBoard, Checkers.currentPlayer);
         ArrayList<int[][]> movesArray = possibleMoves.getPossibleMovesFromMarble(xSelected+1, ySelected+1);
         for (int[][] board : movesArray) {
             for (int k = 1; k < board.length-1; k++) {
@@ -153,15 +156,9 @@ public class Board {
         }
     }
 
-    public void drawPossibleMoveFromMCTS(int[][] board, boolean clear) {
+    public void drawPossibleMoveFromAI(int[][] board, boolean clear) {
 
-        int opponentPlayer;
-        if (Checkers.currentPlayer == 1) {
-            opponentPlayer = 2;
-        }
-        else {
-            opponentPlayer = 1;
-        }
+        int opponentPlayer = Util.changeCurrentPlayer(Checkers.currentPlayer);
         for (int i = 1; i < board.length-1; i++) {
             for (int j = 1; j < board.length-1; j++) {
                 if (board[i][j] != gameBoard[i][j]) {

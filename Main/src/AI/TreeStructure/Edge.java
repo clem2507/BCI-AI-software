@@ -1,4 +1,4 @@
-package AI;
+package AI.TreeStructure;
 
 public class Edge  {
     private final Node source;
