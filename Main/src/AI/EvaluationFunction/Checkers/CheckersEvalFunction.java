@@ -1,14 +1,15 @@
-package AI.EvaluationFunction;
+package AI.EvaluationFunction.Checkers;
 
+import AI.EvaluationFunction.EvaluationFunction;
 import AI.Util;
 import Abalone.Game.MoveDirection;
 
-public class SimplifiedCheckersEvalFunction extends EvaluationFunction {
+public class CheckersEvalFunction extends EvaluationFunction {
 
     private int[][] rootBoard;
     private int currentPlayer;
 
-    public SimplifiedCheckersEvalFunction(int[][] rootBoard, int currentPlayer) {
+    public CheckersEvalFunction(int[][] rootBoard, int currentPlayer) {
 
         this.rootBoard = rootBoard;
         this.currentPlayer = currentPlayer;
@@ -22,14 +23,16 @@ public class SimplifiedCheckersEvalFunction extends EvaluationFunction {
         int h3 = victoriousPosition(Util.changeCurrentPlayer(currentPlayer));
         int h4 = distanceToTheOtherSide(Util.changeCurrentPlayer(currentPlayer)) - distanceToTheOtherSide(currentPlayer);
         int h5 = Util.countMarbles(rootBoard, currentPlayer) - Util.countMarbles(rootBoard, Util.changeCurrentPlayer(currentPlayer));
+        int h6 = aba_PatternCount(currentPlayer) - aba_PatternCount(Util.changeCurrentPlayer(currentPlayer));
 
-        double w1 = 10;
-        double w2 = 100;
-        double w3 = -200;
+        double w1 = 100;
+        double w2 = 1000;
+        double w3 = -2000;
         double w4 = 10;
-        double w5 = 100;
+        double w5 = 300;
+        double w6 = 100;
 
-        return (w1*h1) + (w2*h2) + (w3*h3) + (w4*h4) + (w5*h5);
+        return (w1*h1) + (w2*h2) + (w3*h3) + (w4*h4) + (w5*h5) + (w6*h6);
     }
 
     public int attackingPosition(int player) {
@@ -121,18 +124,50 @@ public class SimplifiedCheckersEvalFunction extends EvaluationFunction {
 
     public int distanceToTheOtherSide(int player) {
 
+        switch (player) {
+            case 1:
+                for (int i = 1; i < rootBoard.length-1; i++) {
+                    for (int j = 1; j < rootBoard.length-1; j++) {
+                        if (rootBoard[i][j] == player) {
+                            return i-1;
+                        }
+                    }
+                }
+                break;
+            case 2:
+                for (int i = rootBoard.length-2; i > 0; i--) {
+                    for (int j = rootBoard.length-2; j > 0 ; j--) {
+                        if (rootBoard[i][j] == player) {
+                            return rootBoard.length-2-i;
+                        }
+                    }
+                }
+                break;
+        }
+        return 0;
+    }
+
+    private int aba_PatternCount(int currentPlayer) {
+
         int count = 0;
         for (int i = 1; i < rootBoard.length-1; i++) {
             for (int j = 1; j < rootBoard.length-1; j++) {
-                if (rootBoard[i][j] == player) {
-                    if (player == 1) {
-                        count += i-1;
-                    }
-                    else {
-                        count += rootBoard.length-2-i;
-                    }
+                if (rootBoard[i][j] == currentPlayer) {
+                    count += checkPatternInSquare(i, j, currentPlayer);
                 }
             }
+        }
+        return count;
+    }
+
+    public int checkPatternInSquare(int i, int j, int player) {
+
+        int count = 0;
+        if (rootBoard[i+1][j-1] == Util.changeCurrentPlayer(player) && rootBoard[i-1][j+1] == Util.changeCurrentPlayer(player)) {
+            count++;
+        }
+        if (rootBoard[i-1][j-1] == Util.changeCurrentPlayer(player) && rootBoard[i+1][j+1] == Util.changeCurrentPlayer(player)) {
+            count++;
         }
         return count;
     }

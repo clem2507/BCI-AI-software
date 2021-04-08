@@ -2,16 +2,16 @@ package AI.AlphaBetaTreeSearch;
 
 import AI.TreeStructure.GameTree;
 import AI.TreeStructure.Node;
+import AI.Util;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class ABTS {
 
     private GameTree tree;
     private int totalDepth;
     private ArrayList<Node> rootChildren;
-    private ArrayList<Node> rootChildrenNodesScore = new ArrayList<>();
+    private ArrayList<Node> rootChildrenNodes = new ArrayList<>();
     private ArrayList<int[][]> fourBestNodes = new ArrayList<>();
     private int index = 0;
     private int investigatedNodes = 0;
@@ -31,20 +31,22 @@ public class ABTS {
             double bestScore = Double.NEGATIVE_INFINITY;
             int[][] bestMove = null;
             Node bestNode = null;
-            for (Node n : rootChildrenNodesScore) {
+            for (Node n : rootChildrenNodes) {
                 if (n.getScore() > bestScore) {
                     bestScore = n.getScore();
                     bestMove = n.getBoardState();
                     bestNode = n;
                 }
             }
+            System.out.println("bestScore = " + bestScore);
             if (bestNode == null) {
                 bestMove = fourBestNodes.get(fourBestNodes.size()-1);
             }
             fourBestNodes.add(bestMove);
-            rootChildrenNodesScore.remove(bestNode);
+            rootChildrenNodes.remove(bestNode);
         }
-
+        System.out.println("investigatedNodes = " + investigatedNodes);
+        System.out.println();
     }
 
     public double ab_minimax(Node position, int depth, boolean maximizingPlayer, double alpha, double beta) {
@@ -56,6 +58,14 @@ public class ABTS {
         }
         else {
             children = tree.getChildren(position);
+            if (children.size() == 0) {
+                if (depth == totalDepth-1) {
+                    Node node = new Node(rootChildren.get(index).getBoardState(), position.getScore());
+                    rootChildrenNodes.add(node);
+                    index++;
+                }
+                return position.getScore();
+            }
         }
 
         if (maximizingPlayer) {
@@ -84,7 +94,7 @@ public class ABTS {
             }
             if (depth == totalDepth-1) {
                 Node node = new Node(rootChildren.get(index).getBoardState(), minEvaluation);
-                rootChildrenNodesScore.add(node);
+                rootChildrenNodes.add(node);
                 index++;
             }
             return minEvaluation;

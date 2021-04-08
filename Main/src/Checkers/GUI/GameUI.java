@@ -49,14 +49,15 @@ public class GameUI extends Application {
 
     private boolean flag = false;
     private boolean done = true;
-    private boolean isMCTS = true;
+    private boolean isMCTS = false;
+    private boolean completeBoard = false;
 
     private int choice;
 
     @Override
     public void start(Stage primaryStage) {
 
-        this.board = new Board(numberOfMarblesOnBoard, false);
+        this.board = new Board(numberOfMarblesOnBoard, completeBoard);
         this.checkers = new Checkers(this.board);
 
         displayBoard();
@@ -200,6 +201,7 @@ public class GameUI extends Application {
                             checkers.runMCTS();
                             done = false;
                             flag = true;
+                            isMCTS = false;
                         }).start();
                     }
                     else if (done) {
@@ -208,6 +210,7 @@ public class GameUI extends Application {
                             checkers.runABTS();
                             done = false;
                             flag = true;
+                            isMCTS = true;
                         }).start();
                     }
                     break;

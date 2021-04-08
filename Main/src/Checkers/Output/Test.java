@@ -1,12 +1,10 @@
 package Checkers.Output;
 
-import AI.AlphaBetaTreeSearch.ABTS;
-import AI.EvaluationFunction.SimplifiedCheckersEvalFunction;
 import AI.TreeStructure.GameTree;
+import AI.TreeStructure.Node;
+import AI.Util;
 import Checkers.Game.Board;
 import Checkers.Game.Checkers;
-
-import java.util.Arrays;
 
 public class Test {
 
@@ -15,12 +13,12 @@ public class Test {
     private static int[][] gameBoard = new int[][]{
 
             {3, 3, 3, 3, 3, 3, 3, 3},
-            {3, 0, 2, 0, 2, 0, 2, 3},
+            {3, 0, 2, 0, 0, 0, 2, 3},
             {3, 0, 0, 0, 0, 0, 0, 3},
             {3, 0, 0, 0, 0, 0, 0, 3},
             {3, 0, 0, 0, 0, 0, 0, 3},
-            {3, 0, 0, 0, 0, 0, 0, 3},
-            {3, 1, 0, 1, 0, 1, 0, 3},
+            {3, 0, 0, 0, 1, 0, 2, 3},
+            {3, 1, 0, 1, 0, 0, 0, 3},
             {3, 3, 3, 3, 3, 3, 3, 3}
 
     };
@@ -62,15 +60,29 @@ public class Test {
 //        System.out.println();
 //        Test.printBoard(mcts.getBestMove());
 
-        GameTree gameTree = new GameTree(new Checkers(board), 5);
-        System.out.println("Total # of nodes in GT = " + gameTree.getNodes().size());
-        ABTS abts = new ABTS(gameTree);
-        abts.start();
-        for (int[][] arr : abts.getFourBestNodes()) {
-            System.out.println(Arrays.deepToString(arr));
-        }
+//        GameTree gameTree = new GameTree(new Checkers(board), 5);
+//        System.out.println("Total # of nodes in GT = " + gameTree.getNodes().size());
+//        ABTS abts = new ABTS(gameTree);
+//        abts.start();
+//        for (int[][] arr : abts.getFourBestNodes()) {
+//            System.out.println(Arrays.deepToString(arr));
+//        }
 
-//        SimplifiedCheckersEvalFunction f = new SimplifiedCheckersEvalFunction(gameBoard, 1);
+//        CheckersEvalFunction f = new CheckersEvalFunction(gameBoard, 1);
 //        System.out.println(f.evaluate());
+
+//        PossibleMoves possibleMoves = new CheckersPossibleMoves(gameBoard, 2);
+//        for (int[][] arr : possibleMoves.getPossibleMoves()) {
+//            Util.printBoard(arr);
+//        }
+
+        board.setBoard(gameBoard);
+        GameTree gameTree = new GameTree(new Checkers(board), 5);
+        for (Node n : gameTree.getNodes()) {
+            Util.printBoard(n.getBoardState());
+            System.out.println(n.getScore());
+            System.out.println();
+        }
     }
+
 }

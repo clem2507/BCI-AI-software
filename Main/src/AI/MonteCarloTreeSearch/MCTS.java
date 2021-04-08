@@ -54,7 +54,7 @@ public class MCTS {
     public void setBestConfiguration() {
 
         sampleSize = 5;
-        stopCondition = 5000;
+        stopCondition = 2000;
     }
 
     public void start() {
@@ -62,10 +62,10 @@ public class MCTS {
         long b_time = System.currentTimeMillis();
         while ((System.currentTimeMillis() - b_time) < stopCondition) {
             Selection();
-            for (Node n : nodes) {
-                System.out.print(n.getTotalSimulation() + ", ");
-            }
-            System.out.println();
+//            for (Node n : nodes) {
+//                System.out.print(n.getTotalSimulation() + ", ");
+//            }
+//            System.out.println();
             iterations++;
         }
         ArrayList<Node> rootChildren = getChildren(root);
@@ -135,12 +135,16 @@ public class MCTS {
         ArrayList<int[][]> children = new ArrayList<>();
 
         if (isCheckers) {
-            CheckersPossibleMoves possibleMoves = new CheckersPossibleMoves(n.getBoardState(), currentPlayer);
-            children = possibleMoves.getPossibleMoves();
+            if (!game.isDone(n.getBoardState())) {
+                CheckersPossibleMoves possibleMoves = new CheckersPossibleMoves(n.getBoardState(), currentPlayer);
+                children = possibleMoves.getPossibleMoves();
+            }
         }
         else if (isAbalone) {
-            GetPossibleMoves possibleMoves = new GetPossibleMoves();
-            children = possibleMoves.getPossibleMoves(n.getBoardState(), currentPlayer);
+            if (!game.isDone(n.getBoardState())) {
+                GetPossibleMoves possibleMoves = new GetPossibleMoves();
+                children = possibleMoves.getPossibleMoves(n.getBoardState(), currentPlayer);
+            }
         }
 
         for (int[][] child : children) {

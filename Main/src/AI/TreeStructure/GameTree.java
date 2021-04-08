@@ -1,7 +1,7 @@
 package AI.TreeStructure;
 
 import AI.EvaluationFunction.EvaluationFunction;
-import AI.EvaluationFunction.SimplifiedCheckersEvalFunction;
+import AI.EvaluationFunction.Checkers.CheckersEvalFunction;
 import AI.GameSelector;
 import AI.PossibleMoves.PossibleMoves;
 import AI.Util;
@@ -14,6 +14,7 @@ import java.util.*;
 public class GameTree {
 
     private PossibleMoves possibleMoves;
+    private GameSelector game;
 
     private Node root;
 
@@ -28,8 +29,10 @@ public class GameTree {
 
     public GameTree(GameSelector game, int depth){
 
+        this.game = game;
         this.totalNumGeneration = depth;
         this.currentPlayer = game.getCurrentPlayer();
+        System.out.println("currentPlayer = " + currentPlayer);
 
         if (game.getClass().isInstance(new Checkers(null))) {
             root = new Node(game.getCheckersBoard().getGameBoard(), 0);
@@ -46,11 +49,15 @@ public class GameTree {
             currentPlayer = Util.changeCurrentPlayer(currentPlayer);
             generationCounter++;
             for(Node n : previousGeneration) {
-                createChildren(n, n.getBoardState(), currentPlayer);
+                if (!game.isDone(n.getBoardState())) {
+                    createChildren(n, n.getBoardState(), currentPlayer);
+                }
             }
             previousGeneration.clear();
             previousGeneration.addAll(currentGeneration);
+            currentGeneration.clear();
         }
+        System.out.println("Nodes in game tree = " + nodes.size());
     }
 
     public void createChildren(Node parent, int[][] currentBoardState, int currentPlayer){
@@ -59,8 +66,9 @@ public class GameTree {
         ArrayList<int[][]> childrenStates = possibleMoves.getPossibleMoves();
 
         for(int[][] child : childrenStates){
-            EvaluationFunction eval = new SimplifiedCheckersEvalFunction(currentBoardState, currentPlayer);
+            EvaluationFunction eval = new CheckersEvalFunction(child, currentPlayer);
             double score = eval.evaluate();
+
             if (generationCounter == 1) {
                 Node node = new Node(child, score);
                 nodes.add(node);
