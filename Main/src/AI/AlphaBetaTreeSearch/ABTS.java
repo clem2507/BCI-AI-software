@@ -38,15 +38,15 @@ public class ABTS {
                     bestNode = n;
                 }
             }
-            System.out.println("bestScore = " + bestScore);
-            if (bestNode == null) {
+//            System.out.println("bestScore = " + bestScore);
+            if (bestNode == null && fourBestNodes.size() > 0) {
                 bestMove = fourBestNodes.get(fourBestNodes.size()-1);
             }
             fourBestNodes.add(bestMove);
             rootChildrenNodes.remove(bestNode);
         }
-        System.out.println("investigatedNodes = " + investigatedNodes);
-        System.out.println();
+//        System.out.println("investigatedNodes = " + investigatedNodes);
+//        System.out.println();
     }
 
     public double ab_minimax(Node position, int depth, boolean maximizingPlayer, double alpha, double beta) {

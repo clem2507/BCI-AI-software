@@ -1,4 +1,4 @@
-package Checkers.Output;
+package Output;
 
 import AI.TreeStructure.GameTree;
 import AI.TreeStructure.Node;
@@ -78,6 +78,7 @@ public class Test {
 
         board.setBoard(gameBoard);
         GameTree gameTree = new GameTree(new Checkers(board), 5);
+        gameTree.createTree();
         for (Node n : gameTree.getNodes()) {
             Util.printBoard(n.getBoardState());
             System.out.println(n.getScore());

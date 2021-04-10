@@ -201,7 +201,6 @@ public class GameUI extends Application {
                             checkers.runMCTS();
                             done = false;
                             flag = true;
-                            isMCTS = false;
                         }).start();
                     }
                     else if (done) {
@@ -210,7 +209,6 @@ public class GameUI extends Application {
                             checkers.runABTS();
                             done = false;
                             flag = true;
-                            isMCTS = true;
                         }).start();
                     }
                     break;

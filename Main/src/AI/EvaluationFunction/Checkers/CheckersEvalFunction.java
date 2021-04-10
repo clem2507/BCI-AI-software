@@ -8,11 +8,30 @@ public class CheckersEvalFunction extends EvaluationFunction {
 
     private int[][] rootBoard;
     private int currentPlayer;
+    private double[] configuration;
+
+    private double w1;
+    private double w2;
+    private double w3;
+    private double w4;
+    private double w5;
+    private double w6;
+
+    public CheckersEvalFunction(int[][] rootBoard, int currentPlayer, double[] configuration) {
+
+        this.rootBoard = rootBoard;
+        this.currentPlayer = currentPlayer;
+        this.configuration = configuration;
+        setWeights(configuration);
+    }
 
     public CheckersEvalFunction(int[][] rootBoard, int currentPlayer) {
 
         this.rootBoard = rootBoard;
         this.currentPlayer = currentPlayer;
+
+        double[] bestConfig = new double[]{109, 1723, -1927, 98, 442, 168};
+        setWeights(bestConfig);
     }
 
     @Override
@@ -25,14 +44,17 @@ public class CheckersEvalFunction extends EvaluationFunction {
         int h5 = Util.countMarbles(rootBoard, currentPlayer) - Util.countMarbles(rootBoard, Util.changeCurrentPlayer(currentPlayer));
         int h6 = aba_PatternCount(currentPlayer) - aba_PatternCount(Util.changeCurrentPlayer(currentPlayer));
 
-        double w1 = 100;
-        double w2 = 1000;
-        double w3 = -2000;
-        double w4 = 10;
-        double w5 = 300;
-        double w6 = 100;
-
         return (w1*h1) + (w2*h2) + (w3*h3) + (w4*h4) + (w5*h5) + (w6*h6);
+    }
+
+    public void setWeights(double[] configuration) {
+
+        w1 = configuration[0];
+        w2 = configuration[1];
+        w3 = configuration[2];
+        w4 = configuration[3];
+        w5 = configuration[4];
+        w6 = configuration[5];
     }
 
     public int attackingPosition(int player) {

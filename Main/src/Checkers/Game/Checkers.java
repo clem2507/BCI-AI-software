@@ -34,6 +34,7 @@ public class Checkers extends GameSelector {
     public void runABTS() {
 
         GameTree gameTree = new GameTree(this, 5);
+        gameTree.createTree();
         ABTS abts = new ABTS(gameTree);
         abts.start();
         fourBestMoves = abts.getFourBestNodes();

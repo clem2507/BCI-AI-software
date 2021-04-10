@@ -15,6 +15,7 @@ public class GameTree {
 
     private PossibleMoves possibleMoves;
     private GameSelector game;
+    private double[] configuration;
 
     private Node root;
 
@@ -27,12 +28,22 @@ public class GameTree {
     private int currentPlayer;
     private int generationCounter = 1;
 
-    public GameTree(GameSelector game, int depth){
+    public GameTree(GameSelector game, int depth) {
 
         this.game = game;
         this.totalNumGeneration = depth;
         this.currentPlayer = game.getCurrentPlayer();
-        System.out.println("currentPlayer = " + currentPlayer);
+    }
+
+    public GameTree(GameSelector game, int depth, double[] configuration) {
+
+        this.game = game;
+        this.configuration = configuration;
+        this.totalNumGeneration = depth;
+        this.currentPlayer = game.getCurrentPlayer();
+    }
+
+    public void createTree() {
 
         if (game.getClass().isInstance(new Checkers(null))) {
             root = new Node(game.getCheckersBoard().getGameBoard(), 0);
@@ -57,7 +68,7 @@ public class GameTree {
             previousGeneration.addAll(currentGeneration);
             currentGeneration.clear();
         }
-        System.out.println("Nodes in game tree = " + nodes.size());
+//        System.out.println("Nodes in game tree = " + nodes.size());
     }
 
     public void createChildren(Node parent, int[][] currentBoardState, int currentPlayer){
@@ -66,7 +77,13 @@ public class GameTree {
         ArrayList<int[][]> childrenStates = possibleMoves.getPossibleMoves();
 
         for(int[][] child : childrenStates){
-            EvaluationFunction eval = new CheckersEvalFunction(child, currentPlayer);
+            EvaluationFunction eval;
+            if (configuration != null) {
+                eval = new CheckersEvalFunction(child, currentPlayer, configuration);
+            }
+            else {
+                eval = new CheckersEvalFunction(child, currentPlayer);
+            }
             double score = eval.evaluate();
 
             if (generationCounter == 1) {
@@ -128,6 +145,10 @@ public class GameTree {
             }
         }
         return children;
+    }
+
+    public void setCurrentPlayer(int currentPlayer) {
+        this.currentPlayer = currentPlayer;
     }
 
     public ArrayList<Node> getNodes() {
