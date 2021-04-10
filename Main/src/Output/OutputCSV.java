@@ -32,13 +32,26 @@ public class OutputCSV {
         }
         this.bufferedWriter = new BufferedWriter(fileWriter);
         this.printWriter = new PrintWriter(bufferedWriter);
+        this.printWriter.println(stringHeaderResume);
     }
 
+    public OutputCSV(String fileName) {
+
+        this.fileName = fileName;
+
+        this.filePath = fileName;
+        try {
+            this.fileWriter = new FileWriter(filePath,false);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        this.bufferedWriter = new BufferedWriter(fileWriter);
+        this.printWriter = new PrintWriter(bufferedWriter);
+    }
 
     public void writeResume(String[][] data) {
 
         try {
-            printWriter.println(stringHeaderResume);
             for (int i = 0; i < data.length; i++) {
                 for (int j = 0; j < data[0].length; j++) {
                     printWriter.print(data[i][j] + ", ");

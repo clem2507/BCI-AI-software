@@ -8,10 +8,11 @@ import Checkers.Game.Board;
 import Checkers.Game.Checkers;
 import Output.OutputCSV;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Random;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.*;
 
 public class TournamentGeneticAlgorithm {
 
@@ -20,6 +21,7 @@ public class TournamentGeneticAlgorithm {
     private ArrayList<Item> population;
     private ArrayList<Item> matingPool;
     private ArrayList<Item[]> tournament;
+    private double[][] dataPopulation;
     private int genotypeSize;
     private int populationSize;
     private int generationSize;
@@ -28,19 +30,39 @@ public class TournamentGeneticAlgorithm {
     private int totalGenerationNumber;
     private double mutationRate;
     private double crossoverRate;
+    private boolean completeBoard = true;
 
-    public TournamentGeneticAlgorithm(GameSelector game, int genotypeSize, int generationSize, int numberOfTournaments, double mutationRate, double crossoverRate) {
+    public TournamentGeneticAlgorithm(GameSelector game, int genotypeSize, int generationSize, int startingGeneration, int numberOfTournaments, double mutationRate, double crossoverRate) {
 
         this.game = game;
         this.random = new Random();
         this.population = new ArrayList<>();
         this.genotypeSize = genotypeSize;
-        this.generationSize = generationSize;
+        this.generationSize = generationSize+startingGeneration;
+        this.totalGenerationNumber = startingGeneration;
         this.numberOfTournaments = numberOfTournaments;
         this.numberOfParticipantsPerTournament = (int) Math.pow(2, 4);
         this.populationSize = (numberOfParticipantsPerTournament*numberOfTournaments);
         this.mutationRate = mutationRate;
         this.crossoverRate = crossoverRate;
+        initializePopulation();
+    }
+
+    public TournamentGeneticAlgorithm(String fileName, GameSelector game, int generationSize, int startingGeneration, int numberOfTournaments, double mutationRate, double crossoverRate) {
+
+        this.dataPopulation = fileParser("/Users/clemdetry/Documents/Documents – Clem's MacBook Pro/UM/Thesis Karim/Code/Main/"+fileName);
+        this.game = game;
+        this.random = new Random();
+        this.population = new ArrayList<>();
+        this.genotypeSize = dataPopulation[0].length;
+        this.generationSize = generationSize+startingGeneration;
+        this.totalGenerationNumber = startingGeneration;
+        this.numberOfTournaments = numberOfTournaments;
+        this.numberOfParticipantsPerTournament = (int) Math.pow(2, 4);
+        this.populationSize = (numberOfParticipantsPerTournament*numberOfTournaments);
+        this.mutationRate = mutationRate;
+        this.crossoverRate = crossoverRate;
+        initializePopulation(dataPopulation);
     }
 
     public void start() {
@@ -57,10 +79,9 @@ public class TournamentGeneticAlgorithm {
         System.out.println("Total # of participants per tournament = " + numberOfParticipantsPerTournament);
         System.out.println();
         System.out.println("----- START -----");
-        initializePopulation();
         while (totalGenerationNumber < generationSize) {
             System.out.println();
-            System.out.println("--> Generation = " + (totalGenerationNumber+1));
+            System.out.println("--> Generation = " + (totalGenerationNumber));
             System.out.println();
             tournamentSelection();
             play();
@@ -84,6 +105,20 @@ public class TournamentGeneticAlgorithm {
             Item item = new Item(createRandomGenotype());
             population.add(item);
         }
+    }
+
+    public void initializePopulation(double[][] data) {
+
+        matingPool = new ArrayList<>();
+        for (int i = 0; i < data.length; i++) {
+            double[] temp = new double[data[0].length];
+            for (int j = 0; j < data[0].length; j++) {
+                temp[j] = data[i][j];
+            }
+            Item item = new Item(temp);
+            matingPool.add(item);
+        }
+        reproduction();
     }
 
     public double[] createRandomGenotype() {
@@ -148,7 +183,7 @@ public class TournamentGeneticAlgorithm {
 
         Board board = null;
         if (game.getClass().isInstance(new Checkers(null))) {
-            board = new Board(6, false);
+            board = new Board(6, completeBoard);
             game = new Checkers(board);
         }
         int currentPlayer = random.nextInt(2)+1;
@@ -268,7 +303,7 @@ public class TournamentGeneticAlgorithm {
 
     public void getMatingPoolGenotypes() {
 
-        OutputCSV out = new OutputCSV("MatingPoolGeneration"+ (totalGenerationNumber + 1) +".csv", "Generation " + (totalGenerationNumber + 1));
+        OutputCSV out = new OutputCSV("CompleteMatingPoolGeneration"+ (totalGenerationNumber) +".csv");
         String[][] data = new String[matingPool.size()][genotypeSize];
         int row = 0;
         for (Item item : matingPool) {
@@ -279,5 +314,26 @@ public class TournamentGeneticAlgorithm {
             row++;
         }
         out.writeResume(data);
+    }
+
+    public double[][] fileParser(String fileName) {
+
+        List<List<String>> records = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] values = line.split(",");
+                records.add(Arrays.asList(values));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        double[][] d = new double[records.size()][records.get(0).size()];
+        for (int i = 0; i < records.size(); i++) {
+            for (int j = 0; j < records.get(0).size(); j++) {
+                d[i][j] = Double.parseDouble(records.get(i).get(j));
+            }
+        }
+        return d;
     }
 }

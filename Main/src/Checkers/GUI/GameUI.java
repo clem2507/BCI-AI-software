@@ -50,7 +50,7 @@ public class GameUI extends Application {
     private boolean flag = false;
     private boolean done = true;
     private boolean isMCTS = false;
-    private boolean completeBoard = false;
+    private boolean completeBoard = true;
 
     private int choice;
 

@@ -30,8 +30,12 @@ public class CheckersEvalFunction extends EvaluationFunction {
         this.rootBoard = rootBoard;
         this.currentPlayer = currentPlayer;
 
-        double[] bestConfig = new double[]{109, 1723, -1927, 98, 442, 168};
-        setWeights(bestConfig);
+
+//        double[] bestConfigNotComplete = new double[]{0.3676439321801084, 0.34927666124021406, -0.5096797020134634, 0.9393348144299724, 0.39430677233420064, 0.5610948160176769};
+//        setWeights(bestConfigNotComplete);
+
+        double[] bestConfigComplete = new double[]{0.43513680781989394, 0.16110031633119282, -0.29187530553211827, 0.9050849723766596, 0.10650690656051254, 0.6613394768774338};
+        setWeights(bestConfigComplete);
     }
 
     @Override
