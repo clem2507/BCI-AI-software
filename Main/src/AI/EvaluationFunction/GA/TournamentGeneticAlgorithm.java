@@ -9,29 +9,45 @@ import Checkers.Game.Checkers;
 import Output.OutputCSV;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 
 public class TournamentGeneticAlgorithm {
 
+    /** game to run the algorithm on */
     private GameSelector game;
     private Random random;
+    /** main population list of items */
     private ArrayList<Item> population;
+    /** pre-processed population list of the fittest generation items  */
     private ArrayList<Item> matingPool;
+    /** tournament list where each item[] contains the array of participant of a single tournament */
     private ArrayList<Item[]> tournament;
+    /** 2d array used to store the population genotypes when given from a csv file */
     private double[][] dataPopulation;
+    /** corresponds to the total number of elements in each genotype */
     private int genotypeSize;
+    /** population size stands for the total amount of items before splitting them into different tournaments */
     private int populationSize;
+    /** algorithm stop condition, when a certain number of generations is reached, we can output the best result */
     private int generationSize;
+    /** number of tournaments per generation */
     private int numberOfTournaments;
+    /** number of participants per tournament (always 2^n) */
     private int numberOfParticipantsPerTournament;
+    /** current number of generation in the process */
     private int totalGenerationNumber;
+    /** corresponds to the rate at which a child undergoes a mutation in his genotype */
     private double mutationRate;
+    /** same as for the mutation but for the crossover between the two parents */
     private double crossoverRate;
+    /** boolean variable that tells the simulation method if the board is complete or simplified */
     private boolean completeBoard = true;
 
+    /**
+     * Class constructor to start the GA with a random population of items
+     */
     public TournamentGeneticAlgorithm(GameSelector game, int genotypeSize, int generationSize, int startingGeneration, int numberOfTournaments, double mutationRate, double crossoverRate) {
 
         this.game = game;
@@ -48,6 +64,9 @@ public class TournamentGeneticAlgorithm {
         initializePopulation();
     }
 
+    /**
+     * Class constructor to start the GA with a predefined population from a csv file
+     */
     public TournamentGeneticAlgorithm(String fileName, GameSelector game, int generationSize, int startingGeneration, int numberOfTournaments, double mutationRate, double crossoverRate) {
 
         this.dataPopulation = fileParser("/Users/clemdetry/Documents/Documents – Clem's MacBook Pro/UM/Thesis Karim/Code/Main/"+fileName);
@@ -65,6 +84,9 @@ public class TournamentGeneticAlgorithm {
         initializePopulation(dataPopulation);
     }
 
+    /**
+     * method that start the tournament GA process and contains all the printing statements
+     */
     public void start() {
 
         System.out.println();
@@ -99,6 +121,9 @@ public class TournamentGeneticAlgorithm {
         System.out.println("----> " + Arrays.toString(getBestGenotype()));
     }
 
+    /**
+     * given the population size, it initializes a random first generation of items
+     */
     public void initializePopulation() {
 
         for (int i = 0; i < populationSize; i++) {
@@ -107,6 +132,28 @@ public class TournamentGeneticAlgorithm {
         }
     }
 
+    /**
+     * given the genotype size
+     * @return an array (-> genotype) of appropriate size of random elements
+     */
+    public double[] createRandomGenotype() {
+
+        double[] genotype = new double[genotypeSize];
+        for (int i = 0; i < genotypeSize; i++) {
+            if (i==2) {
+                genotype[i] = -(random.nextDouble());
+            }
+            else {
+                genotype[i] = random.nextDouble();
+            }
+        }
+        return genotype;
+    }
+
+    /**
+     * method that initializes the first population
+     * @param data from which the population is created
+     */
     public void initializePopulation(double[][] data) {
 
         matingPool = new ArrayList<>();
@@ -121,20 +168,9 @@ public class TournamentGeneticAlgorithm {
         reproduction();
     }
 
-    public double[] createRandomGenotype() {
-
-        double[] genotype = new double[genotypeSize];
-        for (int i = 0; i < genotypeSize; i++) {
-            if (i==2) {
-                genotype[i] = -(random.nextDouble());
-            }
-            else {
-                genotype[i] = random.nextDouble();
-            }
-        }
-        return genotype;
-    }
-    
+    /**
+     * creation of multiple tournaments with a random distribution of participant in each of them
+     */
     public void tournamentSelection() {
         
         int count = 0;
@@ -152,7 +188,10 @@ public class TournamentGeneticAlgorithm {
             tournament.add(league);
         }
     }
-    
+
+    /**
+     * given the list of different tournaments, each of them is played one after the other
+     */
     public void play() {
 
         matingPool = new ArrayList<>();
@@ -165,6 +204,10 @@ public class TournamentGeneticAlgorithm {
         }
     }
 
+    /**
+     * @param list of participants for a specific tournament
+     * @return the two tournament finalist that will enter the mating pool
+     */
     public Item[] playTournament(ArrayList<Item> list) {
 
         int count = 0;
@@ -179,6 +222,11 @@ public class TournamentGeneticAlgorithm {
         return new Item[]{list.get(0), list.get(1)};
     }
 
+    /**
+     * method that set the winner variable of the best of the two participants to true
+     * @param participant1 first item to compete
+     * @param participant2 second item to compete
+     */
     public void simulateGames(Item participant1, Item participant2) {
 
         Board board = null;
@@ -232,6 +280,9 @@ public class TournamentGeneticAlgorithm {
         }
     }
 
+    /**
+     * this will create a new population of the same size as the previous one with the individuals selected in the mating pool
+     */
     public void reproduction() {
 
         population = new ArrayList<>();
@@ -248,6 +299,11 @@ public class TournamentGeneticAlgorithm {
         }
     }
 
+    /**
+     * @param parent1 first breeder
+     * @param parent2 second breeder
+     * @return an item array with the two children created by crossover from the selected parents
+     */
     public Item[] crossover(Item parent1, Item parent2) {
 
         Item child1 = new Item(parent1.getGenotype());
@@ -268,6 +324,10 @@ public class TournamentGeneticAlgorithm {
         return children;
     }
 
+    /**
+     * @param children item array with the two children
+     * @return same item array after having potentially received a mutation
+     */
     public Item[] mutation(Item[] children) {
 
         for (int i = 0; i < 2; i++) {
@@ -285,6 +345,10 @@ public class TournamentGeneticAlgorithm {
         return children;
     }
 
+    /**
+     * when the total # of generations is reached, we want to find the best item from the mating pool
+     * @return the two best items from the mating pool
+     */
     public double[] getBestGenotype() {
 
         tournamentSelection();
@@ -301,6 +365,9 @@ public class TournamentGeneticAlgorithm {
         return matingPool.get(0).getGenotype();
     }
 
+    /**
+     * method used to save the mating pool each generation in a csv file to observe the evolution of the genotypes
+     */
     public void getMatingPoolGenotypes() {
 
         OutputCSV out = new OutputCSV("CompleteMatingPoolGeneration"+ (totalGenerationNumber) +".csv");
@@ -316,10 +383,14 @@ public class TournamentGeneticAlgorithm {
         out.writeResume(data);
     }
 
-    public double[][] fileParser(String fileName) {
+    /**
+     * @param path csv file path with the data
+     * @return the file parsed into a 2d double array with the corresponding data
+     */
+    public double[][] fileParser(String path) {
 
         List<List<String>> records = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(path))) {
             String line;
             while ((line = br.readLine()) != null) {
                 String[] values = line.split(",");

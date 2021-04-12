@@ -6,10 +6,11 @@ import Abalone.Game.MoveDirection;
 
 public class CheckersEvalFunction extends EvaluationFunction {
 
+    /** current root game board */
     private int[][] rootBoard;
+    /** current player to play */
     private int currentPlayer;
-    private double[] configuration;
-
+    /** different weights for the evaluation function */
     private double w1;
     private double w2;
     private double w3;
@@ -17,19 +18,28 @@ public class CheckersEvalFunction extends EvaluationFunction {
     private double w5;
     private double w6;
 
+    /**
+     * class first constructor
+     * @param rootBoard current root game board
+     * @param currentPlayer to play
+     * @param configuration weights for the evaluation function
+     */
     public CheckersEvalFunction(int[][] rootBoard, int currentPlayer, double[] configuration) {
 
         this.rootBoard = rootBoard;
         this.currentPlayer = currentPlayer;
-        this.configuration = configuration;
         setWeights(configuration);
     }
 
+    /**
+     * class second constructor
+     * @param rootBoard current root game board
+     * @param currentPlayer to play
+     */
     public CheckersEvalFunction(int[][] rootBoard, int currentPlayer) {
 
         this.rootBoard = rootBoard;
         this.currentPlayer = currentPlayer;
-
 
 //        double[] bestConfigNotComplete = new double[]{0.3676439321801084, 0.34927666124021406, -0.5096797020134634, 0.9393348144299724, 0.39430677233420064, 0.5610948160176769};
 //        setWeights(bestConfigNotComplete);
@@ -51,6 +61,10 @@ public class CheckersEvalFunction extends EvaluationFunction {
         return (w1*h1) + (w2*h2) + (w3*h3) + (w4*h4) + (w5*h5) + (w6*h6);
     }
 
+    /**
+     * setter to tune the evaluation functions weights
+     * @param configuration corresponding values for weights
+     */
     public void setWeights(double[] configuration) {
 
         w1 = configuration[0];
@@ -61,6 +75,11 @@ public class CheckersEvalFunction extends EvaluationFunction {
         w6 = configuration[5];
     }
 
+    /**
+     * method that computes the total number of attacking positions for a given player
+     * @param player current player
+     * @return the total count of such that position
+     */
     public int attackingPosition(int player) {
 
         int count = 0;
@@ -74,6 +93,13 @@ public class CheckersEvalFunction extends EvaluationFunction {
         return count;
     }
 
+    /**
+     * checks the the # of attacking positions for a given marbles in its square
+     * @param i position on board
+     * @param j position on board
+     * @param player current player
+     * @return the counter
+     */
     public int checkFourDirections(int i, int j, int player) {
 
         int count = 0;
@@ -121,11 +147,19 @@ public class CheckersEvalFunction extends EvaluationFunction {
         return count;
     }
 
+    /**
+     * @param player current player
+     * @return true of the board is victorious for that particular player
+     */
     public int victoriousPosition(int player) {
 
         return isVictorious(rootBoard, player);
     }
 
+    /**
+     * @param player current player
+     * @return true of the board is victorious for that particular player
+     */
     public int isVictorious(int[][] board, int player) {
 
         if (player==1) {
@@ -148,6 +182,11 @@ public class CheckersEvalFunction extends EvaluationFunction {
         return 0;
     }
 
+    /**
+     * method that computes the distance between the closer marble to the other side to of the current player
+     * @param player current player
+     * @return the distance to the other side (considering that it has to make moves to reach the other side)
+     */
     public int distanceToTheOtherSide(int player) {
 
         switch (player) {
@@ -173,6 +212,11 @@ public class CheckersEvalFunction extends EvaluationFunction {
         return 0;
     }
 
+    /**
+     * method that computes the total amount of pattern where one current player marbles is situated between of the other player
+     * @param currentPlayer to play
+     * @return the counter
+     */
     private int aba_PatternCount(int currentPlayer) {
 
         int count = 0;
@@ -186,6 +230,13 @@ public class CheckersEvalFunction extends EvaluationFunction {
         return count;
     }
 
+    /**
+     * checks for the previous method pattern in marble square
+     * @param i position on board
+     * @param j position on board
+     * @param player to play
+     * @return the counter
+     */
     public int checkPatternInSquare(int i, int j, int player) {
 
         int count = 0;

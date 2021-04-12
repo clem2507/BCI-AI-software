@@ -13,21 +13,34 @@ import java.util.*;
 
 public class GameTree {
 
+    /** possible moves selector */
     private PossibleMoves possibleMoves;
+    /** game on which we want to build a game tree on */
     private GameSelector game;
+    /** chosen configuration of weights for the evaluation function */
     private double[] configuration;
-
+    /** root node of the tree */
     private Node root;
-
+    /** list that contains all the edges of the game tree */
     private ArrayList<Edge> edges = new ArrayList<>();
+    /** list that contains all the edges of the game tree */
     private ArrayList<Node> nodes = new ArrayList<>();
+    /** list that contains the previous generation of nodes when building the game tree */
     private ArrayList<Node> previousGeneration = new ArrayList<>();
+    /** list that contains all the current generation nodes -> temporary variable */
     private ArrayList<Node> currentGeneration = new ArrayList<>();
-
+    /** total number of generation -> corresponding to the final depth of the tree */
     private int totalNumGeneration;
+    /** current player to play */
     private int currentPlayer;
+    /** current generation counter variable */
     private int generationCounter = 1;
 
+    /**
+     * class constructor
+     * @param game to create the game tree structure on
+     * @param depth total deepness of the tree
+     */
     public GameTree(GameSelector game, int depth) {
 
         this.game = game;
@@ -35,6 +48,12 @@ public class GameTree {
         this.currentPlayer = game.getCurrentPlayer();
     }
 
+    /**
+     * class constructor
+     * @param game to create the game tree structure on
+     * @param depth total deepness of the tree
+     * @param configuration weights to run the evaluation function with
+     */
     public GameTree(GameSelector game, int depth, double[] configuration) {
 
         this.game = game;
@@ -43,6 +62,10 @@ public class GameTree {
         this.currentPlayer = game.getCurrentPlayer();
     }
 
+    /**
+     * main function of game tree creation
+     * BFS way of constructing the game tree
+     */
     public void createTree() {
 
         if (game.getClass().isInstance(new Checkers(null))) {
@@ -68,9 +91,15 @@ public class GameTree {
             previousGeneration.addAll(currentGeneration);
             currentGeneration.clear();
         }
-//        System.out.println("Nodes in game tree = " + nodes.size());
+        System.out.println("Nodes in game tree = " + nodes.size());
     }
 
+    /**
+     * method that add the new children in the game tree
+     * @param parent to whom children are created
+     * @param currentBoardState of the current parent node
+     * @param currentPlayer to play
+     */
     public void createChildren(Node parent, int[][] currentBoardState, int currentPlayer){
 
         possibleMoves = new CheckersPossibleMoves(currentBoardState, currentPlayer);
@@ -107,35 +136,11 @@ public class GameTree {
         }
     }
 
-    public boolean adjacent(Node x, Node y)	{
-        // Returns true when there’s an edge from x to y
-        for(Edge e : edges){
-            if (e.getSource() == x){
-                if(e.getDestination() == y){
-                    return true;
-                }
-            }else if (e.getSource() == y){
-                if(e.getDestination() == x) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    public List<Node> getNeighbours(Node v) { // String vertex
-        // Returns all neighbours of a given vertex
-        List<Node> neighbours = new ArrayList<>();
-        for (Edge e : edges){
-            if(e.getSource() == v){
-                neighbours.add(e.getDestination());
-            }else if(e.getDestination() == v){
-                neighbours.add(e.getSource());
-            }
-        }
-        return neighbours;
-    }
-
+    /**
+     * method to get the children in the tree of a certain node
+     * @param v current node
+     * @return a list a children
+     */
     public ArrayList<Node> getChildren(Node v) { // String vertex
         // Returns all neighbours of a given vertex
         ArrayList<Node> children = new ArrayList<>();
@@ -147,18 +152,34 @@ public class GameTree {
         return children;
     }
 
+    /**
+     * setter for the current player
+     * @param currentPlayer to play
+     */
     public void setCurrentPlayer(int currentPlayer) {
         this.currentPlayer = currentPlayer;
     }
 
+    /**
+     * getter for the game tree node list
+     * @return the list with the nodes
+     */
     public ArrayList<Node> getNodes() {
         return nodes;
     }
 
+    /**
+     * getter for the game tree edges list
+     * @return the list with the edges
+     */
     public ArrayList<Edge> getEdges() {
         return edges;
     }
 
+    /**
+     * getter for the total number of generation
+     * @return the total number of generation
+     */
     public int getTotalNumGeneration() {
         return totalNumGeneration;
     }

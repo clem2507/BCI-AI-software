@@ -13,25 +13,35 @@ import java.util.ArrayList;
 
 public class MCTS {
 
+    /** specific game to run the MCTS on */
     private final GameSelector game;
-
+    /** current player in the game */
     private final int currentPlayer;
+    /** integer variable that stands for the current number of iterations */
     private int iterations;
+    /** instance that consists of the total number of random simulations to make at a certain leaf in the tree */
     private int sampleSize;
-
+    /** stop condition to let the algorithm knows when it is done with computation */
     private double stopCondition;
 
     private boolean isCheckers = false;
     private boolean isAbalone = false;
 
+    /** root node of the tree */
     private Node root;
-
+    /** list of all edges in the game tree */
     private ArrayList<Edge> edges = new ArrayList<>();
+    /** list of all nodes in the game tree */
     private ArrayList<Node> nodes = new ArrayList<>();
+    /** list that contains the four best nodes after the algorithm is done running */
     private ArrayList<int[][]> fourBestNodes = new ArrayList<>();
 
     private int[][] bestMove;
 
+    /**
+     * main constructor for the MCTS algorithm
+     * @param game current game to play with
+     */
     public MCTS(GameSelector game) {
 
         this.game = game;
@@ -57,6 +67,9 @@ public class MCTS {
         stopCondition = 2000;
     }
 
+    /**
+     * start method that launches the algorithm
+     */
     public void start() {
 
         long b_time = System.currentTimeMillis();
@@ -88,6 +101,11 @@ public class MCTS {
         System.out.println();
     }
 
+    /**
+     * method used to balance the algorithm selection between exploration and exploitation
+     * @param n current node on which we need to compute the uct score
+     * @return the corresponding score
+     */
     public double uctValue(Node n) {
 
         // c = exploration parameter
@@ -105,6 +123,11 @@ public class MCTS {
         return meanScore + (c * Math.sqrt(Math.log(parentVisits)/nodeVisits));
     }
 
+    /**
+     * find the best node to select based on the uct scores
+     * @param n current node
+     * @return the best node to select next
+     */
     public Node findBestNodeWithUCT(Node n) {
 
         Node bestNode = new Node(null, 0, 0);
@@ -118,6 +141,11 @@ public class MCTS {
         return bestNode;
     }
 
+    /**
+     * first of the main MCTS method
+     * aims to select the best node in the current expand tree until a leaf in reached
+     * when this is the case, the tree is expanded on that particular node with its children
+     */
     public void Selection() {
         Node n = root;
         int actualPlayer = currentPlayer;
@@ -130,6 +158,12 @@ public class MCTS {
         Expansion(n, actualPlayer);
     }
 
+    /**
+     * second main MCTS method
+     * it consists of expanding the leaf node to extend its robustness
+     * @param n current node to expand
+     * @param currentPlayer to play
+     */
     public void Expansion(Node n, int currentPlayer) {
 
         ArrayList<int[][]> children = new ArrayList<>();
@@ -164,6 +198,12 @@ public class MCTS {
         }
     }
 
+    /**
+     * third main MCTS method
+     * when the previously selected node has been expanded, we run a certain amount of random simulations on a randomly selected child
+     * @param n randomly selected node from the expansion
+     * @param currentPlayer to play
+     */
     public void Simulation(Node n, int currentPlayer) {
 
         double simulationScore = 0;
@@ -205,6 +245,12 @@ public class MCTS {
         backPropagation(n, simulationScore);
     }
 
+    /**
+     * final main MCTS method
+     * when we are done with the simulations, we need to backtrack the results until the root node is reached and update the corresponding parents
+     * @param n leaf node on which we need to backtrack its score
+     * @param simulationScore to backtrack
+     */
     public void backPropagation(Node n, double simulationScore) {
 
         //int back = 0;
@@ -238,6 +284,10 @@ public class MCTS {
 //        return score;
 //    }
 
+    /**
+     * @param n given a certain node
+     * @return its corresponding list of children
+     */
     public ArrayList<Node> getChildren(Node n) {
 
         ArrayList<Node> children = new ArrayList<>();
@@ -249,6 +299,10 @@ public class MCTS {
         return children;
     }
 
+    /**
+     * @param n given a certain node
+     * @return its closest parent
+     */
     public Node getParent(Node n) {
 
         Node parent = null;
@@ -260,10 +314,9 @@ public class MCTS {
         return parent;
     }
 
-    public int[][] getBestMove() {
-        return bestMove;
-    }
-
+    /**
+     * @return the four best moves selected by the algorithm
+     */
     public ArrayList<int[][]> getFourBestNodes() {
         return fourBestNodes;
     }
