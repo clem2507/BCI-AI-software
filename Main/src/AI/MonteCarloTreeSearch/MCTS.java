@@ -1,11 +1,14 @@
 package AI.MonteCarloTreeSearch;
 
+import AI.EvaluationFunction.Checkers.CheckersEvalFunction;
+import AI.EvaluationFunction.EvaluationFunction;
 import AI.GameSelector;
 import AI.TreeStructure.Edge;
 import AI.TreeStructure.Node;
 import AI.Util;
 import Abalone.Game.Abalone;
 import Abalone.Game.GetPossibleMoves;
+import Checkers.GUI.GameUI;
 import Checkers.Game.Checkers;
 import AI.PossibleMoves.CheckersPossibleMoves;
 
@@ -47,11 +50,11 @@ public class MCTS {
         this.game = game;
 
         if (game.getClass().isInstance(new Checkers(null))) {
-            this.root = new Node(this.game.getCheckersBoard().getGameBoard(), 0, 0);
+            this.root = new Node(this.game.getCheckersBoard().getGameBoard(), 1, 0, 0);
             isCheckers = true;
         }
         else if (game.getClass().isInstance(new Abalone(null))) {
-            this.root = new Node(this.game.getAbaloneBoard().getGameBoard(), 0, 0);
+            this.root = new Node(this.game.getAbaloneBoard().getGameBoard(), 1, 0, 0);
             isAbalone = true;
         }
 
@@ -63,8 +66,8 @@ public class MCTS {
     // TODO: find a way to balance the MCTS configuration
     public void setBestConfiguration() {
 
-        sampleSize = 5;
-        stopCondition = 2000;
+        sampleSize = 1;
+        stopCondition = 5000;
     }
 
     /**
@@ -76,12 +79,13 @@ public class MCTS {
         while ((System.currentTimeMillis() - b_time) < stopCondition) {
             Selection();
 //            for (Node n : nodes) {
-//                System.out.print(n.getTotalSimulation() + ", ");
+//                System.out.print(n.getTotalScore() + ", ");
 //            }
 //            System.out.println();
             iterations++;
         }
         ArrayList<Node> rootChildren = getChildren(root);
+        rootChildren.removeIf(n -> !n.isDoneInSubTree());
         int i = 0;
         while (i < 4) {
             double maxSimulation = 0;
@@ -98,6 +102,7 @@ public class MCTS {
             i++;
         }
         System.out.println("Simulations = " + nodes.get(0).getTotalSimulation());
+        System.out.println("Turns left = " + (15-GameUI.turnCounter));
         System.out.println();
     }
 
@@ -130,7 +135,7 @@ public class MCTS {
      */
     public Node findBestNodeWithUCT(Node n) {
 
-        Node bestNode = new Node(null, 0, 0);
+        Node bestNode = new Node(null, 0, 0, 0);
         double max = Double.NEGATIVE_INFINITY;
         for (Node node : getChildren(n)) {
             if (uctValue(node) > max) {
@@ -167,25 +172,25 @@ public class MCTS {
     public void Expansion(Node n, int currentPlayer) {
 
         ArrayList<int[][]> children = new ArrayList<>();
-
-        if (isCheckers) {
-            if (!game.isDone(n.getBoardState())) {
-                CheckersPossibleMoves possibleMoves = new CheckersPossibleMoves(n.getBoardState(), currentPlayer);
-                children = possibleMoves.getPossibleMoves();
+        if (n.getDepth() < (15-GameUI.turnCounter)) {
+            if (isCheckers) {
+                if (!game.isDone(n.getBoardState())) {
+                    CheckersPossibleMoves possibleMoves = new CheckersPossibleMoves(n.getBoardState(), currentPlayer);
+                    children = possibleMoves.getPossibleMoves();
+                }
+            } else if (isAbalone) {
+                if (!game.isDone(n.getBoardState())) {
+                    GetPossibleMoves possibleMoves = new GetPossibleMoves();
+                    children = possibleMoves.getPossibleMoves(n.getBoardState(), currentPlayer);
+                }
             }
-        }
-        else if (isAbalone) {
-            if (!game.isDone(n.getBoardState())) {
-                GetPossibleMoves possibleMoves = new GetPossibleMoves();
-                children = possibleMoves.getPossibleMoves(n.getBoardState(), currentPlayer);
-            }
-        }
 
-        for (int[][] child : children) {
-            Node childNode = new Node(child, 0, 0);
-            nodes.add(childNode);
-            Edge edge = new Edge(n, childNode);
-            edges.add(edge);
+            for (int[][] child : children) {
+                Node childNode = new Node(child, n.getDepth()+1, 0, 0);
+                nodes.add(childNode);
+                Edge edge = new Edge(n, childNode);
+                edges.add(edge);
+            }
         }
 
         if (children.size() > 0) {
@@ -233,10 +238,15 @@ public class MCTS {
                 actualPlayer = Util.changeCurrentPlayer(actualPlayer);
                 countMoves++;
             }
+//            EvaluationFunction eval;
             if (game.isVictorious(actualBoard, this.currentPlayer)) {
+//                eval = new CheckersEvalFunction(actualBoard, this.currentPlayer);
+//                simulationScore+=eval.evaluate();
                 simulationScore++;
             }
             else {
+//                eval = new CheckersEvalFunction(actualBoard, Util.changeCurrentPlayer(this.currentPlayer));
+//                simulationScore-=eval.evaluate();
                 simulationScore--;
             }
         }
@@ -253,14 +263,22 @@ public class MCTS {
      */
     public void backPropagation(Node n, double simulationScore) {
 
-        //int back = 0;
+//        int back = 0;
+        boolean check = false;
+        if (game.isDone(n.getBoardState())) {
+            check = true;
+            n.setIsDoneInSubTree(true);
+        }
         while (getParent(n) != null) {
+            if (check) {
+                getParent(n).setIsDoneInSubTree(true);
+            }
             n = getParent(n);
             n.setTotalSimulation(n.getTotalSimulation() + 1);
             n.setTotalWin(n.getTotalScore() + simulationScore);
-            //back++;
+//            back++;
         }
-        //System.out.println("back = " + back);
+//        System.out.println("back = " + back);
 
         ArrayList<Node> rootChildren = getChildren(root);
         double sumScore = 0;
@@ -272,17 +290,6 @@ public class MCTS {
         root.setTotalWin(sumScore);
         root.setTotalSimulation(sumSimulation);
     }
-
-//    public double weightingFunction(double rootScore, double currentScore) {
-//
-//        double score;
-//        if (currentScore > rootScore) {
-//            score = Math.sqrt(Math.abs(currentScore-rootScore))/5;
-//        } else {
-//            score = -(Math.sqrt(Math.abs(currentScore-rootScore))/5);
-//        }
-//        return score;
-//    }
 
     /**
      * @param n given a certain node

@@ -26,6 +26,7 @@ public class GameUI extends Application {
     private Scene scene;
 
     public static int squareSize = 80;
+    public static int turnCounter = 0;
     private final int numberOfMarblesOnBoard = 6;
     private final int WIDTH = (numberOfMarblesOnBoard*squareSize)+(2*squareSize) + 250;
     private final int HEIGHT = (numberOfMarblesOnBoard*squareSize)+(2*squareSize);
@@ -36,11 +37,16 @@ public class GameUI extends Application {
     private CheckBox box2;
     private CheckBox box3;
     private CheckBox box4;
+    private CheckBox isMCTS;
+    private CheckBox isABTS;
 
     private Text move1;
     private Text move2;
     private Text move3;
     private Text move4;
+    private Text isMCTStext;
+    private Text isABTStext;
+    private Text turnNumberText;
 
     public static Text readyText;
 
@@ -49,8 +55,7 @@ public class GameUI extends Application {
 
     private boolean flag = false;
     private boolean done = true;
-    private boolean isMCTS = false;
-    private boolean completeBoard = true;
+    private boolean completeBoard = false;
 
     private int choice;
 
@@ -67,10 +72,10 @@ public class GameUI extends Application {
         this.box1.setTranslateX(WIDTH - 275);
         this.box1.setTranslateY(100);
         this.box1.setOnAction(event -> {
+            box2.setSelected(false);
+            box3.setSelected(false);
+            box4.setSelected(false);
             if (flag) {
-                box2.setSelected(false);
-                box3.setSelected(false);
-                box4.setSelected(false);
                 showSelection(0, checkers.getFourBestMoves());
             }
         });
@@ -79,10 +84,10 @@ public class GameUI extends Application {
         this.box2.setTranslateX(WIDTH - 275);
         this.box2.setTranslateY(200);
         this.box2.setOnAction(event -> {
+            box1.setSelected(false);
+            box3.setSelected(false);
+            box4.setSelected(false);
             if (flag) {
-                box1.setSelected(false);
-                box3.setSelected(false);
-                box4.setSelected(false);
                 showSelection(1, checkers.getFourBestMoves());
             }
         });
@@ -91,10 +96,10 @@ public class GameUI extends Application {
         this.box3.setTranslateX(WIDTH - 275);
         this.box3.setTranslateY(300);
         this.box3.setOnAction(event -> {
+            box1.setSelected(false);
+            box2.setSelected(false);
+            box4.setSelected(false);
             if (flag) {
-                box1.setSelected(false);
-                box2.setSelected(false);
-                box4.setSelected(false);
                 showSelection(2, checkers.getFourBestMoves());
             }
         });
@@ -103,10 +108,10 @@ public class GameUI extends Application {
         this.box4.setTranslateX(WIDTH - 275);
         this.box4.setTranslateY(400);
         this.box4.setOnAction(event -> {
+            box1.setSelected(false);
+            box2.setSelected(false);
+            box3.setSelected(false);
             if (flag) {
-                box1.setSelected(false);
-                box2.setSelected(false);
-                box3.setSelected(false);
                 showSelection(3, checkers.getFourBestMoves());
             }
         });
@@ -117,6 +122,60 @@ public class GameUI extends Application {
         this.box4.setFocusTraversable(false);
 
         pane.getChildren().addAll(box1, box2, box3, box4);
+
+        this.isMCTS = new CheckBox();
+        this.isMCTS.setTranslateX(80);
+        this.isMCTS.setTranslateY(25);
+        this.isMCTS.setSelected(true);
+        this.isMCTS.setOnAction(event -> {
+            if (board.isSelectable) {
+                if (isMCTS.isSelected() || isABTS.isSelected()) {
+                    isABTS.setSelected(false);
+                    if (done) {
+                        readyText.setText("Press ENTER to start MCTS");
+                    }
+                } else {
+                    isMCTS.setSelected(true);
+                }
+            }
+            else {
+                isMCTS.setSelected(!isMCTS.isSelected());
+            }
+        });
+
+        this.isABTS = new CheckBox();
+        this.isABTS.setTranslateX(350);
+        this.isABTS.setTranslateY(25);
+        this.isABTS.setOnAction(event -> {
+            if (board.isSelectable) {
+                if (isMCTS.isSelected() || isABTS.isSelected()) {
+                    isMCTS.setSelected(false);
+                    if (done) {
+                        readyText.setText("Press ENTER to start ABTS");
+                    }
+                } else {
+                    isABTS.setSelected(true);
+                }
+            }
+            else {
+                isABTS.setSelected(!isABTS.isSelected());
+            }
+        });
+
+        this.isMCTStext = new Text("Monte-Carlo Tree Search");
+        this.isMCTStext.setTranslateX(120);
+        this.isMCTStext.setTranslateY(40);
+        this.isMCTStext.setFont(Font.font("Arial", FontWeight.BOLD, FontPosture.REGULAR, 16));
+
+        this.isABTStext = new Text("Alpha-Beta Tree Search");
+        this.isABTStext.setTranslateX(390);
+        this.isABTStext.setTranslateY(40);
+        this.isABTStext.setFont(Font.font("Arial", FontWeight.BOLD, FontPosture.REGULAR, 16));
+
+        this.isMCTS.setFocusTraversable(false);
+        this.isABTS.setFocusTraversable(false);
+
+        pane.getChildren().addAll(isMCTS, isABTS, isMCTStext, isABTStext);
 
         this.move1 = new Text("Move 1");
         this.move1.setTranslateX(WIDTH - 230);
@@ -140,7 +199,7 @@ public class GameUI extends Application {
 
         pane.getChildren().addAll(move1, move2, move3, move4);
 
-        if (isMCTS) {
+        if (isMCTS.isSelected()) {
             readyText = new Text("Press ENTER to start MCTS");
         }
         else {
@@ -150,7 +209,12 @@ public class GameUI extends Application {
         readyText.setTranslateY(500);
         readyText.setFont(Font.font("Arial", FontWeight.BOLD, FontPosture.REGULAR, 18));
 
-        pane.getChildren().add(readyText);
+        this.turnNumberText = new Text("Turn number " + turnCounter);
+        this.turnNumberText.setTranslateX(80);
+        this.turnNumberText.setTranslateY(HEIGHT-30);
+        this.turnNumberText.setFont(Font.font("Arial", FontWeight.BOLD, FontPosture.REGULAR, 18));
+
+        pane.getChildren().addAll(readyText, turnNumberText);
 
         scene = new Scene(pane ,WIDTH, HEIGHT);
         primaryStage.setResizable(false);
@@ -192,11 +256,14 @@ public class GameUI extends Application {
                     if (flag) {
                         makeMoveWithAI();
                         board.isSelectable = true;
+                        turnCounter++;
+                        turnNumberText.setText("Turn number " + turnCounter);
                     }
                     break;
                 case ENTER:
-                    if (done && isMCTS) {
+                    if (done && isMCTS.isSelected()) {
                         new Thread(() -> {
+                            readyText.setText("...");
                             board.isSelectable = false;
                             checkers.runMCTS();
                             done = false;
@@ -205,6 +272,7 @@ public class GameUI extends Application {
                     }
                     else if (done) {
                         new Thread(() -> {
+                            readyText.setText("...");
                             board.isSelectable = false;
                             checkers.runABTS();
                             done = false;
@@ -281,7 +349,7 @@ public class GameUI extends Application {
         box3.setSelected(false);
         box4.setSelected(false);
         checkers.getFourBestMoves().clear();
-        if (isMCTS) {
+        if (isMCTS.isSelected()) {
             readyText.setText("Press ENTER to start MCTS");
         }
         else {

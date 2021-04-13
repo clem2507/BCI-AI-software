@@ -178,7 +178,7 @@ public class GameTree {
 
     /**
      * getter for the total number of generation
-     * @return the total number of generation
+     * @return the total number of generationvc
      */
     public int getTotalNumGeneration() {
         return totalNumGeneration;
