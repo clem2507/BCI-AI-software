@@ -12,7 +12,7 @@ import java.util.Arrays;
 public class Rules {
 
     private int[][] board;
-    private int[][] new_board = new int[9][9];
+    private int[][] new_board;
     private int playerTurn;
     private MoveDirection direction; //stores the target direction of the current move
     private int[][] marblesSelected; //stores the coordinates of the selected marbles
@@ -30,9 +30,10 @@ public class Rules {
         marblesSelected=mv.pushing;
         nbSelected=mv.pushing.length;
         board=mv.board;
+        new_board=new int[board.length][board[0].length];
 
-        for (int i = 0; i < 9; i++) {
-            for (int j = 0; j < 9; j++)
+        for (int i = 0; i < board.length; i++) {
+            for (int j = 0; j < board[0].length; j++)
                 new_board[i][j] = board[i][j];
         }
     }
@@ -65,8 +66,8 @@ public class Rules {
     }
 
     public void replaceBoard() {
-        for (int i = 0; i < 9; i++)
-            for (int j = 0; j < 9; j++)
+        for (int i = 0; i < board.length; i++)
+            for (int j = 0; j < board[0].length; j++)
                 board[i][j] = new_board[i][j];
     }
 
@@ -215,34 +216,58 @@ public class Rules {
         switch (direction) {
 
             case TOP_LEFT:
-                if(marble[0] == 0) { return true; }
-                if(marble[0]<5) { return (marble[1] == 0); }
+                if(marble[0] == 0) {
+                    return true;
+                }
+                if(marble[0]<5) {
+                    return (marble[1] == 0);
+                }
                 return false;
 
             case LEFT:
                 //check if a marble is on the far left.
-                if (marble[1] == 0) { return true; }
+                if (marble[1] == 0) {
+                    return true;
+                }
                 return false;
 
             case BOTTOM_LEFT:
-                if(marble[0] == 8) { return true; }
-                if(marble[0] > 3) {return (marble[1] == 0); }
+                if(marble[0] == 8) {
+                    return true;
+                }
+                if(marble[0] > 3) {
+                    return (marble[1] == 0);
+                }
                 return false;
 
             case TOP_RIGHT:
-                if(marble[0] == 0) { return true; }
-                if(marble[0] == 4) { return (marble[1] == 8); }
-                if(marble[0] < 5) { return (board[marble[0]][marble[1]+1] == -1); }
+                if(marble[0] == 0) {
+                    return true;
+                }
+                if(marble[0] == 4) {
+                    return (marble[1] == 6);
+                }
+                if(marble[0] < 5) {
+                    return (board[marble[0]][marble[1]+1] == -1);
+                }
                 return false;
 
             case RIGHT:
-                if (marble[0] == 4 && marble[1] == 8) { return true; }
+                if (marble[0] == 4 && marble[1] == 6) {
+                    return true;
+                }
                 return (board[marble[0]][marble[1] + 1] == -1);
 
             case BOTTOM_RIGHT:
-                if(marble[0] == 8) { return true; }
-                if(marble[0] == 4) { return (marble[1] == 8); }
-                if(marble[0] > 3) { return (board[marble[0]][marble[1]+1] == -1); }
+                if(marble[0] == 8) {
+                    return true;
+                }
+                if(marble[0] == 4) {
+                    return (marble[1] == 6);
+                }
+                if(marble[0] > 3) {
+                    return (board[marble[0]][marble[1]+1] == -1);
+                }
                 return false;
         }
         // System.out.println("you should not be here");

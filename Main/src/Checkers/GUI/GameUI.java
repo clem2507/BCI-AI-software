@@ -6,9 +6,12 @@ import Checkers.Game.Checkers;
 import Checkers.Game.Move;
 import Checkers.Game.MoveDirection;
 import javafx.application.Application;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.CheckBox;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -18,6 +21,9 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -47,6 +53,7 @@ public class GameUI extends Application {
     private Text isMCTStext;
     private Text isABTStext;
     private Text turnNumberText;
+    private Text whosePlaying;
 
     public static Text readyText;
 
@@ -65,12 +72,13 @@ public class GameUI extends Application {
         this.board = new Board(numberOfMarblesOnBoard, completeBoard);
         this.checkers = new Checkers(this.board);
 
+        setBackground();
         displayBoard();
         displayMarbles();
 
         this.box1 = new CheckBox();
-        this.box1.setTranslateX(WIDTH - 275);
-        this.box1.setTranslateY(100);
+        this.box1.setTranslateX(WIDTH - 230);
+        this.box1.setTranslateY(135);
         this.box1.setOnAction(event -> {
             box2.setSelected(false);
             box3.setSelected(false);
@@ -81,8 +89,8 @@ public class GameUI extends Application {
         });
 
         this.box2 = new CheckBox();
-        this.box2.setTranslateX(WIDTH - 275);
-        this.box2.setTranslateY(200);
+        this.box2.setTranslateX(WIDTH - 230);
+        this.box2.setTranslateY(235);
         this.box2.setOnAction(event -> {
             box1.setSelected(false);
             box3.setSelected(false);
@@ -93,8 +101,8 @@ public class GameUI extends Application {
         });
 
         this.box3 = new CheckBox();
-        this.box3.setTranslateX(WIDTH - 275);
-        this.box3.setTranslateY(300);
+        this.box3.setTranslateX(WIDTH - 230);
+        this.box3.setTranslateY(335);
         this.box3.setOnAction(event -> {
             box1.setSelected(false);
             box2.setSelected(false);
@@ -105,8 +113,8 @@ public class GameUI extends Application {
         });
 
         this.box4 = new CheckBox();
-        this.box4.setTranslateX(WIDTH - 275);
-        this.box4.setTranslateY(400);
+        this.box4.setTranslateX(WIDTH - 230);
+        this.box4.setTranslateY(435);
         this.box4.setOnAction(event -> {
             box1.setSelected(false);
             box2.setSelected(false);
@@ -178,23 +186,23 @@ public class GameUI extends Application {
         pane.getChildren().addAll(isMCTS, isABTS, isMCTStext, isABTStext);
 
         this.move1 = new Text("Move 1");
-        this.move1.setTranslateX(WIDTH - 230);
-        this.move1.setTranslateY(115);
+        this.move1.setTranslateX(WIDTH - 200);
+        this.move1.setTranslateY(150);
         this.move1.setFont(Font.font("Arial", FontWeight.BOLD, FontPosture.REGULAR, 18));
 
         this.move2 = new Text("Move 2");
-        this.move2.setTranslateX(WIDTH - 230);
-        this.move2.setTranslateY(215);
+        this.move2.setTranslateX(WIDTH - 200);
+        this.move2.setTranslateY(250);
         this.move2.setFont(Font.font("Arial", FontWeight.BOLD, FontPosture.REGULAR, 18));
 
         this.move3 = new Text("Move 3");
-        this.move3.setTranslateX(WIDTH - 230);
-        this.move3.setTranslateY(315);
+        this.move3.setTranslateX(WIDTH - 200);
+        this.move3.setTranslateY(350);
         this.move3.setFont(Font.font("Arial", FontWeight.BOLD, FontPosture.REGULAR, 18));
 
         this.move4 = new Text("Move 4");
-        this.move4.setTranslateX(WIDTH - 230);
-        this.move4.setTranslateY(415);
+        this.move4.setTranslateX(WIDTH - 200);
+        this.move4.setTranslateY(450);
         this.move4.setFont(Font.font("Arial", FontWeight.BOLD, FontPosture.REGULAR, 18));
 
         pane.getChildren().addAll(move1, move2, move3, move4);
@@ -206,7 +214,7 @@ public class GameUI extends Application {
             readyText = new Text("Press ENTER to start ABTS");
         }
         readyText.setTranslateX(WIDTH - 280);
-        readyText.setTranslateY(500);
+        readyText.setTranslateY(510);
         readyText.setFont(Font.font("Arial", FontWeight.BOLD, FontPosture.REGULAR, 18));
 
         this.turnNumberText = new Text("Turn number " + turnCounter);
@@ -215,6 +223,14 @@ public class GameUI extends Application {
         this.turnNumberText.setFont(Font.font("Arial", FontWeight.BOLD, FontPosture.REGULAR, 18));
 
         pane.getChildren().addAll(readyText, turnNumberText);
+
+        this.whosePlaying = new Text ("White" + " to play");
+        this.whosePlaying.setX(WIDTH - 230);
+        this.whosePlaying.setY(95);
+        this.whosePlaying.setFont(Font.font("Arial", FontWeight.BOLD, FontPosture.REGULAR, 18));
+        this.whosePlaying.setFill(Color.BLACK);
+
+        pane.getChildren().add(whosePlaying);
 
         scene = new Scene(pane ,WIDTH, HEIGHT);
         primaryStage.setResizable(false);
@@ -257,6 +273,7 @@ public class GameUI extends Application {
                         makeMoveWithAI();
                         board.isSelectable = true;
                         turnCounter++;
+                        whosePlaying.setText(getCurrentPlayerColor(Checkers.currentPlayer) + " to play");
                         turnNumberText.setText("Turn number " + turnCounter);
                     }
                     break;
@@ -326,6 +343,9 @@ public class GameUI extends Application {
         //board.drawPossibleMoves(true);
         board.clearStrokes();
         board.drawAllMarbles();
+        turnCounter++;
+        turnNumberText.setText("Turn number " + turnCounter);
+        whosePlaying.setText(getCurrentPlayerColor(Util.changeCurrentPlayer(Checkers.currentPlayer)) + " to play");
         checkWin();
         if (Checkers.currentPlayer == 1) {
             Checkers.currentPlayer = 2;
@@ -447,6 +467,28 @@ public class GameUI extends Application {
             for (int j = 0; j < board.marbles.length; j++) {
                 pane.getChildren().add(board.marbles[i][j]);
             }
+        }
+    }
+
+    public String getCurrentPlayerColor(int player) {
+
+        if (player == 1) {
+            return "White";
+        }
+        else {
+            return "Black";
+        }
+    }
+
+    private void setBackground() {
+        try {
+            BufferedImage buffer = ImageIO.read(new File("Main/res/grey2.jpg"));
+            Image background = SwingFXUtils.toFXImage(buffer, null);
+            ImageView view = new ImageView(background);
+            pane.getChildren().addAll(view);
+        } catch (Exception e) {
+            System.out.println("file not found");
+            System.exit(0);
         }
     }
 }

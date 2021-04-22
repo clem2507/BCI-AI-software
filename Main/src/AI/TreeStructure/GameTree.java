@@ -1,12 +1,16 @@
 package AI.TreeStructure;
 
+import AI.EvaluationFunction.Abalone.AbaloneEvalFunction;
 import AI.EvaluationFunction.EvaluationFunction;
 import AI.EvaluationFunction.Checkers.CheckersEvalFunction;
 import AI.GameSelector;
+import AI.PossibleMoves.AbaloneGetPossibleMoves;
 import AI.PossibleMoves.PossibleMoves;
 import AI.Util;
 import AI.PossibleMoves.CheckersPossibleMoves;
+import Abalone.GUI.Hexagon;
 import Abalone.Game.Abalone;
+import Checkers.GUI.GameUI;
 import Checkers.Game.Checkers;
 
 import java.util.*;
@@ -35,6 +39,12 @@ public class GameTree {
     private int currentPlayer;
     /** current generation counter variable */
     private int generationCounter = 1;
+    /** boolean variable to recognize the current game */
+    private boolean isCheckers, isAbalone;
+
+    private ArrayList<Node> rootChildrenNodes = new ArrayList<>();
+    private ArrayList<int[][]> fourBestNodes = new ArrayList<>();
+    private int totalDepth;
 
     /**
      * class constructor
@@ -44,8 +54,19 @@ public class GameTree {
     public GameTree(GameSelector game, int depth) {
 
         this.game = game;
-        this.totalNumGeneration = depth;
+        this.totalNumGeneration = Math.min(depth, (15-GameUI.turnCounter));
         this.currentPlayer = game.getCurrentPlayer();
+
+        if (game.getClass().isInstance(new Checkers(null))) {
+            isCheckers = true;
+            root = new Node(game.getCheckersBoard().getGameBoard(), 0);
+            nodes.add(root);
+        }
+        else if (game.getClass().isInstance(new Abalone(null))) {
+            isAbalone = true;
+            root = new Node(game.getAbaloneBoard().getGameBoard(), 0);
+            nodes.add(root);
+        }
     }
 
     /**
@@ -57,82 +78,192 @@ public class GameTree {
     public GameTree(GameSelector game, int depth, double[] configuration) {
 
         this.game = game;
-        this.configuration = configuration;
         this.totalNumGeneration = depth;
+        this.configuration = configuration;
         this.currentPlayer = game.getCurrentPlayer();
-    }
-
-    /**
-     * main function of game tree creation
-     * BFS way of constructing the game tree
-     */
-    public void createTree() {
 
         if (game.getClass().isInstance(new Checkers(null))) {
+            isCheckers = true;
             root = new Node(game.getCheckersBoard().getGameBoard(), 0);
             nodes.add(root);
         }
         else if (game.getClass().isInstance(new Abalone(null))) {
+            isAbalone = true;
             root = new Node(game.getAbaloneBoard().getGameBoard(), 0);
             nodes.add(root);
         }
 
-        createChildren(root, root.getBoardState(), currentPlayer);
+    }
 
-        while(generationCounter < totalNumGeneration){
-            currentPlayer = Util.changeCurrentPlayer(currentPlayer);
-            generationCounter++;
-            for(Node n : previousGeneration) {
-                if (!game.isDone(n.getBoardState())) {
-                    createChildren(n, n.getBoardState(), currentPlayer);
+    public void createTreeDFS() {
+
+        if (isCheckers) {
+//            totalDepth = (15 - GameUI.turnCounter);
+            totalDepth = Math.min(7, (15-GameUI.turnCounter));
+            createTreeDFS(root, totalDepth, true, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+        }
+        else if (isAbalone){
+//            totalDepth = (15 - Hexagon.turnCounter);
+            totalDepth = Math.min(3, (15-Hexagon.turnCounter));
+            createTreeDFS(root, totalDepth, true, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+        }
+        fourBestNodes = computeFourBestMoves(rootChildrenNodes);
+    }
+
+    public ArrayList<int[][]> computeFourBestMoves(ArrayList<Node> rootChildrenNodes) {
+
+        int count = 0;
+        for (Node n : rootChildrenNodes) {
+            if (n.isDoneInSubTree()) {
+                count++;
+            }
+        }
+        while (fourBestNodes.size() < 4) {
+            double bestScore = Double.NEGATIVE_INFINITY;
+            int[][] bestMove = null;
+            Node bestNode = null;
+            for (Node n : rootChildrenNodes) {
+                if (n.getScore() > bestScore) {
+                    if (n.isDoneInSubTree() && count > 0) {
+                        bestScore = n.getScore();
+                        bestMove = n.getBoardState();
+                        bestNode = n;
+                    }
+                    if (count == 0){
+                        bestScore = n.getScore();
+                        bestMove = n.getBoardState();
+                        bestNode = n;
+                    }
                 }
             }
-            previousGeneration.clear();
-            previousGeneration.addAll(currentGeneration);
-            currentGeneration.clear();
+            if (bestNode == null && fourBestNodes.size() > 0) {
+                bestMove = fourBestNodes.get(fourBestNodes.size()-1);
+            }
+            fourBestNodes.add(bestMove);
+            rootChildrenNodes.remove(bestNode);
         }
-        System.out.println("Nodes in game tree = " + nodes.size());
+        return fourBestNodes;
+    }
+
+    public double createTreeDFS(Node parent, int depth, boolean maximizingPlayer, double alpha, double beta) {
+
+        int player;
+        if (maximizingPlayer) {
+            player = currentPlayer;
+        }
+        else {
+            player = Util.changeCurrentPlayer(currentPlayer);
+        }
+
+        ArrayList<int[][]> children;
+
+        if (depth == 0) {
+            if (game.isDone(parent.getBoardState())) {
+                backtrackWinOrLoss(parent);
+            }
+            if (getParent(parent) == nodes.get(0)) {
+                Node node = new Node(parent.getBoardState(), parent.getScore());
+                node.setIsDoneInSubTree(parent.isDoneInSubTree());
+                rootChildrenNodes.add(node);
+            }
+            return parent.getScore();
+        }
+        else {
+            if (game.isDone(parent.getBoardState())) {
+                backtrackWinOrLoss(parent);
+                return parent.getScore();
+            }
+            children = getPossibleMoves(parent.getBoardState(), player);
+            if (children.size() == 0) {
+                if (depth == totalDepth-1) {
+                    Node node = new Node(parent.getBoardState(), parent.getScore());
+                    node.setIsDoneInSubTree(parent.isDoneInSubTree());
+                    rootChildrenNodes.add(node);
+                }
+                return parent.getScore();
+            }
+        }
+
+        if (maximizingPlayer) {
+            double maxEvaluation = Double.NEGATIVE_INFINITY;
+            for (int[][] board : children) {
+                double score = evaluateNode(board, player);
+                Node child = new Node(board, score);
+                nodes.add(child);
+                Edge edge = new Edge(parent, child);
+                edges.add(edge);
+                double evaluation = createTreeDFS(child, depth-1, false, alpha, beta);
+                maxEvaluation = Double.max(maxEvaluation, evaluation);
+                alpha = Math.max(alpha, evaluation);
+                if (beta <= alpha) {
+                    break;
+                }
+            }
+            return maxEvaluation;
+        }
+        else {
+            double minEvaluation = Double.POSITIVE_INFINITY;
+            for (int[][] board : children) {
+                double score = evaluateNode(board, player);
+                Node child = new Node(board, score);
+                nodes.add(child);
+                Edge edge = new Edge(parent, child);
+                edges.add(edge);
+                double evaluation = createTreeDFS(child, depth-1, true, alpha, beta);
+                minEvaluation = Double.min(minEvaluation, evaluation);
+                beta = Math.min(beta, evaluation);
+                if (beta <= alpha) {
+                    break;
+                }
+            }
+            if (depth == totalDepth-1) {
+                Node node = new Node(parent.getBoardState(), minEvaluation);
+                node.setIsDoneInSubTree(parent.isDoneInSubTree());
+                rootChildrenNodes.add(node);
+            }
+            return minEvaluation;
+        }
+    }
+
+    public double evaluateNode(int[][] board, int player) {
+
+        EvaluationFunction eval;
+        double score = 0;
+        if (isCheckers) {
+            eval = new CheckersEvalFunction(board, player);
+            score = eval.evaluate();
+        }
+        else if (isAbalone) {
+            eval = new AbaloneEvalFunction(board, player);
+            score = eval.evaluate();
+        }
+        return score;
+    }
+
+    public ArrayList<int[][]> getPossibleMoves(int[][] board, int player) {
+
+        ArrayList<int[][]> out = new ArrayList<>();
+        PossibleMoves moves;
+        if (isCheckers) {
+            moves = new CheckersPossibleMoves(board, player);
+            out = moves.getPossibleMoves();
+        }
+        else if (isAbalone){
+            moves = new AbaloneGetPossibleMoves(board, player);
+            out = moves.getPossibleMoves();
+        }
+        return out;
     }
 
     /**
-     * method that add the new children in the game tree
-     * @param parent to whom children are created
-     * @param currentBoardState of the current parent node
-     * @param currentPlayer to play
+     * method used to backtrack the win or loss information in subtree util the children of the root
+     * @param n starting node
      */
-    public void createChildren(Node parent, int[][] currentBoardState, int currentPlayer){
+    public void backtrackWinOrLoss(Node n) {
 
-        possibleMoves = new CheckersPossibleMoves(currentBoardState, currentPlayer);
-        ArrayList<int[][]> childrenStates = possibleMoves.getPossibleMoves();
-
-        for(int[][] child : childrenStates){
-            EvaluationFunction eval;
-            if (configuration != null) {
-                eval = new CheckersEvalFunction(child, currentPlayer, configuration);
-            }
-            else {
-                eval = new CheckersEvalFunction(child, currentPlayer);
-            }
-            double score = eval.evaluate();
-
-            if (generationCounter == 1) {
-                Node node = new Node(child, score);
-                nodes.add(node);
-
-                Edge edge = new Edge(parent, node);
-                edges.add(edge);
-
-                previousGeneration.add(node);
-            }
-            else {
-                Node node = new Node(child, score);
-                nodes.add(node);
-
-                Edge edge = new Edge(parent, node);
-                edges.add(edge);
-
-                currentGeneration.add(node);
-            }
+        while (getParent(n) != null) {
+            n.setIsDoneInSubTree(true);
+            n = getParent(n);
         }
     }
 
@@ -150,6 +281,21 @@ public class GameTree {
             }
         }
         return children;
+    }
+
+    /**
+     * @param n given a certain node
+     * @return its closest parent
+     */
+    public Node getParent(Node n) {
+
+        Node parent = null;
+        for (Edge e : edges) {
+            if (e.getDestination() == n) {
+                parent = e.getSource();
+            }
+        }
+        return parent;
     }
 
     /**
@@ -178,10 +324,18 @@ public class GameTree {
 
     /**
      * getter for the total number of generation
-     * @return the total number of generationvc
+     * @return the total number of generation
      */
     public int getTotalNumGeneration() {
         return totalNumGeneration;
+    }
+
+    public ArrayList<Node> getRootChildrenNodes() {
+        return rootChildrenNodes;
+    }
+
+    public ArrayList<int[][]> getFourBestNodes() {
+        return fourBestNodes;
     }
 }
 

@@ -1,13 +1,13 @@
 package AI.MonteCarloTreeSearch;
 
-import AI.EvaluationFunction.Checkers.CheckersEvalFunction;
-import AI.EvaluationFunction.EvaluationFunction;
 import AI.GameSelector;
+import AI.PossibleMoves.PossibleMoves;
 import AI.TreeStructure.Edge;
 import AI.TreeStructure.Node;
 import AI.Util;
+import Abalone.GUI.Hexagon;
 import Abalone.Game.Abalone;
-import Abalone.Game.GetPossibleMoves;
+import AI.PossibleMoves.AbaloneGetPossibleMoves;
 import Checkers.GUI.GameUI;
 import Checkers.Game.Checkers;
 import AI.PossibleMoves.CheckersPossibleMoves;
@@ -85,7 +85,14 @@ public class MCTS {
             iterations++;
         }
         ArrayList<Node> rootChildren = getChildren(root);
-        rootChildren.removeIf(n -> !n.isDoneInSubTree());
+//        for (Node node : rootChildren) {
+//            if (node.isDoneInSubTree()) {
+//                System.out.println("ok");
+//            }
+//        }
+//        System.out.println(rootChildren.size());
+//        rootChildren.removeIf(n -> !n.isDoneInSubTree());
+//        System.out.println("-> "+rootChildren.size());
         int i = 0;
         while (i < 4) {
             double maxSimulation = 0;
@@ -102,7 +109,6 @@ public class MCTS {
             i++;
         }
         System.out.println("Simulations = " + nodes.get(0).getTotalSimulation());
-        System.out.println("Turns left = " + (15-GameUI.turnCounter));
         System.out.println();
     }
 
@@ -111,6 +117,7 @@ public class MCTS {
      * @param n current node on which we need to compute the uct score
      * @return the corresponding score
      */
+    // TODO - change the uct scoring value!!
     public double uctValue(Node n) {
 
         // c = exploration parameter
@@ -172,16 +179,24 @@ public class MCTS {
     public void Expansion(Node n, int currentPlayer) {
 
         ArrayList<int[][]> children = new ArrayList<>();
-        if (n.getDepth() < (15-GameUI.turnCounter)) {
+        int depthLimit;
+        if (isCheckers) {
+            depthLimit = 15-GameUI.turnCounter;
+        }
+        else {
+            depthLimit = 15-Hexagon.turnCounter;
+        }
+        if (n.getDepth() <= depthLimit) {
+            PossibleMoves possibleMoves;
             if (isCheckers) {
                 if (!game.isDone(n.getBoardState())) {
-                    CheckersPossibleMoves possibleMoves = new CheckersPossibleMoves(n.getBoardState(), currentPlayer);
+                    possibleMoves = new CheckersPossibleMoves(n.getBoardState(), currentPlayer);
                     children = possibleMoves.getPossibleMoves();
                 }
             } else if (isAbalone) {
                 if (!game.isDone(n.getBoardState())) {
-                    GetPossibleMoves possibleMoves = new GetPossibleMoves();
-                    children = possibleMoves.getPossibleMoves(n.getBoardState(), currentPlayer);
+                    possibleMoves = new AbaloneGetPossibleMoves(n.getBoardState(), currentPlayer);
+                    children = possibleMoves.getPossibleMoves();
                 }
             }
 
@@ -219,18 +234,27 @@ public class MCTS {
             while (!game.isDone(actualBoard)) {
 
                 ArrayList<int[][]> children = new ArrayList<>();
-
+                PossibleMoves possibleMoves;
+                int max;
+                int randomIndex = -1;
                 if (isCheckers) {
-                    CheckersPossibleMoves possibleMoves = new CheckersPossibleMoves(actualBoard, actualPlayer);
+                    possibleMoves = new CheckersPossibleMoves(actualBoard, actualPlayer);
                     children = possibleMoves.getPossibleMoves();
+                    max = children.size();
+                    randomIndex = (int) (Math.random() * (max));
                 }
                 else if (isAbalone) {
-                    GetPossibleMoves possibleMoves = new GetPossibleMoves();
-                    children = possibleMoves.getPossibleMoves(actualBoard, actualPlayer);
+                    possibleMoves = new AbaloneGetPossibleMoves(actualBoard, actualPlayer);
+                    children = possibleMoves.getPossibleMoves();
+                    max = children.size();
+                    double rand = Math.random();
+                    if (rand < 0.7) {
+                        randomIndex = (int) (Math.random() * Math.floor((double) max/3));
+                    }
+                    else {
+                        randomIndex = (int) ((Math.random() * max/3) + Math.floor((double) 2*max/3));
+                    }
                 }
-
-                int max = children.size();
-                int randomIndex = (int) (Math.random() * (max));
 
                 if (children.size() > 0) {
                     actualBoard = children.get(randomIndex);
@@ -263,7 +287,7 @@ public class MCTS {
      */
     public void backPropagation(Node n, double simulationScore) {
 
-//        int back = 0;
+        int back = 0;
         boolean check = false;
         if (game.isDone(n.getBoardState())) {
             check = true;
@@ -276,7 +300,7 @@ public class MCTS {
             n = getParent(n);
             n.setTotalSimulation(n.getTotalSimulation() + 1);
             n.setTotalWin(n.getTotalScore() + simulationScore);
-//            back++;
+            back++;
         }
 //        System.out.println("back = " + back);
 

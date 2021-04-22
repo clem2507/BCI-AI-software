@@ -1,10 +1,15 @@
 package Abalone.Game;
 
+import AI.Util;
 import Abalone.GUI.Marble;
+import Checkers.Game.Checkers;
 import javafx.scene.effect.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Polygon;
+
+import java.util.ArrayList;
+
 import static javafx.scene.paint.Color.*;
 
 /**
@@ -15,12 +20,11 @@ public class BoardUI {
 
     private int[][] cellColors; // each cell of the board is associated to an integer which defines whether it
     private boolean[][] selected;
+    public boolean isSelected;
+    public boolean isSelectable = true;
 
     // is a marble, a hole or out of the board
     public Marble[][] circles; // array of all the Circles of the board (might be a hole or a marble)
-
-    private int[][] scoredCirclesColors; // player
-    public Circle[][] scoredCircles; // first index is the number of the marble, second is the number of the player
 
     public Polygon hexagon; // the board shaped like an hexagon
 
@@ -31,10 +35,7 @@ public class BoardUI {
 
         createColors();
         createCircles();
-        createScoredCircles();
-        createScoredCirclesColors();
         drawAllCells();
-        drawAllScoredCells();
     }
 
     public int[][] getBoard() {
@@ -55,15 +56,15 @@ public class BoardUI {
         //Adding coordinates to the hexagon
         hexagon.getPoints().addAll(
                 315.0, 90.0, //1
-                640.0, 90.0, //1
-                820.0, 350.0, //2
-                640.0, 610.0, //3
-                315.0, 610.0, //3
-                150.0, 350.0 //2
+                540.0, 90.0, //1
+                720.0, 315.0, //2
+                540.0, 550.0, //3
+                315.0, 550.0, //3
+                150.0, 315.0 //2
         );
 
         //define the color of the hexagon
-        Color hexagonColor = ORANGE;
+        Color hexagonColor = GREY;
         hexagon.setFill(hexagonColor);
 
         //Shadow effect on hexagon:
@@ -81,8 +82,8 @@ public class BoardUI {
     public int[][] getSelected() {
         int[][] ans;
         int cnt = 0;
-        for (int i = 0; i < 9; i++) {
-            for (int j = 0; j < 9; j++) {
+        for (int i = 0; i < cellColors.length; i++) {
+            for (int j = 0; j < cellColors[0].length; j++) {
                 if (selected[i][j]) {
                     cnt++;
                 }
@@ -91,8 +92,8 @@ public class BoardUI {
 
         ans = new int[cnt][2];
         cnt = 0;
-        for (int i = 0; i < 9; i++) {
-            for (int j = 0; j < 9; j++) {
+        for (int i = 0; i < cellColors.length; i++) {
+            for (int j = 0; j < cellColors[0].length; j++) {
                 if (selected[i][j]) {
                     ans[cnt][0] = i;
                     ans[cnt][1] = j;
@@ -105,8 +106,8 @@ public class BoardUI {
     }
 
     public void unselect() {
-        for (int i = 0; i < 9; i++) {
-            for (int j = 0; j < 9; j++) {
+        for (int i = 0; i < cellColors.length; i++) {
+            for (int j = 0; j < cellColors[0].length; j++) {
                 selected[i][j] = false;
             }
         }
@@ -116,24 +117,22 @@ public class BoardUI {
      * Create all circles of the board (a circle can be either a hole, or a marble)
      */
     private void createCircles() {
-        circles = new Marble[9][9];
-        for (int i = 0; i < 9; i++)
-            for (int j = 0; j < 9; j++)
+        circles = new Marble[cellColors.length][cellColors[0].length];
+        for (int i = 0; i < cellColors.length; i++)
+            for (int j = 0; j < cellColors[0].length; j++)
                 circles[i][j] = null;
 
-        selected = new boolean[9][9];
-        for (int i = 0; i < 9; i++)
-            for (int j = 0; j < 9; j++)
+        selected = new boolean[cellColors.length][cellColors[0].length];
+        for (int i = 0; i < cellColors.length; i++)
+            for (int j = 0; j < cellColors[0].length; j++)
                 selected[i][j] = false;
 
-        int nc = 5; // nc: number of circles
+        int nc = 3; // nc: number of circles
         double x_coord = 490;
         double y_coord = 125;
 
-        for (int i = 0; i < 9; i++) { // 9 loops for the 9 levels of the hexagon
-
-            for (int j = 0; j < nc; j++)
-            {
+        for (int i = 0; i < cellColors.length; i++) { // 9 loops for the 9 levels of the hexagon
+            for (int j = 0; j < nc; j++) {
                 Marble circle = new Marble(RADIUS);
                 circle.setCenterX(x_coord);
                 circle.setCenterY(y_coord);
@@ -141,11 +140,11 @@ public class BoardUI {
                 circle.y = j;
 
                 circles[i][j] = circle;
-                x_coord += RADIUS * 2 + 25;
+                x_coord += RADIUS * 2 + 35;
                 drawCell(i,j);
 
                 // add light effect on marbles
-                if(circle.getFill() == MEDIUMBLUE || circle.getFill() == LIGHTSKYBLUE){
+                if(circle.getFill() == WHITE || circle.getFill() == BLACK){
                     Light.Point light = new Light.Point(); //point of light on marbles
                     light.setColor(Color.WHITE); // color of the light
                     //Setting the position of the light
@@ -157,14 +156,30 @@ public class BoardUI {
                     //Applying the Lighting effect to the circle
                     circle.setEffect(lighting);
 
-                }else if(circle.getFill() == BISQUE){ //add shadow effect on holes
+                }else if(circle.getFill() == GREY){ //add shadow effect on holes
                     InnerShadow innerShadow = new InnerShadow();
                     innerShadow.setOffsetX(4);
                     innerShadow.setOffsetY(4);
                     innerShadow.setColor(Color.GRAY); //color of the shadow
                     circle.setEffect(innerShadow);
                 }
-
+//                int finalI = i;
+//                int finalJ = j;
+                circle.setOnMouseClicked(e -> {
+                    if (cellColors[circle.x][circle.y] == Abalone.currentPlayer && !selected[circle.x][circle.y] && countSelected() < 3 && isSelectable) {
+                        selected[circle.x][circle.y] = true;
+                        isSelected = true;
+//                        xSelected = finalI;
+//                        ySelected = finalJ;
+//                        drawPossibleMoves(false);
+                        drawAllCells();
+                    } else if (selected[circle.x][circle.y] && cellColors[circle.x][circle.y] == Abalone.currentPlayer && isSelectable) {
+                        selected[circle.x][circle.y] = false;
+                        isSelected = false;
+//                        drawPossibleMoves(true);
+                        drawAllCells();
+                    }
+                });
             }
             // update the number of circles per level
             if (i < 4) { // less than 9 holes at that level
@@ -174,7 +189,7 @@ public class BoardUI {
             }
 
             // update y_coord
-            y_coord += RADIUS * 2 + 12;
+            y_coord += RADIUS * 2 + 4;
 
             //update x_coord
             if (i == 0 || i == 6) {
@@ -192,65 +207,6 @@ public class BoardUI {
     }
 
     /**
-     * Creates six holes for each player
-     * This is where the ejected marbles will be displayed
-     */
-    private void createScoredCircles(){
-        scoredCircles = new Circle[6][2];
-
-        double x_coord = 150;
-        double y_coord = 250;
-        int player = 0;
-
-        while(player<2) {
-            int nc = 1; // nc: number of circles
-            int counter = 0;
-
-            for (int i = 0; i < 3; i++) { // 3 loops for the 3 levels of the 'pyramid'
-                for (int j = 0; j < nc; j++) {
-                    Circle circle = new Circle(RADIUS);
-                    circle.setCenterX(x_coord);
-                    circle.setCenterY(y_coord);
-                    scoredCircles[counter++][player] = circle;
-
-                    //add shadow effect on holes:
-                    InnerShadow innerShadow = new InnerShadow();
-                    innerShadow.setOffsetX(4);
-                    innerShadow.setOffsetY(4);
-                    innerShadow.setColor(Color.GRAY); //color of the shadow
-                    circle.setEffect(innerShadow);
-
-                    x_coord += RADIUS * 2;
-                }
-                // update the number of circles per level
-                nc += 1;
-
-                // update y_coord
-                y_coord += RADIUS * 2 - 5;
-
-                //update x_coord
-                if (player == 0) {
-                    if (i == 0) {
-                        x_coord = 127;
-                    } else if (i == 1) {
-                        x_coord = 104;
-                    }
-                } else {
-                    if (i == 0) {
-                        x_coord = 1077;
-                    } else if (i == 1) {
-                        x_coord = 1053;
-                    }
-                }
-            }
-            x_coord = 1100;
-            y_coord = 250;
-            player += 1;
-        }
-
-    }
-
-    /**
      * Defines which circle is empty (0) (=hole, in bisque), medium_blue (1) or light_sky_blue (2)
      * Medium_blue represents the marbles of player 1
      * Light_sky_blue represents the marbles of player 2
@@ -259,23 +215,16 @@ public class BoardUI {
 
     private void createColors() {
         cellColors = new int[][]{
-                {2, 2, 2, 2, 2, -1, -1, -1, -1},
-                {2, 2, 2, 2, 2,  2, -1, -1, -1},
-                {0, 0, 2, 2, 2,  0,  0, -1, -1},
-                {0, 0, 0, 0, 0,  0,  0,  0, -1},
-                {0, 0, 0, 0, 0,  0,  0,  0,  0},
-                {0, 0, 0, 0, 0,  0,  0,  0, -1},
-                {0, 0, 1, 1, 1,  0,  0, -1, -1},
-                {1, 1, 1, 1, 1,  1, -1, -1, -1},
-                {1, 1, 1, 1, 1, -1, -1, -1, -1}
+                {2, 2, 2, -1, -1, -1, -1},
+                {2, 2, 2, 2, -1, -1, -1},
+                {0, 2, 2, 2,  0, -1, -1},
+                {0, 0, 0, 0,  0,  0, -1},
+                {0, 0, 0, 0,  0,  0, 0},
+                {0, 0, 0, 0,  0,  0, -1},
+                {0, 1, 1, 1,  0, -1, -1},
+                {1, 1, 1, 1, -1, -1, -1},
+                {1, 1, 1, -1, -1, -1, -1}
         };
-    }
-
-    /**
-     * Creates the score circles
-     */
-    public void createScoredCirclesColors(){
-        scoredCirclesColors = new int[][]{{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}};
     }
 
     /**
@@ -287,17 +236,18 @@ public class BoardUI {
 
         Color c = null;
         switch (cellColors[i][j]) {
-            case 0:  c = BISQUE;       break;
-            case 1:  c = LIGHTSKYBLUE;   break;
-            case 2:  c = MEDIUMBLUE; break;
+            case 0:  c = Color.rgb(250,250,250,0.3);       break;
+            case 1:  c = BLACK;   break;
+            case 2:  c = WHITE; break;
             default: break;
         }
-        if (selected[i][j])
-            c = GREEN;
+        if (selected[i][j]) {
+            c = RED;
+        }
 
         if (c != null) {
             circles[i][j].setFill(c);
-            if(c == MEDIUMBLUE || c == LIGHTSKYBLUE || c == GREEN){
+            if(c == WHITE || c == BLACK || c == RED){
                 Light.Point light = new Light.Point(); //point of light on marbles
                 light.setColor(Color.WHITE); // color of the light
                 //Setting the position of the light
@@ -308,13 +258,9 @@ public class BoardUI {
                 lighting.setLight(light);
                 //Applying the Lighting effect to the circle
                 circles[i][j].setEffect(lighting);
-
-            }else if(c == BISQUE){ //add shadow effect on holes
-                InnerShadow innerShadow = new InnerShadow();
-                innerShadow.setOffsetX(4);
-                innerShadow.setOffsetY(4);
-                innerShadow.setColor(Color.GRAY); //color of the shadow
-                circles[i][j].setEffect(innerShadow);
+            }
+            else {
+                circles[i][j].setEffect(null);
             }
         }
     }
@@ -323,73 +269,10 @@ public class BoardUI {
      * Colours all the circles of the board
      */
     public void drawAllCells() {
-        for (int i = 0; i < 9; i++) {
-            for (int j = 0; j < 9; j++) {
+        for (int i = 0; i < cellColors.length; i++) {
+            for (int j = 0; j < cellColors[0].length; j++) {
                 drawCell(i, j);
             }
-        }
-        drawAllScoredCells();
-    }
-
-    /**
-     * Colours the circle of a player in its colour
-     * @param i the index of the circle to be coloured
-     * @param player the "id" of the player (0 or 1)
-     */
-    private void drawScoredCell(int i, int player) {
-        Color c = null;
-        switch (scoredCirclesColors[i][player]) {
-            case 0:  c = ORANGE;       break;
-            case 1:  c = LIGHTSKYBLUE;   break;
-            case 2:  c = MEDIUMBLUE; break;
-            default: break;
-        }
-        if (c != null) {
-            scoredCircles[i][player].setFill(c);
-
-            if (c == ORANGE) {
-                InnerShadow innerShadow = new InnerShadow();
-                innerShadow.setOffsetX(4);
-                innerShadow.setOffsetY(4);
-                innerShadow.setColor(Color.GRAY); //color of the shadow
-                scoredCircles[i][player].setEffect(innerShadow);
-            } else {
-                Light.Point light = new Light.Point(); //point of light on marbles
-                light.setColor(Color.WHITE); // color of the light
-                //Setting the position of the light
-                light.setX(70);
-                light.setY(55);
-                light.setZ(45);
-                Lighting lighting = new Lighting();
-                lighting.setLight(light);
-                //Applying the Lighting effect to the circle
-                scoredCircles[i][player].setEffect(lighting);
-            }
-        }
-    }
-
-    /**
-     * Colours all the circles for both players
-     */
-    private void drawAllScoredCells() {
-        int cnt1 = 14, cnt2 = 14;
-        for (int i = 0; i < 9; i++) {
-            for (int j = 0; j < 9; j++) {
-                if (cellColors[i][j] == 1)
-                    cnt1--;
-                else if (cellColors[i][j] == 2)
-                    cnt2--;
-            }
-        }
-
-        for (int i = 0; i < cnt1; i++)
-            scoredCirclesColors[i][1] = 1;
-        for (int i = 0; i < cnt2; i++)
-            scoredCirclesColors[i][0] = 2;
-
-        for (int i = 0; i < 6; i++) {
-            drawScoredCell(i, 0);
-            drawScoredCell(i, 1); //uncomment when done with the second player side marbles
         }
     }
 
@@ -403,17 +286,189 @@ public class BoardUI {
         return selected[i][j];
     }
 
-    public int countSelected(int[][] currentBoard){
+    public int countSelected(){
 
         int selectedCounter = 0;
-        for(int i = 0; i< currentBoard.length; i++){
-            for(int j = 0; j<currentBoard.length; j++){
+        for(int i = 0; i< selected.length; i++){
+            for(int j = 0; j<selected[0].length; j++){
                 if(selected[i][j]){
                     selectedCounter ++;
                 }
             }
         }
         return selectedCounter;
+    }
+
+    public void drawPossibleMoveFromAI(int[][] board, boolean clear) {
+
+        int opponentPlayer = Util.changeCurrentPlayer(Abalone.currentPlayer);
+        ArrayList<int[]> locationPlayerToZero = new ArrayList<>();
+        ArrayList<int[]> locationZeroToPlayer = new ArrayList<>();
+        for (int i = 0; i < board.length; i++) {
+            for (int j = 0; j < board[0].length; j++) {
+                if (board[i][j] != cellColors[i][j]) {
+                    if (!clear) {
+                        if (board[i][j] != 0) {
+                            circles[i][j].setStroke(Color.RED);
+                            locationZeroToPlayer.add(new int[]{i,j});
+                        } else {
+                            if (cellColors[i][j] != opponentPlayer) {
+                                circles[i][j].setFill(Color.RED);
+                                locationPlayerToZero.add(new int[]{i,j});
+                            }
+                        }
+                    }
+                    else {
+                        circles[i][j].setStroke(null);
+                        drawAllCells();
+                    }
+                }
+            }
+        }
+        if (!clear) {
+            if (locationPlayerToZero.size() < 2 && locationZeroToPlayer.size() <= 2) {
+                if (Math.abs(locationPlayerToZero.get(0)[0] - locationZeroToPlayer.get(0)[0]) > 1 ||
+                        Math.abs(locationPlayerToZero.get(0)[1] - locationZeroToPlayer.get(0)[1]) > 1) {
+                    for (int[] coord : findCoordinatesBetweenTwoPoints(locationPlayerToZero, locationZeroToPlayer)) {
+                        circles[coord[0]][coord[1]].setFill(RED);
+                    }
+                }
+            }
+        }
+    }
+
+    public ArrayList<int[]> findCoordinatesBetweenTwoPoints(ArrayList<int[]> startList, ArrayList<int[]> endList) {
+
+        int[] start = startList.get(0);
+        int[] end;
+        if (endList.size() == 1) {
+            end = endList.get(0);
+        }
+        else {
+            if (Math.abs(start[0] - endList.get(0)[0]) < Math.abs(start[0] - endList.get(1)[0])) {
+                end = endList.get(0);
+            }
+            else {
+                end = endList.get(1);
+            }
+        }
+        ArrayList<int[]> out = new ArrayList<>();
+        int option = 0;
+        if ((start[0] <= 4 && end[0] <= 4) || (start[0] >= 4 && end[0] >= 4)) {
+            option = 1;
+        }
+        else if (start[0] > 4 && end[0] < 4) {
+            option = 2;
+        }
+        else if (start[0] < 4 && end[0] > 4) {
+            option = 3;
+        }
+        for (int i = 0; i < Math.max(Math.abs(start[0]-end[0]), Math.abs(start[1]-end[1]))-1; i++) {
+            switch (option) {
+                case 1:
+                    option1coord(out, i, start, end);
+                    break;
+                case 2:
+                    option2coord(out, i, start, end);
+                    break;
+                case 3:
+                    option3coord(out, i, start, end);
+                    break;
+            }
+        }
+        return out;
+    }
+
+    private void option1coord(ArrayList<int[]> out, int i, int[] start, int[] end) {
+
+        int[] coord = new int[2];
+        if (start[0] - end[0] != 0 && start[1] - end[1] != 0) {
+            if (start[0] < end[0] && start[1] < end[1]) {
+                coord[0] = start[0] + (i+1);
+                coord[1] = start[1] + (i+1);
+            } else if (start[0] > end[0] && start[1] > end[1]) {
+                coord[0] = start[0] - (i+1);
+                coord[1] = start[1] - (i+1);
+            } else if (start[0] > end[0] && start[1] < end[1]) {
+                coord[0] = start[0] - (i+1);
+                coord[1] = start[1] + (i+1);
+            } else if (start[0] < end[0] && start[1] > end[1]) {
+                coord[0] = start[0] + (i+1);
+                coord[1] = start[1] - (i+1);
+            }
+        } else {
+            if (start[0] - end[0] == 0) {
+                coord[0] = start[0];
+                coord[1] = Math.min(start[1], end[1]) + (i+1);
+            } else {
+                coord[0] = Math.min(start[0], end[0]) + (i+1);
+                coord[1] = start[1];
+            }
+        }
+        out.add(coord);
+    }
+
+    private void option2coord(ArrayList<int[]> out, int i, int[] start, int[] end) {
+
+        int[] coord = new int[2];
+        if (start[1] > end[1]) {
+            if (start[0]-(i+1) >= 4) {
+                coord[0] = start[0] - (i+1);
+                coord[1] = start[1];
+            }
+            else {
+                coord[0] = out.get(i-1)[0] - 1;
+                coord[1] = out.get(i-1)[1] - 1;
+            }
+        }
+        else {
+            if (start[0]-(i+1) >= 4) {
+                coord[0] = start[0] - (i+1);
+                coord[1] = start[1] + (i+1);
+            }
+            else {
+                coord[0] = out.get(i-1)[0] - 1;
+                coord[1] = out.get(i-1)[1];
+            }
+        }
+        out.add(coord);
+    }
+
+    private void option3coord(ArrayList<int[]> out, int i, int[] start, int[] end) {
+
+        int[] coord = new int[2];
+        if (start[1] < end[1]) {
+            if (start[0]+(i+1) <= 4) {
+                coord[0] = start[0] + (i+1);
+                coord[1] = start[1] + (i+1);
+            }
+            else {
+                coord[0] = out.get(i-1)[0] + 1;
+                coord[1] = out.get(i-1)[1];
+            }
+        }
+        else {
+            if (start[0]+(i+1) <= 4) {
+                coord[0] = start[0] + (i+1);
+                coord[1] = start[1];
+            }
+            else {
+                coord[0] = out.get(i-1)[0] + 1;
+                coord[1] = out.get(i-1)[1] - 1;
+            }
+        }
+        out.add(coord);
+    }
+
+    public void clearStrokes() {
+
+        for (int i = 0; i < circles.length; i++) {
+            for (int j = 0; j < circles[0].length; j++) {
+                if (cellColors[i][j]!=-1) {
+                    circles[i][j].setStroke(null);
+                }
+            }
+        }
     }
 
     public Marble[][] getCircles() {

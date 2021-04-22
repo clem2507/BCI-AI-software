@@ -1,5 +1,4 @@
-package Checkers.GUI;
-
+import Checkers.GUI.GameUI;
 import javafx.application.Application;
 import javafx.scene.Group;
 import javafx.scene.Scene;

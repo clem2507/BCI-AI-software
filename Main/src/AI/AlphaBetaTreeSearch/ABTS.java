@@ -11,13 +11,10 @@ public class ABTS {
     private GameTree tree;
     /** game tree total depth */
     private int totalDepth;
-    /** list that contains the root children board and score */
-    private ArrayList<Node> rootChildren;
+    /** list that contains the root children board state and score */
     private ArrayList<Node> rootChildrenNodes = new ArrayList<>();
     /** the list of the four best node moves for a given position */
     private ArrayList<int[][]> fourBestNodes = new ArrayList<>();
-    /** simple index counter variable */
-    private int index = 0;
     /** integer variable that stands for the number visited nodes by the ABTS */
     private int investigatedNodes = 0;
 
@@ -36,29 +33,8 @@ public class ABTS {
      */
     public void start() {
 
-        rootChildren = tree.getChildren(tree.getNodes().get(0));
         double bestOutcome = ab_minimax(tree.getNodes().get(0), totalDepth, true, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-
-        while (fourBestNodes.size() < 4) {
-            double bestScore = Double.NEGATIVE_INFINITY;
-            int[][] bestMove = null;
-            Node bestNode = null;
-            for (Node n : rootChildrenNodes) {
-                if (n.getScore() > bestScore) {
-                    bestScore = n.getScore();
-                    bestMove = n.getBoardState();
-                    bestNode = n;
-                }
-            }
-//            System.out.println("bestScore = " + bestScore);
-            if (bestNode == null && fourBestNodes.size() > 0) {
-                bestMove = fourBestNodes.get(fourBestNodes.size()-1);
-            }
-            fourBestNodes.add(bestMove);
-            rootChildrenNodes.remove(bestNode);
-        }
-//        System.out.println("investigatedNodes = " + investigatedNodes);
-//        System.out.println();
+        fourBestNodes = tree.getFourBestNodes();
     }
 
     /**
@@ -75,15 +51,20 @@ public class ABTS {
         ArrayList<Node> children;
 
         if (depth == 0) {
+            if (tree.getParent(position) == tree.getNodes().get(0)) {
+                Node node = new Node(position.getBoardState(), position.getScore());
+                node.setIsDoneInSubTree(position.isDoneInSubTree());
+                rootChildrenNodes.add(node);
+            }
             return position.getScore();
         }
         else {
             children = tree.getChildren(position);
             if (children.size() == 0) {
                 if (depth == totalDepth-1) {
-                    Node node = new Node(rootChildren.get(index).getBoardState(), position.getScore());
+                    Node node = new Node(position.getBoardState(), position.getScore());
+                    node.setIsDoneInSubTree(position.isDoneInSubTree());
                     rootChildrenNodes.add(node);
-                    index++;
                 }
                 return position.getScore();
             }
@@ -114,9 +95,9 @@ public class ABTS {
                 investigatedNodes++;
             }
             if (depth == totalDepth-1) {
-                Node node = new Node(rootChildren.get(index).getBoardState(), minEvaluation);
+                Node node = new Node(position.getBoardState(), minEvaluation);
+                node.setIsDoneInSubTree(position.isDoneInSubTree());
                 rootChildrenNodes.add(node);
-                index++;
             }
             return minEvaluation;
         }

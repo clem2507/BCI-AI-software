@@ -4,6 +4,8 @@ import AI.AlphaBetaTreeSearch.ABTS;
 import AI.GameSelector;
 import AI.TreeStructure.GameTree;
 import AI.Util;
+import Abalone.Game.Abalone;
+import Abalone.Game.BoardUI;
 import Checkers.Game.Board;
 import Checkers.Game.Checkers;
 import Output.OutputCSV;
@@ -140,12 +142,12 @@ public class TournamentGeneticAlgorithm {
 
         double[] genotype = new double[genotypeSize];
         for (int i = 0; i < genotypeSize; i++) {
-            if (i==2) {
-                genotype[i] = -(random.nextDouble());
-            }
-            else {
+//            if (i==2) {
+//                genotype[i] = -(random.nextDouble());
+//            }
+//            else {
                 genotype[i] = random.nextDouble();
-            }
+//            }
         }
         return genotype;
     }
@@ -230,12 +232,17 @@ public class TournamentGeneticAlgorithm {
     public void simulateGames(Item participant1, Item participant2) {
 
         Board board = null;
+        BoardUI boardUI = null;
         if (game.getClass().isInstance(new Checkers(null))) {
             board = new Board(6, completeBoard);
             game = new Checkers(board);
         }
+        else if (game.getClass().isInstance(new Abalone(null))) {
+            boardUI = new BoardUI();
+            game = new Abalone(boardUI);
+        }
         int currentPlayer = random.nextInt(2)+1;
-        while (!game.isDone(board.getGameBoard())) {
+        while (!game.isDone(boardUI.getGameBoard())) {
             GameTree gameTree;
             if (currentPlayer == 1) {
                 gameTree = new GameTree(game, 5, participant1.getGenotype());
@@ -244,33 +251,34 @@ public class TournamentGeneticAlgorithm {
                 gameTree = new GameTree(game, 5, participant2.getGenotype());
             }
             gameTree.setCurrentPlayer(currentPlayer);
-            gameTree.createTree();
-            ABTS abts = new ABTS(gameTree);
-            abts.start();
+            gameTree.createTreeDFS();
+//            gameTree.createTreeBFS();
+//            ABTS abts = new ABTS(gameTree);
+//            abts.start();
             double moveChoice = random.nextDouble();
             if (moveChoice < 0.55) {
-                if (abts.getFourBestNodes().get(0) != null) {
-                    board.setBoard(abts.getFourBestNodes().get(0));
+                if (gameTree.getFourBestNodes().get(0) != null) {
+                    boardUI.setBoard(gameTree.getFourBestNodes().get(0));
                 }
             }
             else if (moveChoice < 0.75) {
-                if (abts.getFourBestNodes().get(1) != null) {
-                    board.setBoard(abts.getFourBestNodes().get(1));
+                if (gameTree.getFourBestNodes().get(1) != null) {
+                    boardUI.setBoard(gameTree.getFourBestNodes().get(1));
                 }
             }
             else if (moveChoice < 0.9) {
-                if (abts.getFourBestNodes().get(2) != null) {
-                    board.setBoard(abts.getFourBestNodes().get(2));
+                if (gameTree.getFourBestNodes().get(2) != null) {
+                    boardUI.setBoard(gameTree.getFourBestNodes().get(2));
                 }
             }
             else {
-                if (abts.getFourBestNodes().get(3) != null) {
-                    board.setBoard(abts.getFourBestNodes().get(3));
+                if (gameTree.getFourBestNodes().get(3) != null) {
+                    boardUI.setBoard(gameTree.getFourBestNodes().get(3));
                 }
             }
             currentPlayer = Util.changeCurrentPlayer(currentPlayer);
         }
-        if (game.isVictorious(board.getGameBoard(), 1)) {
+        if (game.isVictorious(boardUI.getGameBoard(), 1)) {
             participant1.setWinner(true);
             participant2.setWinner(false);
         }
@@ -354,7 +362,7 @@ public class TournamentGeneticAlgorithm {
         tournamentSelection();
         play();
         playTournament(matingPool);
-        OutputCSV out = new OutputCSV("BestTwoGenotypes.csv", "BestTwoGenotypes");
+        OutputCSV out = new OutputCSV("AbaloneBestTwoGenotypes.csv", "BestTwoGenotypes");
         String[][] data = new String[2][genotypeSize];
         for (int i = 0; i < 2; i++) {
             for (int j = 0; j < genotypeSize; j++) {
@@ -370,7 +378,7 @@ public class TournamentGeneticAlgorithm {
      */
     public void getMatingPoolGenotypes() {
 
-        OutputCSV out = new OutputCSV("CompleteMatingPoolGeneration"+ (totalGenerationNumber) +".csv");
+        OutputCSV out = new OutputCSV("abaloneGeneration"+ (totalGenerationNumber) +".csv");
         String[][] data = new String[matingPool.size()][genotypeSize];
         int row = 0;
         for (Item item : matingPool) {

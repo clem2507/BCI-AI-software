@@ -6,8 +6,8 @@ import Abalone.Game.MoveDirection;
 
 public class CheckersEvalFunction extends EvaluationFunction {
 
-    /** current root game board */
-    private int[][] rootBoard;
+    /** current game board */
+    private int[][] board;
     /** current player to play */
     private int currentPlayer;
     /** different weights for the evaluation function */
@@ -20,25 +20,25 @@ public class CheckersEvalFunction extends EvaluationFunction {
 
     /**
      * class first constructor
-     * @param rootBoard current root game board
+     * @param board current game board
      * @param currentPlayer to play
      * @param configuration weights for the evaluation function
      */
-    public CheckersEvalFunction(int[][] rootBoard, int currentPlayer, double[] configuration) {
+    public CheckersEvalFunction(int[][] board, int currentPlayer, double[] configuration) {
 
-        this.rootBoard = rootBoard;
+        this.board = board;
         this.currentPlayer = currentPlayer;
         setWeights(configuration);
     }
 
     /**
      * class second constructor
-     * @param rootBoard current root game board
+     * @param board current game board
      * @param currentPlayer to play
      */
-    public CheckersEvalFunction(int[][] rootBoard, int currentPlayer) {
+    public CheckersEvalFunction(int[][] board, int currentPlayer) {
 
-        this.rootBoard = rootBoard;
+        this.board = board;
         this.currentPlayer = currentPlayer;
 
         double[] bestConfigNotComplete = new double[]{0.3676439321801084, 0.34927666124021406, -0.5096797020134634, 0.9393348144299724, 0.39430677233420064, 0.5610948160176769};
@@ -55,7 +55,7 @@ public class CheckersEvalFunction extends EvaluationFunction {
         int h2 = victoriousPosition(currentPlayer);
         int h3 = victoriousPosition(Util.changeCurrentPlayer(currentPlayer));
         int h4 = distanceToTheOtherSide(Util.changeCurrentPlayer(currentPlayer)) - distanceToTheOtherSide(currentPlayer);
-        int h5 = Util.countMarbles(rootBoard, currentPlayer) - Util.countMarbles(rootBoard, Util.changeCurrentPlayer(currentPlayer));
+        int h5 = Util.countMarbles(board, currentPlayer) - Util.countMarbles(board, Util.changeCurrentPlayer(currentPlayer));
         int h6 = aba_PatternCount(currentPlayer) - aba_PatternCount(Util.changeCurrentPlayer(currentPlayer));
 
         return (w1*h1) + (w2*h2) + (w3*h3) + (w4*h4) + (w5*h5) + (w6*h6);
@@ -83,9 +83,9 @@ public class CheckersEvalFunction extends EvaluationFunction {
     public int attackingPosition(int player) {
 
         int count = 0;
-        for (int i = 1; i < rootBoard.length-1; i++) {
-            for (int j = 1; j < rootBoard.length-1; j++) {
-                if (rootBoard[i][j] == player) {
+        for (int i = 1; i < board.length-1; i++) {
+            for (int j = 1; j < board.length-1; j++) {
+                if (board[i][j] == player) {
                     count+=checkFourDirections(i, j, player);
                 }
             }
@@ -108,8 +108,8 @@ public class CheckersEvalFunction extends EvaluationFunction {
             switch (dir) {
                 case TOP_LEFT:
                     if (player == 1) {
-                        if (rootBoard[i-1][j-1] == Util.changeCurrentPlayer(player)) {
-                            if (rootBoard[i-2][j-2] == 0) {
+                        if (board[i-1][j-1] == Util.changeCurrentPlayer(player)) {
+                            if (board[i-2][j-2] == 0) {
                                 count++;
                             }
                         }
@@ -117,8 +117,8 @@ public class CheckersEvalFunction extends EvaluationFunction {
                     break;
                 case TOP_RIGHT:
                     if (player == 1) {
-                        if (rootBoard[i-1][j+1] == Util.changeCurrentPlayer(player)) {
-                            if (rootBoard[i-2][j+2] == 0) {
+                        if (board[i-1][j+1] == Util.changeCurrentPlayer(player)) {
+                            if (board[i-2][j+2] == 0) {
                                 count++;
                             }
                         }
@@ -126,8 +126,8 @@ public class CheckersEvalFunction extends EvaluationFunction {
                     break;
                 case BOTTOM_RIGHT:
                     if (player == 2) {
-                        if (rootBoard[i+1][j+1] == Util.changeCurrentPlayer(player)) {
-                            if (rootBoard[i+2][j+2] == 0) {
+                        if (board[i+1][j+1] == Util.changeCurrentPlayer(player)) {
+                            if (board[i+2][j+2] == 0) {
                                 count++;
                             }
                         }
@@ -135,8 +135,8 @@ public class CheckersEvalFunction extends EvaluationFunction {
                     break;
                 case BOTTOM_LEFT:
                     if (player == 2) {
-                        if (rootBoard[i+1][j-1] == Util.changeCurrentPlayer(player)) {
-                            if (rootBoard[i+2][j-2] == 0) {
+                        if (board[i+1][j-1] == Util.changeCurrentPlayer(player)) {
+                            if (board[i+2][j-2] == 0) {
                                 count++;
                             }
                         }
@@ -153,7 +153,7 @@ public class CheckersEvalFunction extends EvaluationFunction {
      */
     public int victoriousPosition(int player) {
 
-        return isVictorious(rootBoard, player);
+        return isVictorious(board, player);
     }
 
     /**
@@ -191,19 +191,19 @@ public class CheckersEvalFunction extends EvaluationFunction {
 
         switch (player) {
             case 1:
-                for (int i = 1; i < rootBoard.length-1; i++) {
-                    for (int j = 1; j < rootBoard.length-1; j++) {
-                        if (rootBoard[i][j] == player) {
+                for (int i = 1; i < board.length-1; i++) {
+                    for (int j = 1; j < board.length-1; j++) {
+                        if (board[i][j] == player) {
                             return i-1;
                         }
                     }
                 }
                 break;
             case 2:
-                for (int i = rootBoard.length-2; i > 0; i--) {
-                    for (int j = rootBoard.length-2; j > 0 ; j--) {
-                        if (rootBoard[i][j] == player) {
-                            return rootBoard.length-2-i;
+                for (int i = board.length-2; i > 0; i--) {
+                    for (int j = board.length-2; j > 0 ; j--) {
+                        if (board[i][j] == player) {
+                            return board.length-2-i;
                         }
                     }
                 }
@@ -220,9 +220,9 @@ public class CheckersEvalFunction extends EvaluationFunction {
     private int aba_PatternCount(int currentPlayer) {
 
         int count = 0;
-        for (int i = 1; i < rootBoard.length-1; i++) {
-            for (int j = 1; j < rootBoard.length-1; j++) {
-                if (rootBoard[i][j] == currentPlayer) {
+        for (int i = 1; i < board.length-1; i++) {
+            for (int j = 1; j < board.length-1; j++) {
+                if (board[i][j] == currentPlayer) {
                     count += checkPatternInSquare(i, j, currentPlayer);
                 }
             }
@@ -240,10 +240,10 @@ public class CheckersEvalFunction extends EvaluationFunction {
     public int checkPatternInSquare(int i, int j, int player) {
 
         int count = 0;
-        if (rootBoard[i+1][j-1] == Util.changeCurrentPlayer(player) && rootBoard[i-1][j+1] == Util.changeCurrentPlayer(player)) {
+        if (board[i+1][j-1] == Util.changeCurrentPlayer(player) && board[i-1][j+1] == Util.changeCurrentPlayer(player)) {
             count++;
         }
-        if (rootBoard[i-1][j-1] == Util.changeCurrentPlayer(player) && rootBoard[i+1][j+1] == Util.changeCurrentPlayer(player)) {
+        if (board[i-1][j-1] == Util.changeCurrentPlayer(player) && board[i+1][j+1] == Util.changeCurrentPlayer(player)) {
             count++;
         }
         return count;

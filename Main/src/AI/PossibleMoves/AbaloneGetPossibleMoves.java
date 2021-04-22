@@ -1,12 +1,13 @@
-package Abalone.Game;
+package AI.PossibleMoves;
 
+import AI.Util;
 import Abalone.Game.Move;
 import Abalone.Game.MoveDirection;
 import Abalone.Game.Rules;
 import java.util.Collections;
 import java.util.ArrayList;
 
-public class GetPossibleMoves {
+public class AbaloneGetPossibleMoves extends PossibleMoves {
 
     private Rules rules;
     private ArrayList<int[][]> allPossibleMoves = new ArrayList<>();
@@ -15,8 +16,16 @@ public class GetPossibleMoves {
     private ArrayList<int[][]> threeMarblesMoving = new ArrayList<>();
     private ArrayList<int[][]> twoMarblesMoving = new ArrayList<>();
     private ArrayList<int[][]> oneMarbleMoving = new ArrayList<>();
+    private int[][] board;
+    private int playerTurn;
 
-    public ArrayList<int[][]> getPossibleMoves(int[][] board, int playerTurn) {
+    public AbaloneGetPossibleMoves(int[][] board, int playerTurn) {
+        this.board = board;
+        this.playerTurn = playerTurn;
+    }
+
+    @Override
+    public ArrayList<int[][]> getPossibleMoves() {
         //clear all arrays for new possible moves in a position
         allPossibleMoves.clear();
         capturing.clear();
@@ -111,11 +120,11 @@ public class GetPossibleMoves {
         Rules searchRules = new Rules(justAMove);
 
 
-        for(int i = 0; i < board.length; i++) { // search for all combinations of two marbles the player can make
+        for(int i = 0; i < board[0].length; i++) { // search for all combinations of two marbles the player can make
                                                 /* NOTE: there are some missing directions. This is to prevent unnecessarily
                                                    finding vertically oriented combinations twice.
                                                 */
-            for(int j = 0; j < board[i].length; j++) {
+            for(int j = 0; j < board.length; j++) {
 
                 if(board[j][i] == playerTurn) {
                     int[] marbleLocation = new int[] {j,i};
@@ -163,12 +172,11 @@ public class GetPossibleMoves {
         justAMove.board = board;
         Rules searchRules = new Rules(justAMove);
 
-
-        for(int i = 0; i < board.length; i++) { // search for all combinations of three marbles the player can make
+        for(int i = 0; i < board[0].length; i++) { // search for all combinations of three marbles the player can make
                                                 /* NOTE: there are some missing directions. This is to prevent unnecessarily
                                                    finding vertically oriented combinations twice.
                                                 */
-            for(int j = 0; j < board[i].length; j++) {
+            for(int j = 0; j < board.length; j++) {
 
                 if(board[j][i] == playerTurn) {
                     int[] marbleLocation = new int[] {j,i};
@@ -373,7 +381,7 @@ public class GetPossibleMoves {
         }
 
         for (int i = 0; i < board.length; i++) {
-            for (int j = 0; j < board.length; j++) {
+            for (int j = 0; j < board[0].length; j++) {
                 if (board[i][j] == opponentPlayer && currentBoard[i][j] != opponentPlayer) {
                     return true;
                 }
@@ -399,7 +407,7 @@ public class GetPossibleMoves {
         int currentBoardCount = 0;
 
         for (int i = 0; i < board.length; i++) {
-            for (int j = 0; j < board.length; j++) {
+            for (int j = 0; j < board[0].length; j++) {
                 if (board[i][j] == opponentPlayer) {
                     boardCount++;
                 }

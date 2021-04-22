@@ -15,8 +15,8 @@ public class Util {
     public static int countMarbles(int[][] board, int player) {
 
         int count = 0;
-        for (int i = 1; i < board.length-1; i++) {
-            for (int j = 1; j < board.length-1; j++) {
+        for (int i = 0; i < board.length; i++) {
+            for (int j = 0; j < board[0].length; j++) {
                 if (board[i][j]==player) {
                     count++;
                 }
@@ -28,7 +28,7 @@ public class Util {
     public static void printBoard(int[][] board) {
 
         for (int i = 0; i < board.length; i++) {
-            for (int j = 0; j < board.length; j++) {
+            for (int j = 0; j < board[0].length; j++) {
                 System.out.print(board[i][j] + "  ");
             }
             System.out.println();

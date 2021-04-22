@@ -33,11 +33,13 @@ public class Checkers extends GameSelector {
 
     public void runABTS() {
 
-        GameTree gameTree = new GameTree(this, 5);
-        gameTree.createTree();
-        ABTS abts = new ABTS(gameTree);
-        abts.start();
-        fourBestMoves = abts.getFourBestNodes();
+        GameTree gameTree = new GameTree(this, 7);
+//        gameTree.createTreeBFS();
+//        ABTS abts = new ABTS(gameTree);
+//        abts.start();
+//        fourBestMoves = abts.getFourBestNodes();
+        gameTree.createTreeDFS();
+        fourBestMoves = gameTree.getFourBestNodes();
         board.drawAllMarbles();
         GameUI.readyText.setText("Ready!\n\nChoose between move\n1, 2, 3 or 4\n\nPress SPACE to update board");
     }
