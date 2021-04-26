@@ -44,7 +44,7 @@ public class GameTree {
 
     private ArrayList<Node> rootChildrenNodes = new ArrayList<>();
     private ArrayList<int[][]> fourBestNodes = new ArrayList<>();
-    private int totalDepth;
+    private int depth;
 
     /**
      * class constructor
@@ -54,7 +54,8 @@ public class GameTree {
     public GameTree(GameSelector game, int depth) {
 
         this.game = game;
-        this.totalNumGeneration = Math.min(depth, (15-GameUI.turnCounter));
+        this.depth = depth;
+//        this.totalNumGeneration = Math.min(depth, (15-GameUI.turnCounter));
         this.currentPlayer = game.getCurrentPlayer();
 
         if (game.getClass().isInstance(new Checkers(null))) {
@@ -78,7 +79,8 @@ public class GameTree {
     public GameTree(GameSelector game, int depth, double[] configuration) {
 
         this.game = game;
-        this.totalNumGeneration = depth;
+        this.depth = depth;
+//        this.totalNumGeneration = depth;
         this.configuration = configuration;
         this.currentPlayer = game.getCurrentPlayer();
 
@@ -99,41 +101,41 @@ public class GameTree {
 
         if (isCheckers) {
 //            totalDepth = (15 - GameUI.turnCounter);
-            totalDepth = Math.min(7, (15-GameUI.turnCounter));
-            createTreeDFS(root, totalDepth, true, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+//            totalDepth = Math.min(7, (15-GameUI.turnCounter));
+            createTreeDFS(root, depth, true, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
         }
         else if (isAbalone){
 //            totalDepth = (15 - Hexagon.turnCounter);
-            totalDepth = Math.min(3, (15-Hexagon.turnCounter));
-            createTreeDFS(root, totalDepth, true, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+//            totalDepth = Math.min(3, (15-Hexagon.turnCounter));
+            createTreeDFS(root, depth, true, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
         }
         fourBestNodes = computeFourBestMoves(rootChildrenNodes);
     }
 
     public ArrayList<int[][]> computeFourBestMoves(ArrayList<Node> rootChildrenNodes) {
 
-        int count = 0;
-        for (Node n : rootChildrenNodes) {
-            if (n.isDoneInSubTree()) {
-                count++;
-            }
-        }
+//        int count = 0;
+//        for (Node n : rootChildrenNodes) {
+//            if (n.isDoneInSubTree()) {
+//                count++;
+//            }
+//        }
         while (fourBestNodes.size() < 4) {
             double bestScore = Double.NEGATIVE_INFINITY;
             int[][] bestMove = null;
             Node bestNode = null;
             for (Node n : rootChildrenNodes) {
                 if (n.getScore() > bestScore) {
-                    if (n.isDoneInSubTree() && count > 0) {
+//                    if (n.isDoneInSubTree() && count > 0) {
                         bestScore = n.getScore();
                         bestMove = n.getBoardState();
                         bestNode = n;
-                    }
-                    if (count == 0){
-                        bestScore = n.getScore();
-                        bestMove = n.getBoardState();
-                        bestNode = n;
-                    }
+//                    }
+//                    if (count == 0){
+//                        bestScore = n.getScore();
+//                        bestMove = n.getBoardState();
+//                        bestNode = n;
+//                    }
                 }
             }
             if (bestNode == null && fourBestNodes.size() > 0) {
@@ -175,7 +177,7 @@ public class GameTree {
             }
             children = getPossibleMoves(parent.getBoardState(), player);
             if (children.size() == 0) {
-                if (depth == totalDepth-1) {
+                if (depth == this.depth-1) {
                     Node node = new Node(parent.getBoardState(), parent.getScore());
                     node.setIsDoneInSubTree(parent.isDoneInSubTree());
                     rootChildrenNodes.add(node);
@@ -216,7 +218,7 @@ public class GameTree {
                     break;
                 }
             }
-            if (depth == totalDepth-1) {
+            if (depth == this.depth-1) {
                 Node node = new Node(parent.getBoardState(), minEvaluation);
                 node.setIsDoneInSubTree(parent.isDoneInSubTree());
                 rootChildrenNodes.add(node);

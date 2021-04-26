@@ -33,9 +33,9 @@ public class GameUI extends Application {
 
     public static int squareSize = 80;
     public static int turnCounter = 0;
-    private final int numberOfMarblesOnBoard = 6;
-    private final int WIDTH = (numberOfMarblesOnBoard*squareSize)+(2*squareSize) + 250;
-    private final int HEIGHT = (numberOfMarblesOnBoard*squareSize)+(2*squareSize);
+    private int numberOfMarblesOnBoard;
+    private int WIDTH;
+    private int HEIGHT;
 
     public Group pane = new Group();
 
@@ -62,9 +62,17 @@ public class GameUI extends Application {
 
     private boolean flag = false;
     private boolean done = true;
-    private boolean completeBoard = false;
+    private boolean completeBoard;
 
     private int choice;
+
+    public GameUI(int boardSize, boolean completeBoard) {
+
+        this.numberOfMarblesOnBoard = boardSize;
+        this.completeBoard = completeBoard;
+        this.WIDTH = (numberOfMarblesOnBoard*squareSize)+(2*squareSize) + 250;
+        this.HEIGHT = (numberOfMarblesOnBoard*squareSize)+(2*squareSize);
+    }
 
     @Override
     public void start(Stage primaryStage) {

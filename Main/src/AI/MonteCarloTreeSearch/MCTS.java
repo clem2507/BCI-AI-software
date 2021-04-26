@@ -67,7 +67,7 @@ public class MCTS {
     public void setBestConfiguration() {
 
         sampleSize = 1;
-        stopCondition = 5000;
+        stopCondition = 3000;
     }
 
     /**
@@ -85,14 +85,6 @@ public class MCTS {
             iterations++;
         }
         ArrayList<Node> rootChildren = getChildren(root);
-//        for (Node node : rootChildren) {
-//            if (node.isDoneInSubTree()) {
-//                System.out.println("ok");
-//            }
-//        }
-//        System.out.println(rootChildren.size());
-//        rootChildren.removeIf(n -> !n.isDoneInSubTree());
-//        System.out.println("-> "+rootChildren.size());
         int i = 0;
         while (i < 4) {
             double maxSimulation = 0;
