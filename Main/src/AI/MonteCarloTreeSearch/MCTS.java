@@ -37,9 +37,10 @@ public class MCTS {
     /** list of all nodes in the game tree */
     private ArrayList<Node> nodes = new ArrayList<>();
     /** list that contains the four best nodes after the algorithm is done running */
-    private ArrayList<int[][]> fourBestNodes = new ArrayList<>();
+    private ArrayList<Node> fourBestNodes = new ArrayList<>();
 
-    private int[][] bestMove;
+
+    private int count = 0;
 
     /**
      * main constructor for the MCTS algorithm
@@ -57,7 +58,6 @@ public class MCTS {
             this.root = new Node(this.game.getAbaloneBoard().getGameBoard(), 1, 0, 0);
             isAbalone = true;
         }
-
         this.currentPlayer = this.game.getCurrentPlayer();
         this.nodes.add(root);
         setBestConfiguration();
@@ -66,8 +66,8 @@ public class MCTS {
     // TODO: find a way to balance the MCTS configuration
     public void setBestConfiguration() {
 
-        sampleSize = 1;
-        stopCondition = 3000;
+        sampleSize = 10;
+        stopCondition = 5000;
     }
 
     /**
@@ -75,11 +75,12 @@ public class MCTS {
      */
     public void start() {
 
-        long b_time = System.currentTimeMillis();
-        while ((System.currentTimeMillis() - b_time) < stopCondition) {
+//        long b_time = System.currentTimeMillis();
+//        while ((System.currentTimeMillis() - b_time) < stopCondition) {
+        while (nodes.get(0).getTotalSimulation() < stopCondition) {
             Selection();
 //            for (Node n : nodes) {
-//                System.out.print(n.getTotalScore() + ", ");
+//                System.out.print(n.getTotalSimulation() + ", ");
 //            }
 //            System.out.println();
             iterations++;
@@ -92,15 +93,15 @@ public class MCTS {
             for (Node child : rootChildren) {
                 if (child.getTotalSimulation() > maxSimulation) {
                     maxSimulation = child.getTotalSimulation();
-                    bestMove = child.getBoardState();
                     bestChild = child;
                 }
             }
-            fourBestNodes.add(bestMove);
+            fourBestNodes.add(bestChild);
             rootChildren.remove(bestChild);
             i++;
         }
         System.out.println("Simulations = " + nodes.get(0).getTotalSimulation());
+        System.out.println("count = " + count);
         System.out.println();
     }
 
@@ -171,33 +172,24 @@ public class MCTS {
     public void Expansion(Node n, int currentPlayer) {
 
         ArrayList<int[][]> children = new ArrayList<>();
-        int depthLimit;
+        PossibleMoves possibleMoves;
         if (isCheckers) {
-            depthLimit = 15-GameUI.turnCounter;
-        }
-        else {
-            depthLimit = 15-Hexagon.turnCounter;
-        }
-        if (n.getDepth() <= depthLimit) {
-            PossibleMoves possibleMoves;
-            if (isCheckers) {
-                if (!game.isDone(n.getBoardState())) {
-                    possibleMoves = new CheckersPossibleMoves(n.getBoardState(), currentPlayer);
-                    children = possibleMoves.getPossibleMoves();
-                }
-            } else if (isAbalone) {
-                if (!game.isDone(n.getBoardState())) {
-                    possibleMoves = new AbaloneGetPossibleMoves(n.getBoardState(), currentPlayer);
-                    children = possibleMoves.getPossibleMoves();
-                }
+            if (!game.isDone(n.getBoardState())) {
+                possibleMoves = new CheckersPossibleMoves(n.getBoardState(), currentPlayer);
+                children = possibleMoves.getPossibleMoves();
             }
+        } else if (isAbalone) {
+            if (!game.isDone(n.getBoardState())) {
+                possibleMoves = new AbaloneGetPossibleMoves(n.getBoardState(), currentPlayer);
+                children = possibleMoves.getPossibleMoves();
+            }
+        }
 
-            for (int[][] child : children) {
-                Node childNode = new Node(child, n.getDepth()+1, 0, 0);
-                nodes.add(childNode);
-                Edge edge = new Edge(n, childNode);
-                edges.add(edge);
-            }
+        for (int[][] child : children) {
+            Node childNode = new Node(child, n.getDepth()+1, 0, 0);
+            nodes.add(childNode);
+            Edge edge = new Edge(n, childNode);
+            edges.add(edge);
         }
 
         if (children.size() > 0) {
@@ -206,6 +198,7 @@ public class MCTS {
             Simulation(getChildren(n).get(randomIndex), currentPlayer);
         }
         else {
+            count++;
             Simulation(n, currentPlayer);
         }
     }
@@ -266,9 +259,12 @@ public class MCTS {
                 simulationScore--;
             }
         }
-        n.setTotalSimulation(n.getTotalSimulation()+1);
-        n.setTotalWin(n.getTotalScore() + simulationScore);
-        backPropagation(n, simulationScore);
+//        n.setTotalSimulation(n.getTotalSimulation() + 1);
+        n.setTotalSimulation(n.getTotalSimulation() + sampleSize);
+//        n.setTotalWin(n.getTotalScore() + simulationScore);
+        n.setTotalWin(n.getTotalScore() + (simulationScore/n.getDepth()));
+//        backPropagation(n, simulationScore);
+        backPropagation(n, (simulationScore/n.getDepth()));
     }
 
     /**
@@ -290,7 +286,7 @@ public class MCTS {
                 getParent(n).setIsDoneInSubTree(true);
             }
             n = getParent(n);
-            n.setTotalSimulation(n.getTotalSimulation() + 1);
+            n.setTotalSimulation(n.getTotalSimulation() + sampleSize);
             n.setTotalWin(n.getTotalScore() + simulationScore);
             back++;
         }
@@ -340,7 +336,7 @@ public class MCTS {
     /**
      * @return the four best moves selected by the algorithm
      */
-    public ArrayList<int[][]> getFourBestNodes() {
+    public ArrayList<Node> getFourBestNodes() {
         return fourBestNodes;
     }
 }

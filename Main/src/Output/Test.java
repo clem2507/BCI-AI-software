@@ -1,10 +1,8 @@
 package Output;
 
-import AI.TreeStructure.GameTree;
+import AI.AlphaBetaTreeSearch.ABTS;
 import AI.TreeStructure.Node;
 import AI.Util;
-import Abalone.Game.Abalone;
-import Abalone.Game.BoardUI;
 import Checkers.Game.Board;
 import Checkers.Game.Checkers;
 
@@ -113,12 +111,12 @@ public class Test {
 //        System.out.println();
 
 //        GameTree gameTree = new GameTree(new Abalone(new BoardUI()), 3);
-        GameTree gameTree = new GameTree(new Checkers(new Board(6, false)), 3);
-        gameTree.createTreeDFS();
-        System.out.println(gameTree.getNodes().size());
-        System.out.println(gameTree.getRootChildrenNodes().size());
-        for (int[][] n : gameTree.getFourBestNodes()) {
-            Util.printBoard(n);
+        ABTS ABTS = new ABTS(new Checkers(new Board(6, false)), 3);
+        ABTS.start();
+        System.out.println(ABTS.getNodes().size());
+        System.out.println(ABTS.getRootChildrenNodes().size());
+        for (Node n : ABTS.getFourBestNodes()) {
+            Util.printBoard(n.getBoardState());
         }
 
 

@@ -1,6 +1,7 @@
 package Abalone.GUI;
 
 import AI.MonteCarloTreeSearch.MCTS;
+import AI.TreeStructure.Node;
 import AI.Util;
 import Abalone.Game.*;
 import Checkers.Game.Checkers;
@@ -323,13 +324,13 @@ public class Hexagon extends Application {
         accessableScene = scene;
     }
 
-    public void showSelection(int choice, ArrayList<int[][]> list) {
+    public void showSelection(int choice, ArrayList<Node> list) {
 
-        board.drawPossibleMoveFromAI(list.get(0), true);
-        board.drawPossibleMoveFromAI(list.get(1), true);
-        board.drawPossibleMoveFromAI(list.get(2), true);
-        board.drawPossibleMoveFromAI(list.get(3), true);
-        board.drawPossibleMoveFromAI(list.get(choice), false);
+        board.drawPossibleMoveFromAI(list.get(0).getBoardState(), true);
+        board.drawPossibleMoveFromAI(list.get(1).getBoardState(), true);
+        board.drawPossibleMoveFromAI(list.get(2).getBoardState(), true);
+        board.drawPossibleMoveFromAI(list.get(3).getBoardState(), true);
+        board.drawPossibleMoveFromAI(list.get(choice).getBoardState(), false);
         box1.setSelected(false);
         box2.setSelected(false);
         box3.setSelected(false);
@@ -353,12 +354,12 @@ public class Hexagon extends Application {
 
     public void makeMoveWithAI() {
 
-        board.setBoard(abalone.getFourBestMoves().get(choice));
+        board.setBoard(abalone.getFourBestMoves().get(choice).getBoardState());
         board.drawAllCells();
-        board.drawPossibleMoveFromAI(abalone.getFourBestMoves().get(0), true);
-        board.drawPossibleMoveFromAI(abalone.getFourBestMoves().get(1), true);
-        board.drawPossibleMoveFromAI(abalone.getFourBestMoves().get(2), true);
-        board.drawPossibleMoveFromAI(abalone.getFourBestMoves().get(3), true);
+        board.drawPossibleMoveFromAI(abalone.getFourBestMoves().get(0).getBoardState(), true);
+        board.drawPossibleMoveFromAI(abalone.getFourBestMoves().get(1).getBoardState(), true);
+        board.drawPossibleMoveFromAI(abalone.getFourBestMoves().get(2).getBoardState(), true);
+        board.drawPossibleMoveFromAI(abalone.getFourBestMoves().get(3).getBoardState(), true);
         board.clearStrokes();
         box1.setSelected(false);
         box2.setSelected(false);

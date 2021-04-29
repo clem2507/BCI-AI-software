@@ -1,102 +1,202 @@
 package AI.AlphaBetaTreeSearch;
 
-import AI.TreeStructure.GameTree;
+import AI.EvaluationFunction.Abalone.AbaloneEvalFunction;
+import AI.EvaluationFunction.EvaluationFunction;
+import AI.EvaluationFunction.Checkers.CheckersEvalFunction;
+import AI.GameSelector;
+import AI.PossibleMoves.AbaloneGetPossibleMoves;
+import AI.PossibleMoves.PossibleMoves;
+import AI.TreeStructure.Edge;
 import AI.TreeStructure.Node;
+import AI.Util;
+import AI.PossibleMoves.CheckersPossibleMoves;
+import Abalone.Game.Abalone;
+import Checkers.Game.Checkers;
 
-import java.util.ArrayList;
+import java.util.*;
 
 public class ABTS {
 
-    /** game tree on which run the algorithm */
-    private GameTree tree;
-    /** game tree total depth */
-    private int totalDepth;
-    /** list that contains the root children board state and score */
-    private ArrayList<Node> rootChildrenNodes = new ArrayList<>();
-    /** the list of the four best node moves for a given position */
-    private ArrayList<int[][]> fourBestNodes = new ArrayList<>();
-    /** integer variable that stands for the number visited nodes by the ABTS */
-    private int investigatedNodes = 0;
+    /** game on which we want to build a game tree on */
+    private GameSelector game;
+    /** chosen configuration of weights for the evaluation function */
+    private double[] configuration;
+    /** root node of the tree */
+    private Node root;
+    /** list that contains all the edges of the game tree */
+    private ArrayList<Edge> edges = new ArrayList<>();
+    /** list that contains all the edges of the game tree */
+    private ArrayList<Node> nodes = new ArrayList<>();
+    /** list that contains all the nodes of the game tree root node */
+    private ArrayList<Node> rootChildrenNodes;
+    /** list that contains all the four best nodes found */
+    private ArrayList<Node> fourBestNodes = new ArrayList<>();
+    /** current player to play */
+    private int currentPlayer;
+    /** boolean variable to recognize the current game */
+    private boolean isCheckers, isAbalone;
+    /** maximum depth of tree search */
+    private int depth;
 
     /**
-     * main class constructor
-     * @param gameTree stands for the structure on which the algorithm runs on
+     * class constructor
+     * @param game to create the game tree structure on
+     * @param depth total deepness of the tree
      */
-    public ABTS(GameTree gameTree) {
+    public ABTS(GameSelector game, int depth) {
 
-        this.tree = gameTree;
-        this.totalDepth = gameTree.getTotalNumGeneration();
+        this.game = game;
+        this.depth = depth;
+        this.currentPlayer = game.getCurrentPlayer();
+
+        if (game.getClass().isInstance(new Checkers(null))) {
+            isCheckers = true;
+            root = new Node(game.getCheckersBoard().getGameBoard(), 0);
+            nodes.add(root);
+        }
+        else if (game.getClass().isInstance(new Abalone(null))) {
+            isAbalone = true;
+            root = new Node(game.getAbaloneBoard().getGameBoard(), 0);
+            nodes.add(root);
+        }
     }
 
     /**
-     * start method that launches the algorithm
+     * class constructor
+     * @param game to create the game tree structure on
+     * @param depth total deepness of the tree
+     * @param configuration weights to run the evaluation function with
+     */
+    public ABTS(GameSelector game, int depth, double[] configuration) {
+
+        this.game = game;
+        this.depth = depth;
+        this.configuration = configuration;
+        this.currentPlayer = game.getCurrentPlayer();
+
+        if (game.getClass().isInstance(new Checkers(null))) {
+            isCheckers = true;
+            root = new Node(game.getCheckersBoard().getGameBoard(), 0);
+            nodes.add(root);
+        }
+        else if (game.getClass().isInstance(new Abalone(null))) {
+            isAbalone = true;
+            root = new Node(game.getAbaloneBoard().getGameBoard(), 0);
+            nodes.add(root);
+        }
+    }
+
+    /**
+     * ABTS starting algorithm method
      */
     public void start() {
 
-        double bestOutcome = ab_minimax(tree.getNodes().get(0), totalDepth, true, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-        fourBestNodes = tree.getFourBestNodes();
+        int moveChoiceLimit = 4;
+        int count = 0;
+        while (fourBestNodes.size() < 4) {
+            if (count < moveChoiceLimit || count == 0) {
+                rootChildrenNodes = new ArrayList<>();
+                double currScore = Double.NEGATIVE_INFINITY;
+                if (isCheckers) {
+                    currScore = findBestNode(root, depth, true, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                } else if (isAbalone) {
+                    currScore = findBestNode(root, depth, true, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                }
+                if (fourBestNodes.size() == 0 && rootChildrenNodes.size() < 4) {
+                    moveChoiceLimit=rootChildrenNodes.size();
+                }
+                for (Node n : rootChildrenNodes) {
+                    if (n.getScore() == currScore) {
+                        fourBestNodes.add(n);
+                        count++;
+                        break;
+                    }
+                }
+            }
+            else {
+                fourBestNodes.add(fourBestNodes.get(fourBestNodes.size()-1));
+            }
+        }
     }
 
     /**
-     * Alpha-Beta Tree Search (minimax tree traversal) algorithm recursive method
-     * @param position current node position of the tree search
-     * @param depth current depth at which the current node is located in the tree
-     * @param maximizingPlayer is true if the process is located on the maximizing layer
-     * @param alpha current best value of alpha
-     * @param beta current best value of beta
-     * @return the best score suggest by the algorithm as a next move
+     * Recursive method that creates the tree and proceed the ABTS search
+     * @param parent current node
+     * @param depth current tree search depth variable
+     * @param maximizingPlayer is true when the current node is looking to maximize the current player profit
+     * @param alpha represent the minimum score that the maximizing player is assured of
+     * @param beta represent the maximum score that the minimizing player is assured of
+     * @return the best tree search score evaluation
      */
-    public double ab_minimax(Node position, int depth, boolean maximizingPlayer, double alpha, double beta) {
+    public double findBestNode(Node parent, int depth, boolean maximizingPlayer, double alpha, double beta) {
 
-        ArrayList<Node> children;
-
-        if (depth == 0) {
-            if (tree.getParent(position) == tree.getNodes().get(0)) {
-                Node node = new Node(position.getBoardState(), position.getScore());
-                node.setIsDoneInSubTree(position.isDoneInSubTree());
-                rootChildrenNodes.add(node);
-            }
-            return position.getScore();
+        int player;
+        if (maximizingPlayer) {
+            player = currentPlayer;
         }
         else {
-            children = tree.getChildren(position);
-            if (children.size() == 0) {
-                if (depth == totalDepth-1) {
-                    Node node = new Node(position.getBoardState(), position.getScore());
-                    node.setIsDoneInSubTree(position.isDoneInSubTree());
+            player = Util.changeCurrentPlayer(currentPlayer);
+        }
+
+        ArrayList<int[][]> children;
+        if (depth == 0) {
+            return parent.getScore();
+        }
+        else {
+            if (game.isDone(parent.getBoardState())) {
+                if (getParent(parent) == nodes.get(0)) {
+                    Node node = new Node(parent.getBoardState(), parent.getScore());
                     rootChildrenNodes.add(node);
                 }
-                return position.getScore();
+                return parent.getScore();
+            }
+            children = getPossibleMoves(parent.getBoardState(), player);
+            if (parent == nodes.get(0)) {
+                for (int i = 0; i < fourBestNodes.size(); i++) {
+                    for (int[][] b : children) {
+                        if (Util.isEqual(b, fourBestNodes.get(i).getBoardState())) {
+                            children.remove(b);
+                            break;
+                        }
+                    }
+                }
             }
         }
 
         if (maximizingPlayer) {
             double maxEvaluation = Double.NEGATIVE_INFINITY;
-            for (Node child : children) {
-                double evaluation = ab_minimax(child, depth-1, false, alpha, beta);
+            for (int[][] board : children) {
+                double score = evaluateNode(board, player);
+                Node child = new Node(board, score);
+                nodes.add(child);
+                Edge edge = new Edge(parent, child);
+                edges.add(edge);
+                double evaluation = findBestNode(child, depth-1, false, alpha, beta);
                 maxEvaluation = Double.max(maxEvaluation, evaluation);
                 alpha = Math.max(alpha, evaluation);
                 if (beta <= alpha) {
                     break;
                 }
-                investigatedNodes++;
             }
             return maxEvaluation;
         }
         else {
             double minEvaluation = Double.POSITIVE_INFINITY;
-            for (Node child : children) {
-                double evaluation = ab_minimax(child, depth-1, true, alpha, beta);
+            for (int[][] board : children) {
+                double score = evaluateNode(board, player);
+                Node child = new Node(board, score);
+                nodes.add(child);
+                Edge edge = new Edge(parent, child);
+                edges.add(edge);
+                double evaluation = findBestNode(child, depth-1, true, alpha, beta);
                 minEvaluation = Double.min(minEvaluation, evaluation);
                 beta = Math.min(beta, evaluation);
                 if (beta <= alpha) {
                     break;
                 }
-                investigatedNodes++;
             }
-            if (depth == totalDepth-1) {
-                Node node = new Node(position.getBoardState(), minEvaluation);
-                node.setIsDoneInSubTree(position.isDoneInSubTree());
+            if (depth == this.depth-1) {
+                Node node = new Node(parent.getBoardState(), minEvaluation);
                 rootChildrenNodes.add(node);
             }
             return minEvaluation;
@@ -104,18 +204,128 @@ public class ABTS {
     }
 
     /**
-     * getter for the four best nodes list
-     * @return fourBestNodes list
+     * Evaluation function for a certain node board
+     * @param board current state
+     * @param player to play
+     * @return board evaluation
      */
-    public ArrayList<int[][]> getFourBestNodes() {
-        return fourBestNodes;
+    public double evaluateNode(int[][] board, int player) {
+
+        EvaluationFunction eval;
+        double score = 0;
+        if (isCheckers) {
+            eval = new CheckersEvalFunction(board, player);
+            score = eval.evaluate();
+        }
+        else if (isAbalone) {
+            eval = new AbaloneEvalFunction(board, player);
+            score = eval.evaluate();
+        }
+        return score;
     }
 
     /**
-     * getter for the total number of visited nodes
-     * @return investigatedNodes integer variable
+     * Method that returns the possible moves from a given state
+     * @param board current state
+     * @param player to play
+     * @return the list of 2D integer board
      */
-    public int getInvestigatedNodes() {
-        return investigatedNodes;
+    public ArrayList<int[][]> getPossibleMoves(int[][] board, int player) {
+
+        ArrayList<int[][]> out = new ArrayList<>();
+        PossibleMoves moves;
+        if (isCheckers) {
+            moves = new CheckersPossibleMoves(board, player);
+            out = moves.getPossibleMoves();
+        }
+        else if (isAbalone){
+            moves = new AbaloneGetPossibleMoves(board, player);
+            out = moves.getPossibleMoves();
+        }
+        return out;
+    }
+
+//    /**
+//     * method used to backtrack the win or loss information in subtree util the children of the root
+//     * @param n starting node
+//     */
+//    public void backtrackWinOrLoss(Node n) {
+//
+//        while (getParent(n) != null) {
+//            n.setIsDoneInSubTree(true);
+//            n = getParent(n);
+//        }
+//    }
+
+    /**
+     * method to get the children in the tree of a certain node
+     * @param v current node
+     * @return a list a children
+     */
+    public ArrayList<Node> getChildren(Node v) { // String vertex
+        // Returns all neighbours of a given vertex
+        ArrayList<Node> children = new ArrayList<>();
+        for (Edge e : edges){
+            if(e.getSource() == v) {
+                children.add(e.getDestination());
+            }
+        }
+        return children;
+    }
+
+    /**
+     * @param n given a certain node
+     * @return its closest parent
+     */
+    public Node getParent(Node n) {
+
+        Node parent = null;
+        for (Edge e : edges) {
+            if (e.getDestination() == n) {
+                parent = e.getSource();
+            }
+        }
+        return parent;
+    }
+
+    /**
+     * setter for the current player
+     * @param currentPlayer to play
+     */
+    public void setCurrentPlayer(int currentPlayer) {
+        this.currentPlayer = currentPlayer;
+    }
+
+    /**
+     * getter for the game tree node list
+     * @return the list with the nodes
+     */
+    public ArrayList<Node> getNodes() {
+        return nodes;
+    }
+
+    /**
+     * getter for the game tree edges list
+     * @return the list with the edges
+     */
+    public ArrayList<Edge> getEdges() {
+        return edges;
+    }
+
+    /**
+     * getter for the root children nodes list
+     * @return the list that contains the children nodes from the root
+     */
+    public ArrayList<Node> getRootChildrenNodes() {
+        return rootChildrenNodes;
+    }
+
+    /**
+     * getter for the four best best nodes list
+     * @return the list with the four best nodes after running the algorithm
+     */
+    public ArrayList<Node> getFourBestNodes() {
+        return fourBestNodes;
     }
 }
+

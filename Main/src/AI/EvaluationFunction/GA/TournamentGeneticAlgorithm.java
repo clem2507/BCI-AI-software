@@ -1,8 +1,7 @@
 package AI.EvaluationFunction.GA;
 
-import AI.AlphaBetaTreeSearch.ABTS;
 import AI.GameSelector;
-import AI.TreeStructure.GameTree;
+import AI.AlphaBetaTreeSearch.ABTS;
 import AI.Util;
 import Abalone.Game.Abalone;
 import Abalone.Game.BoardUI;
@@ -45,7 +44,7 @@ public class TournamentGeneticAlgorithm {
     /** same as for the mutation but for the crossover between the two parents */
     private double crossoverRate;
     /** boolean variable that tells the simulation method if the board is complete or simplified */
-    private boolean completeBoard = true;
+    private boolean completeBoard = false;
 
     /**
      * Class constructor to start the GA with a random population of items
@@ -59,7 +58,7 @@ public class TournamentGeneticAlgorithm {
         this.generationSize = generationSize+startingGeneration;
         this.totalGenerationNumber = startingGeneration;
         this.numberOfTournaments = numberOfTournaments;
-        this.numberOfParticipantsPerTournament = (int) Math.pow(2, 4);
+        this.numberOfParticipantsPerTournament = (int) Math.pow(2, 5);
         this.populationSize = (numberOfParticipantsPerTournament*numberOfTournaments);
         this.mutationRate = mutationRate;
         this.crossoverRate = crossoverRate;
@@ -142,12 +141,12 @@ public class TournamentGeneticAlgorithm {
 
         double[] genotype = new double[genotypeSize];
         for (int i = 0; i < genotypeSize; i++) {
-//            if (i==2) {
-//                genotype[i] = -(random.nextDouble());
-//            }
-//            else {
+            if (i==2) {
+                genotype[i] = -(random.nextDouble());
+            }
+            else {
                 genotype[i] = random.nextDouble();
-//            }
+            }
         }
         return genotype;
     }
@@ -242,43 +241,46 @@ public class TournamentGeneticAlgorithm {
             game = new Abalone(boardUI);
         }
         int currentPlayer = random.nextInt(2)+1;
-        while (!game.isDone(boardUI.getGameBoard())) {
-            GameTree gameTree;
+        //while (!game.isDone(boardUI.getGameBoard())) {
+        while (!game.isDone(board.getGameBoard())) {
+            ABTS ABTS;
             if (currentPlayer == 1) {
-                gameTree = new GameTree(game, 5, participant1.getGenotype());
+                ABTS = new ABTS(game, 5, participant1.getGenotype());
             }
             else {
-                gameTree = new GameTree(game, 5, participant2.getGenotype());
+                ABTS = new ABTS(game, 5, participant2.getGenotype());
             }
-            gameTree.setCurrentPlayer(currentPlayer);
-            gameTree.createTreeDFS();
-//            gameTree.createTreeBFS();
-//            ABTS abts = new ABTS(gameTree);
-//            abts.start();
+            ABTS.setCurrentPlayer(currentPlayer);
+            ABTS.start();
             double moveChoice = random.nextDouble();
             if (moveChoice < 0.55) {
-                if (gameTree.getFourBestNodes().get(0) != null) {
-                    boardUI.setBoard(gameTree.getFourBestNodes().get(0));
+                if (ABTS.getFourBestNodes().get(0) != null) {
+                    //boardUI.setBoard(ABTS.getFourBestNodes().get(0).getBoardState());
+                    board.setBoard(ABTS.getFourBestNodes().get(0).getBoardState());
                 }
             }
             else if (moveChoice < 0.75) {
-                if (gameTree.getFourBestNodes().get(1) != null) {
-                    boardUI.setBoard(gameTree.getFourBestNodes().get(1));
+                if (ABTS.getFourBestNodes().get(1) != null) {
+                    //boardUI.setBoard(ABTS.getFourBestNodes().get(1).getBoardState());
+                    board.setBoard(ABTS.getFourBestNodes().get(1).getBoardState());
                 }
             }
             else if (moveChoice < 0.9) {
-                if (gameTree.getFourBestNodes().get(2) != null) {
-                    boardUI.setBoard(gameTree.getFourBestNodes().get(2));
+                if (ABTS.getFourBestNodes().get(2) != null) {
+                    //boardUI.setBoard(ABTS.getFourBestNodes().get(2).getBoardState());
+                    board.setBoard(ABTS.getFourBestNodes().get(2).getBoardState());
                 }
             }
             else {
-                if (gameTree.getFourBestNodes().get(3) != null) {
-                    boardUI.setBoard(gameTree.getFourBestNodes().get(3));
+                if (ABTS.getFourBestNodes().get(3) != null) {
+                    //boardUI.setBoard(ABTS.getFourBestNodes().get(3).getBoardState());
+                    board.setBoard(ABTS.getFourBestNodes().get(3).getBoardState());
                 }
             }
             currentPlayer = Util.changeCurrentPlayer(currentPlayer);
         }
-        if (game.isVictorious(boardUI.getGameBoard(), 1)) {
+        //if (game.isVictorious(boardUI.getGameBoard(), 1)) {
+        if (game.isVictorious(board.getGameBoard(), 1)) {
             participant1.setWinner(true);
             participant2.setWinner(false);
         }
@@ -362,7 +364,7 @@ public class TournamentGeneticAlgorithm {
         tournamentSelection();
         play();
         playTournament(matingPool);
-        OutputCSV out = new OutputCSV("AbaloneBestTwoGenotypes.csv", "BestTwoGenotypes");
+        OutputCSV out = new OutputCSV("BestTwoGen.csv", "BestTwoGenotypes");
         String[][] data = new String[2][genotypeSize];
         for (int i = 0; i < 2; i++) {
             for (int j = 0; j < genotypeSize; j++) {
@@ -378,7 +380,7 @@ public class TournamentGeneticAlgorithm {
      */
     public void getMatingPoolGenotypes() {
 
-        OutputCSV out = new OutputCSV("abaloneGeneration"+ (totalGenerationNumber) +".csv");
+        OutputCSV out = new OutputCSV("MatingPoolGen"+ (totalGenerationNumber) +".csv");
         String[][] data = new String[matingPool.size()][genotypeSize];
         int row = 0;
         for (Item item : matingPool) {

@@ -1,5 +1,6 @@
 package Checkers.GUI;
 
+import AI.TreeStructure.Node;
 import AI.Util;
 import Checkers.Game.Board;
 import Checkers.Game.Checkers;
@@ -355,22 +356,17 @@ public class GameUI extends Application {
         turnNumberText.setText("Turn number " + turnCounter);
         whosePlaying.setText(getCurrentPlayerColor(Util.changeCurrentPlayer(Checkers.currentPlayer)) + " to play");
         checkWin();
-        if (Checkers.currentPlayer == 1) {
-            Checkers.currentPlayer = 2;
-        }
-        else {
-            Checkers.currentPlayer = 1;
-        }
+        Checkers.currentPlayer = Util.changeCurrentPlayer(Checkers.currentPlayer);
     }
 
     public void makeMoveWithAI() {
 
-        board.setBoard(checkers.getFourBestMoves().get(choice));
+        board.setBoard(checkers.getFourBestMoves().get(choice).getBoardState());
         board.drawAllMarbles();
-        board.drawPossibleMoveFromAI(checkers.getFourBestMoves().get(0), true);
-        board.drawPossibleMoveFromAI(checkers.getFourBestMoves().get(1), true);
-        board.drawPossibleMoveFromAI(checkers.getFourBestMoves().get(2), true);
-        board.drawPossibleMoveFromAI(checkers.getFourBestMoves().get(3), true);
+        board.drawPossibleMoveFromAI(checkers.getFourBestMoves().get(0).getBoardState(), true);
+        board.drawPossibleMoveFromAI(checkers.getFourBestMoves().get(1).getBoardState(), true);
+        board.drawPossibleMoveFromAI(checkers.getFourBestMoves().get(2).getBoardState(), true);
+        board.drawPossibleMoveFromAI(checkers.getFourBestMoves().get(3).getBoardState(), true);
         board.clearStrokes();
         box1.setSelected(false);
         box2.setSelected(false);
@@ -441,13 +437,13 @@ public class GameUI extends Application {
         }
     }
 
-    public void showSelection(int choice, ArrayList<int[][]> list) {
+    public void showSelection(int choice, ArrayList<Node> list) {
 
-        board.drawPossibleMoveFromAI(list.get(0), true);
-        board.drawPossibleMoveFromAI(list.get(1), true);
-        board.drawPossibleMoveFromAI(list.get(2), true);
-        board.drawPossibleMoveFromAI(list.get(3), true);
-        board.drawPossibleMoveFromAI(list.get(choice), false);
+        board.drawPossibleMoveFromAI(list.get(0).getBoardState(), true);
+        board.drawPossibleMoveFromAI(list.get(1).getBoardState(), true);
+        board.drawPossibleMoveFromAI(list.get(2).getBoardState(), true);
+        board.drawPossibleMoveFromAI(list.get(3).getBoardState(), true);
+        board.drawPossibleMoveFromAI(list.get(choice).getBoardState(), false);
         box1.setSelected(false);
         box2.setSelected(false);
         box3.setSelected(false);

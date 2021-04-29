@@ -1,9 +1,9 @@
 package Abalone.Game;
 
-import AI.AlphaBetaTreeSearch.ABTS;
 import AI.GameSelector;
 import AI.MonteCarloTreeSearch.MCTS;
-import AI.TreeStructure.GameTree;
+import AI.AlphaBetaTreeSearch.ABTS;
+import AI.TreeStructure.Node;
 import AI.Util;
 import Abalone.GUI.Hexagon;
 import Checkers.Game.Board;
@@ -13,9 +13,8 @@ import java.util.ArrayList;
 public class Abalone extends GameSelector {
 
     private BoardUI board;
-    private ArrayList<int[][]> fourBestMoves;
+    private ArrayList<Node> fourBestMoves;
     public static int currentPlayer = 1;
-    private int indexMove = 0;
     private Player[] player = new Player[2];
 
     public Abalone(BoardUI board, Player p1, Player p2) {
@@ -45,45 +44,11 @@ public class Abalone extends GameSelector {
 
     public void runABTS() {
 
-        GameTree gameTree = new GameTree(this, 3);
-//        gameTree.createTreeBFS();
-//        ABTS abts = new ABTS(gameTree);
-//        abts.start();
-//        fourBestMoves = abts.getFourBestNodes();
-        gameTree.createTreeDFS();
-        fourBestMoves = gameTree.getFourBestNodes();
+        ABTS ABTS = new ABTS(this, 3);
+        ABTS.start();
+        fourBestMoves = ABTS.getFourBestNodes();
         board.drawAllCells();
         Hexagon.readyText.setText("Ready!\n\nChoose between move\n1, 2, 3 or 4\n\nPress SPACE to update board");
-    }
-
-    public void makeMove() {
-
-//            int p = 2;
-        try {
-            System.out.println("1");
-            Move mv = player[indexMove & 1].collectMove();
-            System.out.println("2");
-            mv.board = board.getBoard();
-            System.out.println("3");
-            Rules checkRules = new Rules(mv);
-            System.out.println("4");
-            checkRules.move();
-            System.out.println("5");
-
-//                if (checkRules.checkMove(mv.pushing, mv.dir, mv.board, mv.turn)) {
-//                    checkRules.move();
-//                } else {
-//                    p = 1;
-//                    numberOfTurn--;
-//                }
-
-        } catch (InterruptedException e) {
-            System.out.println("concurrency problem, aborting...");
-            System.exit(0);
-        }
-        indexMove++;
-        currentPlayer = Util.changeCurrentPlayer(currentPlayer);
-//        whosePlaying.setText(getCurrentPlayerColor(Abalone.currentPlayer) + " to play");
     }
 
     @Override
@@ -111,7 +76,7 @@ public class Abalone extends GameSelector {
         return Util.countMarbles(actualBoard, player) > Util.countMarbles(actualBoard, Util.changeCurrentPlayer(player));
     }
 
-    public ArrayList<int[][]> getFourBestMoves() {
+    public ArrayList<Node> getFourBestMoves() {
         return fourBestMoves;
     }
 }
