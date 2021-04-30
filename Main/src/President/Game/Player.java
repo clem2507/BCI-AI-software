@@ -6,10 +6,12 @@ public class Player {
 
     private ArrayList<Card> deck;
     private boolean toPlay;
+    private int number;
 
-    public Player(ArrayList<Card> deck) {
+    public Player(ArrayList<Card> deck, int number) {
 
         this.deck = deck;
+        this.number = number;
     }
 
     public void takeAction(int number, int occurrence) {
@@ -52,5 +54,9 @@ public class Player {
 
     public void isToPlay(boolean toPlay) {
         this.toPlay = toPlay;
+    }
+
+    public int getNumber() {
+        return number;
     }
 }

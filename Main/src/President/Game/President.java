@@ -20,9 +20,9 @@ public class President extends GameSelector {
 
         this.deck = new ArrayList<>();
         this.initializeDeck();
-        this.player1 = new Player(setInitialPlayerDeck(deck));
+        this.player1 = new Player(setInitialPlayerDeck(deck), 1);
         this.player1.isToPlay(true);
-        this.player2 = new Player(setInitialPlayerDeck(deck));
+        this.player2 = new Player(setInitialPlayerDeck(deck), 2);
         this.player2.isToPlay(false);
         this.gameState = new Tuple(0, 0);
     }
@@ -31,7 +31,7 @@ public class President extends GameSelector {
 
         for (int i = 1; i <= 13; i++) {
             for (int j = 1; j <= 4; j++) {
-                Card card = new Card(i);
+                Card card = new Card(i, j);
                 deck.add(card);
             }
         }
