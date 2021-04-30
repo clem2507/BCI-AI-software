@@ -4,6 +4,8 @@ import AI.Util;
 import Abalone.Game.Move;
 import Abalone.Game.MoveDirection;
 import Abalone.Game.Rules;
+import President.Game.Tuple;
+
 import java.util.Collections;
 import java.util.ArrayList;
 
@@ -58,6 +60,11 @@ public class AbaloneGetPossibleMoves extends PossibleMoves {
         allPossibleMoves.addAll(oneMarbleMoving);
 
         return allPossibleMoves; //this will be an arraylist containing move objects
+    }
+
+    @Override
+    public ArrayList<Tuple> getPossibleActions() {
+        return null;
     }
 
     /**

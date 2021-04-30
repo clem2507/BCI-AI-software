@@ -4,6 +4,7 @@ import AI.Util;
 import Checkers.Game.Checkers;
 import Checkers.Game.Move;
 import Checkers.Game.MoveDirection;
+import President.Game.Tuple;
 
 import java.util.ArrayList;
 
@@ -34,6 +35,11 @@ public class CheckersPossibleMoves extends PossibleMoves {
             }
         }
         return movesArray;
+    }
+
+    @Override
+    public ArrayList<Tuple> getPossibleActions() {
+        return null;
     }
 
     public ArrayList<int[][]> getPossibleMovesFromMarble(int i, int j) {

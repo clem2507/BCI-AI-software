@@ -3,10 +3,15 @@ package Output;
 import AI.AlphaBetaTreeSearch.ABTS;
 import AI.EvaluationFunction.Checkers.CheckersEvalFunction;
 import AI.EvaluationFunction.EvaluationFunction;
+import AI.PossibleMoves.PossibleMoves;
+import AI.PossibleMoves.PresidentPossibleMoves;
 import AI.TreeStructure.Node;
 import AI.Util;
 import Checkers.Game.Board;
 import Checkers.Game.Checkers;
+import President.Game.Card;
+import President.Game.President;
+import President.Game.Tuple;
 
 public class Test {
 
@@ -84,8 +89,8 @@ public class Test {
 //            System.out.println(Arrays.deepToString(arr));
 //        }
 
-        EvaluationFunction f = new CheckersEvalFunction(gameBoard, 1);
-        System.out.println(f.evaluate());
+//        EvaluationFunction f = new CheckersEvalFunction(gameBoard, 1);
+//        System.out.println(f.evaluate());
 
 //        PossibleMoves possibleMoves = new CheckersPossibleMoves(gameBoard, 2);
 //        for (int[][] arr : possibleMoves.getPossibleMoves()) {
@@ -127,6 +132,20 @@ public class Test {
 //        for (int[][] arr : abts.getFourBestNodes()) {
 //            Util.printBoard(arr);
 //        }
+
+//        President president = new President();
+//        for (Tuple tuple : president.getPlayer1().getSortedDeck()) {
+//            System.out.println(tuple.getNumber() + " -> " + tuple.getOccurrence());
+//        }
+//        System.out.println();
+//
+//        PossibleMoves possibleMoves = new PresidentPossibleMoves(president.getPlayer1(), new Tuple(4, 2));
+//        System.out.println("Current state: 4 -> 2");
+//        System.out.println();
+//        for (Tuple tuple : possibleMoves.getPossibleActions()) {
+//            System.out.println(tuple.getNumber() + " -> " + tuple.getOccurrence());
+//        }
+//        System.out.println();
     }
 
 }

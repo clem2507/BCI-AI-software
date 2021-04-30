@@ -11,6 +11,8 @@ import AI.TreeStructure.Node;
 import AI.Util;
 import Abalone.Game.BoardUI;
 import Checkers.GUI.GameUI;
+import President.Game.Player;
+import President.Game.Tuple;
 
 import java.util.ArrayList;
 
@@ -120,6 +122,16 @@ public class Checkers extends GameSelector {
     }
 
     @Override
+    public boolean isDone(Player player1, Player player2) {
+        return false;
+    }
+
+    @Override
+    public boolean isVictorious(Player player) {
+        return false;
+    }
+
+    @Override
     public double getAdaptiveVariable() {
         return adaptiveVariable;
     }
@@ -141,5 +153,10 @@ public class Checkers extends GameSelector {
     @Override
     public int getCurrentPlayer() {
         return currentPlayer;
+    }
+
+    @Override
+    public Tuple getCurrentGameState() {
+        return null;
     }
 }
