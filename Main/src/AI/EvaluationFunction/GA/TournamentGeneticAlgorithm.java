@@ -141,12 +141,7 @@ public class TournamentGeneticAlgorithm {
 
         double[] genotype = new double[genotypeSize];
         for (int i = 0; i < genotypeSize; i++) {
-            if (i==2) {
-                genotype[i] = -(random.nextDouble());
-            }
-            else {
-                genotype[i] = random.nextDouble();
-            }
+            genotype[i] = random.nextDouble();
         }
         return genotype;
     }

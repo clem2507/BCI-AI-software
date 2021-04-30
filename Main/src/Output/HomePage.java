@@ -1,3 +1,5 @@
+package Output;
+
 import AI.Util;
 import Abalone.GUI.Hexagon;
 import Checkers.GUI.GameUI;

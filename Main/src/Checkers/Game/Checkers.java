@@ -1,5 +1,7 @@
 package Checkers.Game;
 
+import AI.EvaluationFunction.Checkers.CheckersEvalFunction;
+import AI.EvaluationFunction.EvaluationFunction;
 import AI.GameSelector;
 import AI.MonteCarloTreeSearch.MCTS;
 import AI.AlphaBetaTreeSearch.ABTS;
@@ -17,6 +19,8 @@ public class Checkers extends GameSelector {
     private Board board;
     public static int currentPlayer = 1;
     private ArrayList<Node> fourBestMoves;
+    private static ArrayList<Double> adaptiveVariableStack = new ArrayList<>();
+    private double adaptiveVariable;
 
     public Checkers(Board board) {
 
@@ -39,6 +43,29 @@ public class Checkers extends GameSelector {
         fourBestMoves = ABTS.getFourBestNodes();
         board.drawAllMarbles();
         GameUI.readyText.setText("Ready!\n\nChoose between move\n1, 2, 3 or 4\n\nPress SPACE to update board");
+    }
+
+    @Override
+    public void setAdaptiveVariable(int[][] previousBoard, int[][] currentBoard) {
+
+        EvaluationFunction currPlayerEval1 = new CheckersEvalFunction(previousBoard, Util.changeCurrentPlayer(currentPlayer));
+        EvaluationFunction currPlayerEval2 = new CheckersEvalFunction(currentBoard, Util.changeCurrentPlayer(currentPlayer));
+        EvaluationFunction oppPlayerEval1 = new CheckersEvalFunction(previousBoard, currentPlayer);
+        EvaluationFunction oppPlayerEval2 = new CheckersEvalFunction(currentBoard, currentPlayer);
+        adaptiveVariableStack.add(weightingFunction(currPlayerEval1.evaluate(), currPlayerEval2.evaluate(), oppPlayerEval1.evaluate(), oppPlayerEval2.evaluate()));
+        double sum = 0;
+        for (double x : adaptiveVariableStack) {
+            sum+=x;
+        }
+        this.adaptiveVariable = sum / adaptiveVariableStack.size();
+        System.out.println("adaptiveVariable = " + adaptiveVariable);
+        System.out.println();
+    }
+
+    // TODO - improve the adaptive variable computation
+    public double weightingFunction(double x1, double x2, double y1, double y2) {
+
+        return (x2 - x1) + (y1 - y2);
     }
 
     @Override
@@ -90,6 +117,11 @@ public class Checkers extends GameSelector {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public double getAdaptiveVariable() {
+        return adaptiveVariable;
     }
 
     public ArrayList<Node> getFourBestMoves() {

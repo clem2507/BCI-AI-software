@@ -1,6 +1,8 @@
 package Output;
 
 import AI.AlphaBetaTreeSearch.ABTS;
+import AI.EvaluationFunction.Checkers.CheckersEvalFunction;
+import AI.EvaluationFunction.EvaluationFunction;
 import AI.TreeStructure.Node;
 import AI.Util;
 import Checkers.Game.Board;
@@ -13,12 +15,12 @@ public class Test {
     private static int[][] gameBoard = new int[][]{
 
             {3, 3, 3, 3, 3, 3, 3, 3},
-            {3, 0, 2, 0, 0, 0, 2, 3},
+            {3, 0, 2, 0, 2, 0, 2, 3},
             {3, 0, 0, 0, 0, 0, 0, 3},
             {3, 0, 0, 0, 0, 0, 0, 3},
             {3, 0, 0, 0, 0, 0, 0, 3},
-            {3, 0, 0, 0, 1, 0, 2, 3},
-            {3, 1, 0, 1, 0, 0, 0, 3},
+            {3, 0, 0, 0, 0, 0, 0, 3},
+            {3, 1, 0, 1, 0, 1, 0, 3},
             {3, 3, 3, 3, 3, 3, 3, 3}
 
     };
@@ -82,8 +84,8 @@ public class Test {
 //            System.out.println(Arrays.deepToString(arr));
 //        }
 
-//        CheckersEvalFunction f = new CheckersEvalFunction(gameBoard, 1);
-//        System.out.println(f.evaluate());
+        EvaluationFunction f = new CheckersEvalFunction(gameBoard, 1);
+        System.out.println(f.evaluate());
 
 //        PossibleMoves possibleMoves = new CheckersPossibleMoves(gameBoard, 2);
 //        for (int[][] arr : possibleMoves.getPossibleMoves()) {
@@ -111,13 +113,13 @@ public class Test {
 //        System.out.println();
 
 //        GameTree gameTree = new GameTree(new Abalone(new BoardUI()), 3);
-        ABTS ABTS = new ABTS(new Checkers(new Board(6, false)), 3);
-        ABTS.start();
-        System.out.println(ABTS.getNodes().size());
-        System.out.println(ABTS.getRootChildrenNodes().size());
-        for (Node n : ABTS.getFourBestNodes()) {
-            Util.printBoard(n.getBoardState());
-        }
+//        ABTS ABTS = new ABTS(new Checkers(new Board(6, false)), 3);
+//        ABTS.start();
+//        System.out.println(ABTS.getNodes().size());
+//        System.out.println(ABTS.getRootChildrenNodes().size());
+//        for (Node n : ABTS.getFourBestNodes()) {
+//            Util.printBoard(n.getBoardState());
+//        }
 
 
 //        ABTS abts = new ABTS(gameTree);

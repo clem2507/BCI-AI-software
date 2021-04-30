@@ -11,4 +11,6 @@ public abstract class GameSelector {
     public abstract Board getCheckersBoard();
     public abstract boolean isDone(int[][] actualBoard);
     public abstract boolean isVictorious(int[][] actualBoard, int player);
+    public abstract void setAdaptiveVariable(int[][] previousBoard, int[][] currentBoard);
+    public abstract double getAdaptiveVariable();
 }

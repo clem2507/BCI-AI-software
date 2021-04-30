@@ -16,6 +16,7 @@ public class Abalone extends GameSelector {
     private ArrayList<Node> fourBestMoves;
     public static int currentPlayer = 1;
     private Player[] player = new Player[2];
+    private double adaptiveVariable;
 
     public Abalone(BoardUI board, Player p1, Player p2) {
 
@@ -52,6 +53,11 @@ public class Abalone extends GameSelector {
     }
 
     @Override
+    public void setAdaptiveVariable(int[][] previousBoard, int[][] currentBoard) {
+
+    }
+
+    @Override
     public int getCurrentPlayer() {
         return currentPlayer;
     }
@@ -74,6 +80,11 @@ public class Abalone extends GameSelector {
     @Override
     public boolean isVictorious(int[][] actualBoard, int player) {
         return Util.countMarbles(actualBoard, player) > Util.countMarbles(actualBoard, Util.changeCurrentPlayer(player));
+    }
+
+    @Override
+    public double getAdaptiveVariable() {
+        return adaptiveVariable;
     }
 
     public ArrayList<Node> getFourBestMoves() {

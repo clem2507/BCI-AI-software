@@ -66,8 +66,19 @@ public class MCTS {
     // TODO: find a way to balance the MCTS configuration
     public void setBestConfiguration() {
 
-        sampleSize = 10;
-        stopCondition = 5000;
+        if (this.currentPlayer == 1) {
+            sampleSize = 10;
+            stopCondition = 5000;
+        }
+        // else, apply adaptive AI and balance the configuration here
+        else {
+            double adaptiveVariable = game.getAdaptiveVariable();
+            sampleSize = (int) Math.ceil(10*adaptiveVariable);
+            stopCondition = (int) Math.ceil(5000*adaptiveVariable);
+//            System.out.println("sampleSize = " + sampleSize);
+//            System.out.println("stopCondition = " + stopCondition);
+//            System.out.println();
+        }
     }
 
     /**
@@ -86,10 +97,30 @@ public class MCTS {
             iterations++;
         }
         ArrayList<Node> rootChildren = getChildren(root);
-        int i = 0;
-        while (i < 4) {
-            double maxSimulation = 0;
+        if (this.currentPlayer == 1) {
+            int possibleMoveChoice = rootChildren.size();
+            int i = 0;
+            while (i < 4) {
+                if (i < possibleMoveChoice) {
+                    double maxSimulation = -1;
+                    Node bestChild = null;
+                    for (Node child : rootChildren) {
+                        if (child.getTotalSimulation() > maxSimulation) {
+                            maxSimulation = child.getTotalSimulation();
+                            bestChild = child;
+                        }
+                    }
+                    fourBestNodes.add(bestChild);
+                    rootChildren.remove(bestChild);
+                } else {
+                    fourBestNodes.add(fourBestNodes.get(fourBestNodes.size() - 1));
+                }
+                i++;
+            }
+        }
+        else {
             Node bestChild = null;
+            double maxSimulation = -1;
             for (Node child : rootChildren) {
                 if (child.getTotalSimulation() > maxSimulation) {
                     maxSimulation = child.getTotalSimulation();
@@ -97,12 +128,10 @@ public class MCTS {
                 }
             }
             fourBestNodes.add(bestChild);
-            rootChildren.remove(bestChild);
-            i++;
         }
-        System.out.println("Simulations = " + nodes.get(0).getTotalSimulation());
-        System.out.println("count = " + count);
-        System.out.println();
+//        System.out.println("Simulations = " + nodes.get(0).getTotalSimulation());
+//        System.out.println("Repetition count = " + count);
+//        System.out.println();
     }
 
     /**
@@ -110,7 +139,6 @@ public class MCTS {
      * @param n current node on which we need to compute the uct score
      * @return the corresponding score
      */
-    // TODO - change the uct scoring value!!
     public double uctValue(Node n) {
 
         // c = exploration parameter

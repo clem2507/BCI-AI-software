@@ -6,23 +6,29 @@ import Checkers.Game.Board;
 import Checkers.Game.Checkers;
 import Checkers.Game.Move;
 import Checkers.Game.MoveDirection;
+import Output.HomePage;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.Group;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
@@ -30,6 +36,7 @@ import java.util.Arrays;
 
 public class GameUI extends Application {
 
+    private Stage primaryStage;
     private Scene scene;
 
     public static int squareSize = 80;
@@ -247,6 +254,7 @@ public class GameUI extends Application {
         primaryStage.setScene(scene);
         primaryStage.centerOnScreen();
         primaryStage.show();
+        this.primaryStage = primaryStage;
 
         controller();
     }
@@ -279,7 +287,12 @@ public class GameUI extends Application {
                     break;
                 case SPACE:
                     if (flag) {
+                        int[][] previousBoard = board.getGameBoard();
                         makeMoveWithAI();
+                        int[][] currentBoard = board.getGameBoard();
+                        if (checkers.getCurrentPlayer() == 2) {
+                            checkers.setAdaptiveVariable(previousBoard, currentBoard);
+                        }
                         board.isSelectable = true;
                         turnCounter++;
                         whosePlaying.setText(getCurrentPlayerColor(Checkers.currentPlayer) + " to play");
@@ -292,8 +305,18 @@ public class GameUI extends Application {
                             readyText.setText("...");
                             board.isSelectable = false;
                             checkers.runMCTS();
-                            done = false;
-                            flag = true;
+                            if (checkers.getCurrentPlayer()==2) {
+                                makeMoveWithAI(0);
+                                board.isSelectable = true;
+                                turnCounter++;
+                                whosePlaying.setText(getCurrentPlayerColor(Checkers.currentPlayer) + " to play");
+                                turnNumberText.setText("Turn number " + turnCounter);
+                                Platform.runLater(this::checkWin);
+                            }
+                            else {
+                                done = false;
+                                flag = true;
+                            }
                         }).start();
                     }
                     else if (done) {
@@ -301,8 +324,18 @@ public class GameUI extends Application {
                             readyText.setText("...");
                             board.isSelectable = false;
                             checkers.runABTS();
-                            done = false;
-                            flag = true;
+                            if (checkers.getCurrentPlayer()==2) {
+                                makeMoveWithAI(0);
+                                board.isSelectable = true;
+                                turnCounter++;
+                                whosePlaying.setText(getCurrentPlayerColor(Checkers.currentPlayer) + " to play");
+                                turnNumberText.setText("Turn number " + turnCounter);
+                                Platform.runLater(this::checkWin);
+                            }
+                            else {
+                                done = false;
+                                flag = true;
+                            }
                         }).start();
                     }
                     break;
@@ -385,27 +418,91 @@ public class GameUI extends Application {
         Checkers.currentPlayer = Util.changeCurrentPlayer(Checkers.currentPlayer);
     }
 
+    public void makeMoveWithAI(int index) {
+
+        board.setBoard(checkers.getFourBestMoves().get(index).getBoardState());
+        board.drawAllMarbles();
+        box1.setSelected(false);
+        box2.setSelected(false);
+        box3.setSelected(false);
+        box4.setSelected(false);
+        checkers.getFourBestMoves().clear();
+        if (isMCTS.isSelected()) {
+            readyText.setText("Press ENTER to start MCTS");
+        }
+        else {
+            readyText.setText("Press ENTER to start ABTS");
+        }
+        done = true;
+        flag = false;
+        Checkers.currentPlayer = Util.changeCurrentPlayer(Checkers.currentPlayer);
+    }
+
     public void checkWin() {
 
         if (checkers.isDone(board.getGameBoard())) {
-            new Thread(() -> {
-                try {
-                    System.out.println("Checkers game is over");
-                    if (Checkers.currentPlayer == 2) {
-                        System.out.println("Player 1 won - white");
-                        readyText.setText("Player 1 won - white");
-                    }
-                    else {
-                        System.out.println("Player 2 won - black");
-                        readyText.setText("Player 2 won - black");
-                    }
-                    Thread.sleep(2000);
-                    System.exit(0);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }).start();
+            System.out.println("Checkers game is over");
+            if (Checkers.currentPlayer == 1) {
+                System.out.println("Player 1 won - white");
+                readyText.setText("Player 1 won - white");
+                createPopUpWindow(1);
+            }
+            else {
+                System.out.println("Player 2 won - black");
+                readyText.setText("Player 2 won - black");
+                createPopUpWindow(2);
+            }
         }
+    }
+
+    public void createPopUpWindow(int winner) {
+
+        final Stage dialog = new Stage();
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.initOwner(this.primaryStage);
+        Text text;
+        if (winner == 1) {
+            text = new Text(
+                    "\n \t Player 1 won - white"
+            );
+        }
+        else {
+            text = new Text(
+                    "\n \t Player 2 won - black"
+            );
+        }
+        text.setFont(Font.font("Arial", 13));
+        VBox dialogVbox = new VBox(35);
+        dialogVbox.getChildren().add(text);
+        Button playAgain = new Button("Play Again");
+        playAgain.setTranslateX(55);
+        playAgain.setOnAction(event -> {
+            GameUI.turnCounter = 0;
+            Checkers.currentPlayer = 1;
+            HomePage homePage = new HomePage();
+            homePage.start(this.primaryStage);
+            dialog.close();
+        });
+        Button exit = new Button("Exit");
+        exit.setTranslateX(73);
+        exit.setOnAction(event -> System.exit(0));
+        dialogVbox.getChildren().addAll(playAgain, exit);
+        Scene dialogScene = new Scene(dialogVbox, 190, 190);
+        dialog.setScene(dialogScene);
+        dialog.setResizable(false);
+        dialog.show();
+        dialog.setOnCloseRequest(t -> System.exit(0));
+        dialogScene.setOnKeyPressed(event -> {
+            KeyCode keyCode = event.getCode();
+            switch (keyCode) {
+                case ESCAPE:
+                    System.exit(0);
+                    break;
+                case ENTER:
+                    playAgain.fire();
+                    break;
+            }
+        });
     }
 
     public void displayBoard() {

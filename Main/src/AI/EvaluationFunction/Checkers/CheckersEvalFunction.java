@@ -1,8 +1,13 @@
 package AI.EvaluationFunction.Checkers;
 
 import AI.EvaluationFunction.EvaluationFunction;
+import AI.PossibleMoves.CheckersPossibleMoves;
+import AI.PossibleMoves.PossibleMoves;
+import AI.TreeStructure.Node;
 import AI.Util;
 import Abalone.Game.MoveDirection;
+
+import java.util.ArrayList;
 
 public class CheckersEvalFunction extends EvaluationFunction {
 
@@ -17,6 +22,8 @@ public class CheckersEvalFunction extends EvaluationFunction {
     private double w4;
     private double w5;
     private double w6;
+    private double w7;
+    private double w8;
 
     /**
      * class first constructor
@@ -43,7 +50,7 @@ public class CheckersEvalFunction extends EvaluationFunction {
 
 //        double[] bestConfigNotComplete = new double[]{0.3676439321801084, 0.34927666124021406, -0.5096797020134634, 0.9393348144299724, 0.39430677233420064, 0.5610948160176769};
 //        double[] bestConfigNotComplete = new double[]{0.7392273693202003, 0.9755557531174306, -0.8348697914571227, 0.6731809818844702, 0.8584611325785556, 0.8077705395767066};
-        double[] bestConfigNotComplete = new double[]{0.6471705360866706, 0.8227407520078385, -0.44559445326033087, 0.7313818909336706, 0.5238725061974904, 0.6250817564796307};
+        double[] bestConfigNotComplete = new double[]{0.6471705360866706, 0.3, 0.2, 0.8227407520078385, 0.44559445326033087, 0.7313818909336706, 0.5238725061974904, 0.6250817564796307};
         setWeights(bestConfigNotComplete);
 
 //        double[] bestConfigComplete = new double[]{0.43513680781989394, 0.16110031633119282, -0.29187530553211827, 0.9050849723766596, 0.10650690656051254, 0.6613394768774338};
@@ -54,13 +61,15 @@ public class CheckersEvalFunction extends EvaluationFunction {
     public double evaluate() {
 
         int h1 = attackingPosition(currentPlayer) - attackingPosition(Util.changeCurrentPlayer(currentPlayer));
-        int h2 = victoriousPosition(currentPlayer);
-        int h3 = victoriousPosition(Util.changeCurrentPlayer(currentPlayer));
-        int h4 = distanceToTheOtherSide(Util.changeCurrentPlayer(currentPlayer)) - distanceToTheOtherSide(currentPlayer);
-        int h5 = Util.countMarbles(board, currentPlayer) - Util.countMarbles(board, Util.changeCurrentPlayer(currentPlayer));
-        int h6 = aba_PatternCount(currentPlayer) - aba_PatternCount(Util.changeCurrentPlayer(currentPlayer));
+        int h2 = possibleVictoriousPositionCount(currentPlayer);
+        int h3 = possibleDefeatPositionCount(currentPlayer);
+        int h4 = victoriousPosition(currentPlayer);
+        int h5 = victoriousPosition(Util.changeCurrentPlayer(currentPlayer));
+        int h6 = distanceToTheOtherSide(Util.changeCurrentPlayer(currentPlayer)) - distanceToTheOtherSide(currentPlayer);
+        int h7 = Util.countMarbles(board, currentPlayer) - Util.countMarbles(board, Util.changeCurrentPlayer(currentPlayer));
+        int h8 = aba_PatternCount(currentPlayer) - aba_PatternCount(Util.changeCurrentPlayer(currentPlayer));
 
-        return (w1*h1) + (w2*h2) + (w3*h3) + (w4*h4) + (w5*h5) + (w6*h6);
+        return (w1*h1) + (w2*h2) - (w3*h3) + (w4*h4) - (w5*h5) + (w6*h6) + (w7*h7) + (w8*h8);
     }
 
     /**
@@ -75,6 +84,8 @@ public class CheckersEvalFunction extends EvaluationFunction {
         w4 = configuration[3];
         w5 = configuration[4];
         w6 = configuration[5];
+        w7 = configuration[6];
+        w8 = configuration[7];
     }
 
     /**
@@ -149,6 +160,32 @@ public class CheckersEvalFunction extends EvaluationFunction {
         return count;
     }
 
+    private int possibleVictoriousPositionCount(int currentPlayer) {
+
+        PossibleMoves possibleMoves = new CheckersPossibleMoves(board, currentPlayer);
+        ArrayList<int[][]> children = possibleMoves.getPossibleMoves();
+        int count = 0;
+        for (int[][] child : children) {
+            if (isVictorious(child, currentPlayer) == 1) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    private int possibleDefeatPositionCount(int currentPlayer) {
+
+        PossibleMoves possibleMoves = new CheckersPossibleMoves(board, Util.changeCurrentPlayer(currentPlayer));
+        ArrayList<int[][]> children = possibleMoves.getPossibleMoves();
+        int count = 0;
+        for (int[][] child : children) {
+            if (isVictorious(child, Util.changeCurrentPlayer(currentPlayer)) == 1) {
+                count++;
+            }
+        }
+        return count;
+    }
+
     /**
      * @param player current player
      * @return true of the board is victorious for that particular player
@@ -179,6 +216,10 @@ public class CheckersEvalFunction extends EvaluationFunction {
             }
         }
         if (Util.countMarbles(board, Util.changeCurrentPlayer(player)) == 0) {
+            return 1;
+        }
+        PossibleMoves possibleMoves = new CheckersPossibleMoves(board, Util.changeCurrentPlayer(player));
+        if (possibleMoves.getPossibleMoves().size() == 0) {
             return 1;
         }
         return 0;

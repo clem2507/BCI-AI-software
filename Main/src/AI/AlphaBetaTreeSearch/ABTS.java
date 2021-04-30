@@ -93,28 +93,45 @@ public class ABTS {
 
         int moveChoiceLimit = 4;
         int count = 0;
-        while (fourBestNodes.size() < 4) {
-            if (count < moveChoiceLimit || count == 0) {
-                rootChildrenNodes = new ArrayList<>();
-                double currScore = Double.NEGATIVE_INFINITY;
-                if (isCheckers) {
-                    currScore = findBestNode(root, depth, true, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-                } else if (isAbalone) {
-                    currScore = findBestNode(root, depth, true, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-                }
-                if (fourBestNodes.size() == 0 && rootChildrenNodes.size() < 4) {
-                    moveChoiceLimit=rootChildrenNodes.size();
-                }
-                for (Node n : rootChildrenNodes) {
-                    if (n.getScore() == currScore) {
-                        fourBestNodes.add(n);
-                        count++;
-                        break;
+        if (this.currentPlayer == 1) {
+            while (fourBestNodes.size() < 4) {
+                if (count < moveChoiceLimit || count == 0) {
+                    rootChildrenNodes = new ArrayList<>();
+                    double currScore = Double.NEGATIVE_INFINITY;
+                    if (isCheckers) {
+                        currScore = findBestNode(root, depth, true, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                    } else if (isAbalone) {
+                        currScore = findBestNode(root, depth, true, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
                     }
+                    if (fourBestNodes.size() == 0 && rootChildrenNodes.size() < 4) {
+                        moveChoiceLimit = rootChildrenNodes.size();
+                    }
+                    for (Node n : rootChildrenNodes) {
+                        if (n.getScore() == currScore) {
+                            fourBestNodes.add(n);
+                            count++;
+                            break;
+                        }
+                    }
+                } else {
+                    fourBestNodes.add(fourBestNodes.get(fourBestNodes.size() - 1));
                 }
             }
-            else {
-                fourBestNodes.add(fourBestNodes.get(fourBestNodes.size()-1));
+        }
+        else {
+            rootChildrenNodes = new ArrayList<>();
+            double currScore = Double.NEGATIVE_INFINITY;
+            depth = (int) Math.min(5, Math.ceil(game.getAdaptiveVariable()*5));
+            if (isCheckers) {
+                currScore = findBestNode(root, depth, true, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+            } else if (isAbalone) {
+                currScore = findBestNode(root, depth, true, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+            }
+            for (Node n : rootChildrenNodes) {
+                if (n.getScore() == currScore) {
+                    fourBestNodes.add(n);
+                    break;
+                }
             }
         }
     }
