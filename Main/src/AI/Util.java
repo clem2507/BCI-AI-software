@@ -12,6 +12,16 @@ public class Util {
         }
     }
 
+    public static boolean changeCurrentPlayer(boolean currentPlayer) {
+
+        if (currentPlayer) {
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
+
     public static int countMarbles(int[][] board, int player) {
 
         int count = 0;

@@ -4,6 +4,7 @@ import AI.Util;
 import Checkers.Game.Checkers;
 import Checkers.Game.Move;
 import Checkers.Game.MoveDirection;
+import President.Game.Card;
 import President.Game.Tuple;
 
 import java.util.ArrayList;
@@ -39,6 +40,16 @@ public class CheckersPossibleMoves extends PossibleMoves {
 
     @Override
     public ArrayList<Tuple> getPossibleActions() {
+        return null;
+    }
+
+    @Override
+    public ArrayList<Tuple> getInformationSet(ArrayList<Card> deck) {
+        return null;
+    }
+
+    @Override
+    public ArrayList<Card> computeInformationSetCards() {
         return null;
     }
 

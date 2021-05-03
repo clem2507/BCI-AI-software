@@ -2,6 +2,7 @@ package AI.MonteCarloTreeSearch;
 
 import AI.GameSelector;
 import AI.PossibleMoves.PossibleMoves;
+import AI.PossibleMoves.PresidentPossibleMoves;
 import AI.TreeStructure.Edge;
 import AI.TreeStructure.Node;
 import AI.Util;
@@ -11,6 +12,9 @@ import AI.PossibleMoves.AbaloneGetPossibleMoves;
 import Checkers.GUI.GameUI;
 import Checkers.Game.Checkers;
 import AI.PossibleMoves.CheckersPossibleMoves;
+import President.Game.Card;
+import President.Game.Player;
+import President.Game.Tuple;
 
 import java.util.ArrayList;
 
@@ -19,7 +23,7 @@ public class MCTS {
     /** specific game to run the MCTS on */
     private final GameSelector game;
     /** current player in the game */
-    private final int currentPlayer;
+    private int currentPlayer;
     /** integer variable that stands for the current number of iterations */
     private int iterations;
     /** instance that consists of the total number of random simulations to make at a certain leaf in the tree */
@@ -29,6 +33,7 @@ public class MCTS {
 
     private boolean isCheckers = false;
     private boolean isAbalone = false;
+    private boolean isPresident = false;
 
     /** root node of the tree */
     private Node root;
@@ -53,12 +58,24 @@ public class MCTS {
         if (game.getClass().isInstance(new Checkers(null))) {
             this.root = new Node(this.game.getCheckersBoard().getGameBoard(), 1, 0, 0);
             isCheckers = true;
+            this.currentPlayer = this.game.getCurrentPlayer();
         }
         else if (game.getClass().isInstance(new Abalone(null))) {
             this.root = new Node(this.game.getAbaloneBoard().getGameBoard(), 1, 0, 0);
             isAbalone = true;
+            this.currentPlayer = this.game.getCurrentPlayer();
         }
-        this.currentPlayer = this.game.getCurrentPlayer();
+        else {
+            if (game.getPlayer1().toPlay()) {
+                this.root = new Node(game.getPlayer1(), 1, 0, 0);
+                this.currentPlayer = 1;
+            }
+            else {
+                this.root = new Node(game.getPlayer2(), 1, 0, 0);
+                this.currentPlayer = 2;
+            }
+            isPresident = true;
+        }
         this.nodes.add(root);
         setBestConfiguration();
     }
@@ -67,14 +84,20 @@ public class MCTS {
     public void setBestConfiguration() {
 
         if (this.currentPlayer == 1) {
-            sampleSize = 10;
-            stopCondition = 5000;
+//            sampleSize = 10;
+            sampleSize = 2;
+//            stopCondition = 5000;
+            stopCondition = 1000;
         }
         // else, apply adaptive AI and balance the configuration here
         else {
-            double adaptiveVariable = game.getAdaptiveVariable();
-            sampleSize = (int) Math.ceil(10*adaptiveVariable);
-            stopCondition = (int) Math.ceil(5000*adaptiveVariable);
+//            double adaptiveVariable = game.getAdaptiveVariable();
+//            sampleSize = (int) Math.ceil(10*adaptiveVariable);
+//            stopCondition = (int) Math.ceil(5000*adaptiveVariable);
+
+            sampleSize = 2;
+            stopCondition = 1000;
+
 //            System.out.println("sampleSize = " + sampleSize);
 //            System.out.println("stopCondition = " + stopCondition);
 //            System.out.println();
@@ -97,6 +120,15 @@ public class MCTS {
             iterations++;
         }
         ArrayList<Node> rootChildren = getChildren(root);
+        ArrayList<Node> temp = new ArrayList<>(rootChildren);
+        if (rootChildren.size() > 1) {
+            for (Node node : rootChildren) {
+                if (node.getPlayer().getGameState().getOccurrence() == 0) {
+                    temp.remove(node);
+                }
+            }
+            rootChildren = temp;
+        }
         if (this.currentPlayer == 1) {
             int possibleMoveChoice = rootChildren.size();
             int i = 0;
@@ -163,7 +195,13 @@ public class MCTS {
      */
     public Node findBestNodeWithUCT(Node n) {
 
-        Node bestNode = new Node(null, 0, 0, 0);
+        Node bestNode = null;
+        if (isCheckers || isAbalone) {
+            bestNode = new Node((int[][]) null, 0, 0, 0);
+        }
+        else if (isPresident) {
+            bestNode = new Node((Player) null, 0, 0, 0);
+        }
         double max = Double.NEGATIVE_INFINITY;
         for (Node node : getChildren(n)) {
             if (uctValue(node) > max) {
@@ -181,7 +219,7 @@ public class MCTS {
      */
     public void Selection() {
         Node n = root;
-        int actualPlayer = currentPlayer;
+        int actualPlayer = this.currentPlayer;
         if (iterations > 0) {
             while (getChildren(n).size() > 0) {
                 n = findBestNodeWithUCT(n);
@@ -200,6 +238,8 @@ public class MCTS {
     public void Expansion(Node n, int currentPlayer) {
 
         ArrayList<int[][]> children = new ArrayList<>();
+        ArrayList<Tuple> actions = new ArrayList<>();
+        boolean isDone = false;
         PossibleMoves possibleMoves;
         if (isCheckers) {
             if (!game.isDone(n.getBoardState())) {
@@ -212,22 +252,73 @@ public class MCTS {
                 children = possibleMoves.getPossibleMoves();
             }
         }
-
-        for (int[][] child : children) {
-            Node childNode = new Node(child, n.getDepth()+1, 0, 0);
-            nodes.add(childNode);
-            Edge edge = new Edge(n, childNode);
-            edges.add(edge);
+        else if (isPresident) {
+            if (!game.isVictorious(n.getPlayer()) || n.getPlayer().getOpponentNumberCards() == 0) {
+                possibleMoves = new PresidentPossibleMoves(n.getPlayer());
+                if (currentPlayer==this.currentPlayer) {
+                    actions = possibleMoves.getPossibleActions();
+                }
+                else {
+                    actions = possibleMoves.getInformationSet(possibleMoves.computeInformationSetCards());
+                }
+            }
+            else {
+                isDone = true;
+            }
         }
 
-        if (children.size() > 0) {
-            int max = children.size();
-            int randomIndex = (int) (Math.random() * ((max)));
-            Simulation(getChildren(n).get(randomIndex), currentPlayer);
+        if (isCheckers || isAbalone) {
+            for (int[][] child : children) {
+                Node childNode = new Node(child, n.getDepth() + 1, 0, 0);
+                nodes.add(childNode);
+                Edge edge = new Edge(n, childNode);
+                edges.add(edge);
+            }
+
+            if (children.size() > 0) {
+                int max = children.size();
+                int randomIndex = (int) (Math.random() * ((max)));
+                Simulation(getChildren(n).get(randomIndex), Util.changeCurrentPlayer(currentPlayer));
+            } else {
+                count++;
+                Simulation(n, Util.changeCurrentPlayer(currentPlayer));
+            }
         }
-        else {
-            count++;
-            Simulation(n, currentPlayer);
+        else if (isPresident) {
+            for (Tuple action : actions) {
+//                Player temp = n.getPlayer();
+                Player temp = new Player(n.getPlayer());
+                temp.isToPlay(n.getPlayer().toPlay());
+                Node child;
+                temp.takeAction(action, temp.getDeck());
+                child = new Node(temp, n.getDepth()+1, 0, 0);
+                nodes.add(child);
+                Edge edge = new Edge(n, child);
+                edges.add(edge);
+            }
+
+            // CARRY WHEN NOT POSSIBLE TO PLAY FOR THE OTHER PLAYER
+            if (isDone) {
+                count++;
+                Simulation(n, currentPlayer);
+            }
+            else {
+                if (actions.size() > 0) {
+                    int max = actions.size();
+                    int randomIndex = (int) (Math.random() * ((max)));
+                    Simulation(getChildren(n).get(randomIndex), Util.changeCurrentPlayer(currentPlayer));
+                } else {
+//                    Player temp = n.getPlayer();
+                    Player temp = new Player(n.getPlayer());
+                    temp.setGameState(new Tuple(0, 0));
+                    temp.isToPlay(false);
+                    Node child = new Node(temp, n.getDepth()+1, 0, 0);
+                    nodes.add(child);
+                    Edge edge = new Edge(n, child);
+                    edges.add(edge);
+                    Simulation(child, Util.changeCurrentPlayer(currentPlayer));
+                }
+            }
         }
     }
 
@@ -241,52 +332,116 @@ public class MCTS {
 
         double simulationScore = 0;
         for (int i = 0; i < sampleSize; i++) {
-            int actualPlayer = currentPlayer;
-            int countMoves = 0;
-            int[][] actualBoard = n.getBoardState();
-            while (!game.isDone(actualBoard)) {
+            if (isCheckers || isAbalone) {
+                int actualPlayer = currentPlayer;
+                int countMoves = 0;
+                int[][] actualBoard = n.getBoardState();
 
-                ArrayList<int[][]> children = new ArrayList<>();
-                PossibleMoves possibleMoves;
-                int max;
-                int randomIndex = -1;
-                if (isCheckers) {
-                    possibleMoves = new CheckersPossibleMoves(actualBoard, actualPlayer);
-                    children = possibleMoves.getPossibleMoves();
-                    max = children.size();
-                    randomIndex = (int) (Math.random() * (max));
-                }
-                else if (isAbalone) {
-                    possibleMoves = new AbaloneGetPossibleMoves(actualBoard, actualPlayer);
-                    children = possibleMoves.getPossibleMoves();
-                    max = children.size();
-                    double rand = Math.random();
-                    if (rand < 0.7) {
-                        randomIndex = (int) (Math.random() * Math.floor((double) max/3));
+                while (!game.isDone(actualBoard)) {
+                    ArrayList<int[][]> children = new ArrayList<>();
+                    PossibleMoves possibleMoves;
+                    int max;
+                    int randomIndex = -1;
+                    if (isCheckers) {
+                        possibleMoves = new CheckersPossibleMoves(actualBoard, actualPlayer);
+                        children = possibleMoves.getPossibleMoves();
+                        max = children.size();
+                        randomIndex = (int) (Math.random() * (max));
+                    } else if (isAbalone) {
+                        possibleMoves = new AbaloneGetPossibleMoves(actualBoard, actualPlayer);
+                        children = possibleMoves.getPossibleMoves();
+                        max = children.size();
+                        double rand = Math.random();
+                        if (rand < 0.7) {
+                            randomIndex = (int) (Math.random() * Math.floor((double) max / 3));
+                        } else {
+                            randomIndex = (int) ((Math.random() * max / 3) + Math.floor((double) 2 * max / 3));
+                        }
                     }
-                    else {
-                        randomIndex = (int) ((Math.random() * max/3) + Math.floor((double) 2*max/3));
-                    }
-                }
 
-                if (children.size() > 0) {
-                    actualBoard = children.get(randomIndex);
+                    if (children.size() > 0) {
+                        actualBoard = children.get(randomIndex);
+                    }
+                    actualPlayer = Util.changeCurrentPlayer(actualPlayer);
+                    countMoves++;
                 }
-                actualPlayer = Util.changeCurrentPlayer(actualPlayer);
-                countMoves++;
-            }
 //            EvaluationFunction eval;
-            if (game.isVictorious(actualBoard, this.currentPlayer)) {
+                if (game.isVictorious(actualBoard, this.currentPlayer)) {
 //                eval = new CheckersEvalFunction(actualBoard, this.currentPlayer);
 //                simulationScore+=eval.evaluate();
-                simulationScore++;
-            }
-            else {
+                    simulationScore++;
+                } else {
 //                eval = new CheckersEvalFunction(actualBoard, Util.changeCurrentPlayer(this.currentPlayer));
 //                simulationScore-=eval.evaluate();
-                simulationScore--;
+                    simulationScore--;
+                }
+            }
+            else {
+                int countActions = 0;
+//                Player actualPlayer = n.getPlayer();
+                Player actualPlayer = new Player(n.getPlayer());
+
+                while (!game.isVictorious(actualPlayer) && actualPlayer.getOpponentNumberCards() > 0) {
+//                    System.out.println("1: " + actualPlayer.toPlay());
+                    PossibleMoves possibleMoves = new PresidentPossibleMoves(actualPlayer);
+                    ArrayList<Tuple> actions;
+                    int maxIndex;
+                    int randomIndex;
+                    if (actualPlayer.toPlay()) {
+                        actions = possibleMoves.getPossibleActions();
+                        if (actions.size() > 0) {
+                            maxIndex = actions.size();
+                            randomIndex = (int) (Math.random() * (maxIndex));
+                            actualPlayer.takeAction(actions.get(randomIndex), actualPlayer.getDeck());
+                        }
+                        else {
+                            actualPlayer.setGameState(new Tuple(0, 0));
+                            actualPlayer.isToPlay(false);
+                        }
+                    }
+                    else {
+                        ArrayList<Card> ISdeck = possibleMoves.computeInformationSetCards();
+                        actions = possibleMoves.getInformationSet(ISdeck);
+                        if (actions.size() > 0) {
+                            maxIndex = actions.size();
+                            randomIndex = (int) (Math.random() * (maxIndex));
+                            actualPlayer.takeAction(actions.get(randomIndex), ISdeck);
+                        }
+                        else {
+                            actualPlayer.setGameState(new Tuple(0, 0));
+                            actualPlayer.isToPlay(true);
+                        }
+                    }
+//                    System.out.println("2: " + actualPlayer.toPlay());
+//                    System.out.println(actualPlayer.getDeck().size());
+//                    System.out.println(actualPlayer.getOpponentNumberCards());
+//                    System.out.println(actualPlayer.getGameState().getNumber() + " -> " + actualPlayer.getGameState().getOccurrence());
+//                    System.out.println();
+                }
+//                System.out.println("------");
+
+                if (game.isVictorious(actualPlayer)) {
+                    if (this.currentPlayer == 1) {
+                        simulationScore += 5;
+                    }
+                    else {
+                        simulationScore++;
+                    }
+                }
+                else {
+                    if (this.currentPlayer == 1) {
+                        simulationScore--;
+                    }
+                    else {
+                        simulationScore -= 5;
+                    }
+                }
             }
         }
+//        System.out.println();
+//        System.out.println("simulationScore = " + simulationScore);
+//        System.out.println("-----");
+//        System.out.println();
 //        n.setTotalSimulation(n.getTotalSimulation() + 1);
         n.setTotalSimulation(n.getTotalSimulation() + sampleSize);
 //        n.setTotalWin(n.getTotalScore() + simulationScore);

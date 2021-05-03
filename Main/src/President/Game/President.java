@@ -1,46 +1,70 @@
 package President.Game;
 
 import AI.GameSelector;
+import AI.MonteCarloTreeSearch.MCTS;
+import AI.TreeStructure.Node;
 import Abalone.Game.BoardUI;
+import Checkers.GUI.GameUI;
 import Checkers.Game.Board;
+import President.GUI.UserInterface;
 
 import java.util.ArrayList;
 import java.util.Random;
 
 public class President extends GameSelector {
 
+    private ArrayList<Card> gameDeck;
     private ArrayList<Card> deck;
+    private ArrayList<Node> fourBestActions;
+
 
     private Player player1;
     private Player player2;
 
     private Tuple gameState;
 
-    public President() {
+    private int numberOfCards;
 
+    public President(int deckSize) {
+
+        this.numberOfCards = deckSize;
+        this.gameDeck = new ArrayList<>();
         this.deck = new ArrayList<>();
-        this.initializeDeck();
-        this.player1 = new Player(setInitialPlayerDeck(deck), 1);
-        this.player1.isToPlay(true);
-        this.player2 = new Player(setInitialPlayerDeck(deck), 2);
-        this.player2.isToPlay(false);
+        this.deck = initializeDeck();
         this.gameState = new Tuple(0, 0);
+        this.player1 = new Player(setInitialPlayerDeck(deck), gameDeck, gameState, numberOfCards, true, 1);
+        this.player2 = new Player(setInitialPlayerDeck(deck), gameDeck, gameState, numberOfCards, false, 2);
+        this.deck.clear();
     }
 
-    public void initializeDeck() {
+    public void runMCTS() {
 
-        for (int i = 1; i <= 13; i++) {
+        MCTS mcts = new MCTS(this);
+        mcts.start();
+        fourBestActions = mcts.getFourBestNodes();
+        UserInterface.readyText.setText("Ready!\n\nChoose between action\n1, 2, 3 or 4\n\nPress SPACE to update game");
+    }
+
+    public void runABTS() {
+
+    }
+
+    public static ArrayList<Card> initializeDeck() {
+
+        ArrayList<Card> out = new ArrayList<>();
+        for (int i = 2; i <= 14; i++) {
             for (int j = 1; j <= 4; j++) {
                 Card card = new Card(i, j);
-                deck.add(card);
+                out.add(card);
             }
         }
+        return out;
     }
 
     public ArrayList<Card> setInitialPlayerDeck(ArrayList<Card> deck) {
 
         ArrayList<Card> newDeck = new ArrayList<>();
-        while (newDeck.size() < 26) {
+        while (newDeck.size() < numberOfCards) {
             Random random = new Random();
             int index = random.nextInt(deck.size());
             newDeck.add(deck.get(index));
@@ -51,12 +75,12 @@ public class President extends GameSelector {
 
     @Override
     public boolean isDone(Player player1, Player player2) {
-        return player1.getDeck().size()==0 || player2.getDeck().size()==0;
+        return player1.getDeck().size()<=0 || player2.getDeck().size()<=0;
     }
 
     @Override
     public boolean isVictorious(Player player) {
-        return player.getDeck().size()==0;
+        return player.getDeck().size()<=0;
     }
 
     @Override
@@ -99,15 +123,26 @@ public class President extends GameSelector {
         return null;
     }
 
+    @Override
     public Player getPlayer1() {
         return player1;
     }
 
+    @Override
     public Player getPlayer2() {
         return player2;
     }
 
+    @Override
+    public ArrayList<Card> getGameDeck() {
+        return deck;
+    }
+
     public void setGameState(Tuple gameState) {
         this.gameState = gameState;
+    }
+
+    public ArrayList<Node> getFourBestActions() {
+        return fourBestActions;
     }
 }

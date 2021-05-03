@@ -3,6 +3,7 @@ package Output;
 import AI.AlphaBetaTreeSearch.ABTS;
 import AI.EvaluationFunction.Checkers.CheckersEvalFunction;
 import AI.EvaluationFunction.EvaluationFunction;
+import AI.MonteCarloTreeSearch.MCTS;
 import AI.PossibleMoves.PossibleMoves;
 import AI.PossibleMoves.PresidentPossibleMoves;
 import AI.TreeStructure.Node;
@@ -12,6 +13,8 @@ import Checkers.Game.Checkers;
 import President.Game.Card;
 import President.Game.President;
 import President.Game.Tuple;
+
+import java.util.ArrayList;
 
 public class Test {
 
@@ -57,7 +60,7 @@ public class Test {
     public static void main(String[]args) {
 
 //        int currentPlayer = 1;
-        board = new Board(6, false);
+//        board = new Board(6, false);
 //        System.out.println();
 //        printBoard(board.getGameBoard());
 //        System.out.println();
@@ -146,6 +149,58 @@ public class Test {
 //            System.out.println(tuple.getNumber() + " -> " + tuple.getOccurrence());
 //        }
 //        System.out.println();
-    }
 
+//        for (Card card : president.getPlayer1().getDeck()) {
+//            System.out.println(card.getNumber() + " -> " + card.getSymbol());
+//        }
+//        System.out.println();
+//        ArrayList<Card> out = new ArrayList<>();
+//        out.add(new Card(2,4));
+//        out.add(new Card(6,4));
+//        out.add(new Card(8,4));
+//        out.add(new Card(11,4));
+//        PossibleMoves possibleMoves = new PresidentPossibleMoves(president.getPlayer1(), new Tuple(0,0), out);
+//        for (Tuple tuple : possibleMoves.getInformationSet()) {
+//            System.out.println(tuple.getNumber() + " -> " + tuple.getOccurrence());
+//        }
+//        System.out.println();
+
+//        President president = new President();
+//        PossibleMoves possibleMoves = new PresidentPossibleMoves(president.getPlayer1());
+//        for (Card card : president.getPlayer1().getDeck()) {
+//            System.out.println(card.getNumber());
+//        }
+//        System.out.println();
+//        for (Tuple tuple : possibleMoves.getPossibleActions()){
+//            System.out.println(tuple.getNumber() + " -> " + tuple.getOccurrence());
+//        }
+//        System.out.println();
+
+
+//        president.getPlayer1().isToPlay(false);
+//        president.getPlayer2().isToPlay(true);
+//        MCTS mcts = new MCTS(president);
+//        mcts.start();
+//        for (Node node : mcts.getFourBestNodes()) {
+//            System.out.println(node.getPlayer().getGameState().getNumber() + " -> " + node.getPlayer().getGameState().getOccurrence());
+//        }
+
+
+//        for (Card card : president.getPlayer1().getDeck()) {
+//            System.out.println(card.getNumber() + " -> " + card.getSymbol());
+//        }
+//        System.out.println();
+//
+//        PossibleMoves possibleMoves = new PresidentPossibleMoves(president.getPlayer1());
+//        ArrayList<Card> deckIS = possibleMoves.computeInformationSetCards();
+//        for (Card card : deckIS) {
+//            System.out.println(card.getNumber() + " -> " + card.getSymbol());
+//        }
+//        System.out.println();
+//
+//        for (Tuple card : possibleMoves.getInformationSet(deckIS)) {
+//            System.out.println(card.getNumber() + " -> " + card.getOccurrence());
+//        }
+//        System.out.println();
+    }
 }

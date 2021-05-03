@@ -11,6 +11,7 @@ import AI.TreeStructure.Node;
 import AI.Util;
 import Abalone.Game.BoardUI;
 import Checkers.GUI.GameUI;
+import President.Game.Card;
 import President.Game.Player;
 import President.Game.Tuple;
 
@@ -129,6 +130,21 @@ public class Checkers extends GameSelector {
     @Override
     public boolean isVictorious(Player player) {
         return false;
+    }
+
+    @Override
+    public Player getPlayer1() {
+        return null;
+    }
+
+    @Override
+    public Player getPlayer2() {
+        return null;
+    }
+
+    @Override
+    public ArrayList<Card> getGameDeck() {
+        return null;
     }
 
     @Override

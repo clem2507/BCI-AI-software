@@ -7,6 +7,7 @@ import AI.TreeStructure.Node;
 import AI.Util;
 import Abalone.GUI.Hexagon;
 import Checkers.Game.Board;
+import President.Game.Card;
 import President.Game.Tuple;
 
 import java.util.ArrayList;
@@ -91,6 +92,21 @@ public class Abalone extends GameSelector {
     @Override
     public boolean isVictorious(President.Game.Player player) {
         return false;
+    }
+
+    @Override
+    public President.Game.Player getPlayer1() {
+        return null;
+    }
+
+    @Override
+    public President.Game.Player getPlayer2() {
+        return null;
+    }
+
+    @Override
+    public ArrayList<Card> getGameDeck() {
+        return null;
     }
 
     @Override

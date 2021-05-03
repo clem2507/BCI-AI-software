@@ -4,6 +4,7 @@ import AI.Util;
 import Abalone.Game.Move;
 import Abalone.Game.MoveDirection;
 import Abalone.Game.Rules;
+import President.Game.Card;
 import President.Game.Tuple;
 
 import java.util.Collections;
@@ -64,6 +65,16 @@ public class AbaloneGetPossibleMoves extends PossibleMoves {
 
     @Override
     public ArrayList<Tuple> getPossibleActions() {
+        return null;
+    }
+
+    @Override
+    public ArrayList<Tuple> getInformationSet(ArrayList<Card> deck) {
+        return null;
+    }
+
+    @Override
+    public ArrayList<Card> computeInformationSetCards() {
         return null;
     }
 
