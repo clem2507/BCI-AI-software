@@ -84,8 +84,14 @@ public class MCTS {
     public void setBestConfiguration() {
 
         if (this.currentPlayer == 1) {
-            sampleSize = 18;
-            stopCondition = 1340;
+            if (isPresident) {
+                sampleSize = 18;
+                stopCondition = 1340;
+            }
+            else {
+                sampleSize = 5;
+                stopCondition = 2000;
+            }
         }
         // else, apply adaptive AI and balance the configuration here
         else {
@@ -93,8 +99,14 @@ public class MCTS {
 //            sampleSize = (int) Math.ceil(10*adaptiveVariable);
 //            stopCondition = (int) Math.ceil(5000*adaptiveVariable);
 
-            sampleSize = 18;
-            stopCondition = 1340;
+            if (isPresident) {
+                sampleSize = 18;
+                stopCondition = 1340;
+            }
+            else {
+                sampleSize = 5;
+                stopCondition = 2000;
+            }
         }
     }
 
@@ -115,13 +127,15 @@ public class MCTS {
         }
         ArrayList<Node> rootChildren = getChildren(root);
         ArrayList<Node> temp = new ArrayList<>(rootChildren);
-        if (rootChildren.size() > 1) {
-            for (Node node : rootChildren) {
-                if (node.getPlayer().getGameState().getOccurrence() == 0) {
-                    temp.remove(node);
+        if (isPresident) {
+            if (rootChildren.size() > 1) {
+                for (Node node : rootChildren) {
+                    if (node.getPlayer().getGameState().getOccurrence() == 0) {
+                        temp.remove(node);
+                    }
                 }
+                rootChildren = temp;
             }
-            rootChildren = temp;
         }
         if (this.currentPlayer == 1) {
             int possibleMoveChoice = rootChildren.size();
