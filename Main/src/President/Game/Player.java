@@ -91,13 +91,19 @@ public class Player {
                     count++;
                 }
             }
-            out.add(new Tuple(i, count));
+            if (count != 0) {
+                out.add(new Tuple(i, count));
+            }
         }
         return out;
     }
 
     public ArrayList<Card> getDeck() {
         return deck;
+    }
+
+    public void setDeck(ArrayList<Card> deck) {
+        this.deck = deck;
     }
 
     public ArrayList<Card> getGameDeck() {

@@ -3,6 +3,7 @@ package Output;
 import AI.AlphaBetaTreeSearch.ABTS;
 import AI.EvaluationFunction.Checkers.CheckersEvalFunction;
 import AI.EvaluationFunction.EvaluationFunction;
+import AI.EvaluationFunction.President.PresidentEvalFunction;
 import AI.MonteCarloTreeSearch.MCTS;
 import AI.PossibleMoves.PossibleMoves;
 import AI.PossibleMoves.PresidentPossibleMoves;
@@ -165,7 +166,7 @@ public class Test {
 //        }
 //        System.out.println();
 
-//        President president = new President();
+        President president = new President(20);
 //        PossibleMoves possibleMoves = new PresidentPossibleMoves(president.getPlayer1());
 //        for (Card card : president.getPlayer1().getDeck()) {
 //            System.out.println(card.getNumber());
@@ -186,10 +187,13 @@ public class Test {
 //        }
 
 
-//        for (Card card : president.getPlayer1().getDeck()) {
-//            System.out.println(card.getNumber() + " -> " + card.getSymbol());
+//        for (Tuple tuple : president.getPlayer1().getSortedDeck(president.getPlayer1().getDeck())) {
+//            System.out.println(tuple.getNumber() + " -> " + tuple.getOccurrence());
 //        }
 //        System.out.println();
+//
+//        EvaluationFunction evaluationFunction = new PresidentEvalFunction(president.getPlayer1());
+//        System.out.println("score = " + evaluationFunction.evaluate());
 //
 //        PossibleMoves possibleMoves = new PresidentPossibleMoves(president.getPlayer1());
 //        ArrayList<Card> deckIS = possibleMoves.computeInformationSetCards();
@@ -202,5 +206,12 @@ public class Test {
 //            System.out.println(card.getNumber() + " -> " + card.getOccurrence());
 //        }
 //        System.out.println();
+
+        ABTS abts = new ABTS(president, 3);
+        abts.start();
+        for (Node node : abts.getFourBestNodes()) {
+            System.out.println(node.getPlayer().getGameState().getNumber() + " -> " + node.getPlayer().getGameState().getOccurrence());
+        }
+        System.out.println();
     }
 }

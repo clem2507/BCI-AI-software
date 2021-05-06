@@ -1,5 +1,6 @@
 package President.GUI;
 
+import AI.EvaluationFunction.AdaptiveFunction;
 import AI.TreeStructure.Node;
 import Checkers.GUI.GameUI;
 import Checkers.Game.Checkers;
@@ -11,6 +12,7 @@ import President.Game.Tuple;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
+import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -18,6 +20,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -38,6 +41,8 @@ public class UserInterface extends Application {
     private Stage primaryStage;
 
     private President president;
+
+    private AdaptiveFunction adaptiveFunction;
 
     public int turnCounter = 0;
     public static Text readyText;
@@ -95,7 +100,15 @@ public class UserInterface extends Application {
 
         president = new President(deckSize);
 
+        adaptiveFunction = new AdaptiveFunction(president);
+//        System.out.println(adaptiveFunction.getAdaptiveVariable(1));
+//        System.out.println(adaptiveFunction.getAdaptiveVariable(2));
+//        System.out.println("--> " + adaptiveFunction.getGlobalAdaptiveFunction());
+//        System.out.println();
+
         setArrow(president.getPlayer1().toPlay());
+
+        president.getPlayer1().setDeck(sortPlayerDeckUI(president.getPlayer1().getDeck()));
 
         updateDeckUI(president.getPlayer1());
         updateDeckUI(president.getPlayer2());
@@ -158,38 +171,28 @@ public class UserInterface extends Application {
         this.isMCTS.setTranslateY(40);
         this.isMCTS.setSelected(true);
         this.isMCTS.setOnAction(event -> {
-//            if (board.isSelectable) {
-//                if (isMCTS.isSelected() || isABTS.isSelected()) {
-//                    isABTS.setSelected(false);
-//                    if (done) {
-//                        readyText.setText("Press ENTER to start MCTS");
-//                    }
-//                } else {
-//                    isMCTS.setSelected(true);
-//                }
-//            }
-//            else {
-//                isMCTS.setSelected(!isMCTS.isSelected());
-//            }
+            if (isMCTS.isSelected() || isABTS.isSelected()) {
+                isABTS.setSelected(false);
+                if (done) {
+                    readyText.setText("Press ENTER to start MCTS");
+                }
+            } else {
+                isMCTS.setSelected(true);
+            }
         });
 
         this.isABTS = new CheckBox();
         this.isABTS.setTranslateX(350);
         this.isABTS.setTranslateY(40);
         this.isABTS.setOnAction(event -> {
-//            if (board.isSelectable) {
-//                if (isMCTS.isSelected() || isABTS.isSelected()) {
-//                    isMCTS.setSelected(false);
-//                    if (done) {
-//                        readyText.setText("Press ENTER to start ABTS");
-//                    }
-//                } else {
-//                    isABTS.setSelected(true);
-//                }
-//            }
-//            else {
-//                isABTS.setSelected(!isABTS.isSelected());
-//            }
+            if (isMCTS.isSelected() || isABTS.isSelected()) {
+                isMCTS.setSelected(false);
+                if (done) {
+                    readyText.setText("Press ENTER to start ABTS");
+                }
+            } else {
+                isABTS.setSelected(true);
+            }
         });
 
         this.isMCTStext = new Text("Monte-Carlo Tree Search");
@@ -276,20 +279,36 @@ public class UserInterface extends Application {
                 case ENTER:
                     if (done) {
                         done = false;
-                        new Thread(() -> {
-                            readyText.setText("...");
-                            president.runMCTS();
-                            if (president.getPlayer1().toPlay()) {
-                                whosePlaying.setText("Player 1");
-                                flag = true;
-                            } else {
-                                whosePlaying.setText("Player 2");
-                                Platform.runLater(this::takeActionWithAI);
-                                Platform.runLater(this::checkWin);
-                                flag = false;
-                                done = true;
-                            }
-                        }).start();
+                        if (isMCTS.isSelected()) {
+                            new Thread(() -> {
+                                readyText.setText("...");
+                                president.runMCTS(adaptiveFunction.getGlobalAdaptiveFunction());
+                                if (president.getPlayer1().toPlay()) {
+                                    whosePlaying.setText("Player 1");
+                                    flag = true;
+                                } else {
+                                    whosePlaying.setText("Player 2");
+                                    Platform.runLater(this::takeActionWithAI);
+                                    flag = false;
+                                    done = true;
+                                }
+                            }).start();
+                        }
+                        else if (isABTS.isSelected()) {
+                            new Thread(() -> {
+                                readyText.setText("...");
+                                president.runABTS();
+                                if (president.getPlayer1().toPlay()) {
+                                    whosePlaying.setText("Player 1");
+                                    flag = true;
+                                } else {
+                                    whosePlaying.setText("Player 2");
+                                    Platform.runLater(this::takeActionWithAI);
+                                    flag = false;
+                                    done = true;
+                                }
+                            }).start();
+                        }
                     }
                     break;
                 case SPACE:
@@ -335,10 +354,16 @@ public class UserInterface extends Application {
 
     private void takeActionWithAI() {
 
-        turnCounter++;
-        turnNumberText.setText("Turn number " + turnCounter);
-        readyText.setText("Press ENTER to start MCTS");
+        if (isMCTS.isSelected()) {
+            readyText.setText("Press ENTER to start MCTS");
+        }
+        else {
+            readyText.setText("Press ENTER to start ABTS");
+        }
         if (president.getPlayer1().toPlay()) {
+            if (president.getFourBestActions().get(choice).getPlayer().getGameState().getNumber() != 0) {
+                turnCounter++;
+            }
             president.getPlayer1().takeAction(president.getFourBestActions().get(choice).getPlayer().getGameState(), president.getPlayer1().getDeck());
             president.getPlayer2().setOpponentNumberCards(president.getPlayer1().getDeck().size());
             president.getPlayer2().setGameState(president.getFourBestActions().get(choice).getPlayer().getGameState());
@@ -348,6 +373,9 @@ public class UserInterface extends Application {
             updateGameStateUI(president.getFourBestActions().get(choice).getPlayer().getGameState());
         }
         else {
+            if (president.getFourBestActions().get(0).getPlayer().getGameState().getNumber() != 0) {
+                turnCounter++;
+            }
             president.getPlayer2().takeAction(president.getFourBestActions().get(0).getPlayer().getGameState(), president.getPlayer2().getDeck());
             president.getPlayer1().setOpponentNumberCards(president.getPlayer2().getDeck().size());
             president.getPlayer1().setGameState(president.getFourBestActions().get(0).getPlayer().getGameState());
@@ -356,8 +384,10 @@ public class UserInterface extends Application {
             updateDeckUI(president.getPlayer2());
             updateGameStateUI(president.getFourBestActions().get(0).getPlayer().getGameState());
         }
+        turnNumberText.setText("Turn number " + turnCounter);
         checkWin();
         setArrow(president.getPlayer1().toPlay());
+        adaptiveFunction.updateAdaptiveVariable();
     }
 
     public void updateDeckUI(Player player) {
@@ -374,7 +404,7 @@ public class UserInterface extends Application {
 
             for (int i = 0; i < president.getPlayer1().getDeck().size(); i++) {
                 player1DeckUI[i] = new Card(president.getPlayer1().getDeck().get(i).getNumber(), president.getPlayer1().getDeck().get(i).getSymbol());
-                player1DeckUI[i].setTranslateX((i + 1) * 35);
+                player1DeckUI[i].setTranslateX((i + 2) * 35);
                 player1DeckUI[i].setTranslateY(500);
                 player1DeckUI[i].setWidth(50);
                 player1DeckUI[i].setHeight(100);
@@ -400,7 +430,7 @@ public class UserInterface extends Application {
                 if (president.getPlayer1().getDeck().get(i).getSymbol() == 3 || president.getPlayer1().getDeck().get(i).getSymbol() == 4) {
                     number.setFill(Color.RED);
                 }
-                number.setTranslateX(((i + 1) * 35) + 8);
+                number.setTranslateX(((i + 2) * 35) + 8);
                 number.setTranslateY(520);
                 player1DeckNumbers[i] = number;
             }
@@ -408,7 +438,7 @@ public class UserInterface extends Application {
             pane.getChildren().addAll(player1DeckNumbers);
 
             for (int i = 0; i < president.getPlayer1().getDeck().size(); i++) {
-                symbols1DeckUI[i] = setSymbol(president.getPlayer1().getDeck().get(i).getSymbol(), ((i + 1) * 35) + 6, 530);
+                symbols1DeckUI[i] = setSymbol(president.getPlayer1().getDeck().get(i).getSymbol(), ((i + 2) * 35) + 6, 530);
             }
             pane.getChildren().addAll(symbols1DeckUI);
         }
@@ -420,7 +450,7 @@ public class UserInterface extends Application {
 
             for (int i = 0; i < president.getPlayer2().getDeck().size(); i++) {
                 player2DeckUI[i] = new Card(president.getPlayer2().getDeck().get(i).getNumber(), president.getPlayer2().getDeck().get(i).getSymbol());
-                player2DeckUI[i].setTranslateX((i+1)*35);
+                player2DeckUI[i].setTranslateX((i+2)*35);
                 player2DeckUI[i].setTranslateY(100);
                 player2DeckUI[i].setWidth(50);
                 player2DeckUI[i].setHeight(100);
@@ -451,7 +481,7 @@ public class UserInterface extends Application {
         if (gameStateCardUI.length > 0) {
             int i = 0;
             for (Card card : gameStateCardUI) {
-                card.setTranslateX(360 - ((20-deckSize)*20) + (i*35));
+                card.setTranslateX(400 - ((20-deckSize)*20) + (i*35));
                 card.setTranslateY(300);
                 card.setWidth(50);
                 card.setHeight(100);
@@ -474,9 +504,9 @@ public class UserInterface extends Application {
                     case 14:
                         gameStateTextNumber[i].setText("A");
                 }
-                gameStateTextNumber[i].setTranslateX(368 - ((20-deckSize)*20) + (i*35));
+                gameStateTextNumber[i].setTranslateX(408 - ((20-deckSize)*20) + (i*35));
                 gameStateTextNumber[i].setTranslateY(320);
-                symbolsGameDeck[i] = setSymbol(card.getSymbol(), 368 - ((20-deckSize)*20) + (i*35), 340);
+                symbolsGameDeck[i] = setSymbol(card.getSymbol(), 408 - ((20-deckSize)*20) + (i*35), 340);
                 i++;
             }
             pane.getChildren().addAll(gameStateCardUI);
@@ -485,7 +515,7 @@ public class UserInterface extends Application {
         }
         else {
             Card card = new Card(0, 0);
-            card.setTranslateX(360 - ((20-deckSize)*20));
+            card.setTranslateX(400 - ((20-deckSize)*20));
             card.setTranslateY(300);
             card.setWidth(50);
             card.setHeight(100);
@@ -496,40 +526,6 @@ public class UserInterface extends Application {
             gameStateCardUI = new Card[]{card};
             pane.getChildren().addAll(gameStateCardUI);
         }
-
-//        gameStateCardUI = new Card(tuple.getNumber(), tuple.getOccurrence());
-//        gameStateCardUI.setTranslateX(360 - ((20-deckSize)*20));
-//        gameStateCardUI.setTranslateY(300);
-//        gameStateCardUI.setWidth(50);
-//        gameStateCardUI.setHeight(100);
-//        gameStateCardUI.setFill(Color.WHITE);
-//        gameStateCardUI.setStroke(Color.BLACK);
-//        gameStateCardUI.setArcHeight(15);
-//        gameStateCardUI.setArcWidth(15);
-//        pane.getChildren().add(gameStateCardUI);
-
-//        gameStateTextNumber = new Text(String.valueOf(tuple.getNumber()));
-//        switch (tuple.getNumber()) {
-//            case 11:
-//                gameStateTextNumber.setText("J");
-//                break;
-//            case 12:
-//                gameStateTextNumber.setText("Q");
-//                break;
-//            case 13:
-//                gameStateTextNumber.setText("K");
-//                break;
-//            case 14:
-//                gameStateTextNumber.setText("A");
-//        }
-//        gameStateTextNumber.setTranslateX(368 - ((20-deckSize)*20));
-//        gameStateTextNumber.setTranslateY(320);
-//        pane.getChildren().add(gameStateTextNumber);
-//
-//        gameStateTextOccurrence = new Text(tuple.getOccurrence() + " x");
-//        gameStateTextOccurrence.setTranslateX(368 - ((20-deckSize)*20));
-//        gameStateTextOccurrence.setTranslateY(340);
-//        pane.getChildren().add(gameStateTextOccurrence);
     }
 
     public void checkWin() {
@@ -601,9 +597,6 @@ public class UserInterface extends Application {
 
     public void showActionUI(ArrayList<Node> fourBestNodes, int index) {
 
-//        System.out.println(fourBestNodes.get(index).getPlayer().getGameState().getNumber());
-//        System.out.println(fourBestNodes.get(index).getPlayer().getGameState().getOccurrence());
-//        System.out.println();
         clearStrokes();
         box1.setSelected(false);
         box2.setSelected(false);
@@ -636,6 +629,21 @@ public class UserInterface extends Application {
                 }
             }
         }
+    }
+
+    private ArrayList<Card> sortPlayerDeckUI(ArrayList<Card> deck) {
+
+        ArrayList<Card> out = new ArrayList<>();
+        int cardNumber = 2;
+        while (out.size() < deck.size()) {
+            for (Card card : deck) {
+                if (card.getNumber() == cardNumber) {
+                    out.add(card);
+                }
+            }
+            cardNumber++;
+        }
+        return out;
     }
 
     public void clearStrokes() {
@@ -696,17 +704,17 @@ public class UserInterface extends Application {
             Image image;
             if (isPlayer1ToPlay) {
                 image = new Image(new FileInputStream("Main/res/arrow.png"));
-                arrowImage.setTranslateX(1);
-                arrowImage.setTranslateY(540);
+                arrowImage.setTranslateX(20);
+                arrowImage.setTranslateY(538);
             }
             else {
                 image = new Image(new FileInputStream("Main/res/arrow.png"));
-                arrowImage.setTranslateX(1);
-                arrowImage.setTranslateY(135);
+                arrowImage.setTranslateX(20);
+                arrowImage.setTranslateY(133);
             }
             arrowImage.setImage(image);
-            arrowImage.setFitWidth(33);
-            arrowImage.setFitHeight(25);
+            arrowImage.setFitWidth(35);
+            arrowImage.setFitHeight(28);
             pane.getChildren().add(arrowImage);
         } catch (Exception e) {
             System.out.println("file not found");

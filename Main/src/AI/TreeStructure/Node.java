@@ -54,6 +54,11 @@ public class Node{
         this.totalScore = totalScore;
     }
 
+    public Node(Player player, double score) {
+        this.player = player;
+        this.score = score;
+    }
+
     public Player getPlayer() {
         return player;
     }

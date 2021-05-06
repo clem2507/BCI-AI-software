@@ -7,12 +7,19 @@ public class Item {
     /** winner boolean variable that defines the current tournament item status */
     private boolean winner;
 
+    private int score;
+
     /**
      * item main constructor
      * @param genotype double array
      */
     public Item(double[] genotype) {
         this.genotype = genotype;
+    }
+
+    public Item(double[] genotype, int score){
+        this.genotype = genotype;
+        this.score = score;
     }
 
     /**
@@ -45,6 +52,14 @@ public class Item {
      */
     public void setWinner(boolean winner) {
         this.winner = winner;
+    }
+
+    public int getScore() {
+        return score;
+    }
+
+    public void setScore(int score) {
+        this.score = score;
     }
 }
 

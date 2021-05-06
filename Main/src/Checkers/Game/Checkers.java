@@ -32,7 +32,7 @@ public class Checkers extends GameSelector {
 
     public void runMCTS() {
 
-        MCTS mcts = new MCTS(this);
+        MCTS mcts = new MCTS(this, 1);
         mcts.start();
         fourBestMoves = mcts.getFourBestNodes();
         board.drawAllMarbles();
@@ -63,6 +63,11 @@ public class Checkers extends GameSelector {
         this.adaptiveVariable = sum / adaptiveVariableStack.size();
         System.out.println("adaptiveVariable = " + adaptiveVariable);
         System.out.println();
+    }
+
+    @Override
+    public double getAdaptiveVariable(int player) {
+        return 0;
     }
 
     // TODO - improve the adaptive variable computation
@@ -145,11 +150,6 @@ public class Checkers extends GameSelector {
     @Override
     public ArrayList<Card> getGameDeck() {
         return null;
-    }
-
-    @Override
-    public double getAdaptiveVariable() {
-        return adaptiveVariable;
     }
 
     public ArrayList<Node> getFourBestMoves() {

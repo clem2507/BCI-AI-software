@@ -23,5 +23,5 @@ public abstract class GameSelector {
     public abstract Player getPlayer2();
     public abstract ArrayList<Card> getGameDeck();
     public abstract void setAdaptiveVariable(int[][] previousBoard, int[][] currentBoard);
-    public abstract double getAdaptiveVariable();
+    public abstract double getAdaptiveVariable(int player);
 }

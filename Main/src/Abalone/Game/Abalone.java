@@ -38,7 +38,7 @@ public class Abalone extends GameSelector {
 
     public void runMCTS() {
 
-        MCTS mcts = new MCTS(this);
+        MCTS mcts = new MCTS(this, 1);
         mcts.start();
         fourBestMoves = mcts.getFourBestNodes();
         board.drawAllCells();
@@ -57,6 +57,11 @@ public class Abalone extends GameSelector {
     @Override
     public void setAdaptiveVariable(int[][] previousBoard, int[][] currentBoard) {
 
+    }
+
+    @Override
+    public double getAdaptiveVariable(int player) {
+        return 0;
     }
 
     @Override
@@ -112,11 +117,6 @@ public class Abalone extends GameSelector {
     @Override
     public Tuple getCurrentGameState() {
         return null;
-    }
-
-    @Override
-    public double getAdaptiveVariable() {
-        return adaptiveVariable;
     }
 
     public ArrayList<Node> getFourBestMoves() {

@@ -146,7 +146,7 @@ public class HomePage extends Application {
             else if (choiceBox.getValue().equals("President")) {
                 int deckSize;
                 if (cardSize.getValue() == null) {
-                    deckSize = 20;
+                    deckSize = 14;
                 }
                 else {
                     deckSize = cardSize.getValue();

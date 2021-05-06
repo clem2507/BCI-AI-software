@@ -44,17 +44,17 @@ public class MCTS {
     /** list that contains the four best nodes after the algorithm is done running */
     private ArrayList<Node> fourBestNodes = new ArrayList<>();
 
-
     private int count = 0;
+    private double adaptiveVariable;
 
     /**
      * main constructor for the MCTS algorithm
      * @param game current game to play with
      */
-    public MCTS(GameSelector game) {
+    public MCTS(GameSelector game, double adaptiveVariable) {
 
         this.game = game;
-
+        this.adaptiveVariable = adaptiveVariable;
         if (game.getClass().isInstance(new Checkers(null))) {
             this.root = new Node(this.game.getCheckersBoard().getGameBoard(), 1, 0, 0);
             isCheckers = true;
@@ -84,10 +84,8 @@ public class MCTS {
     public void setBestConfiguration() {
 
         if (this.currentPlayer == 1) {
-//            sampleSize = 10;
-            sampleSize = 2;
-//            stopCondition = 5000;
-            stopCondition = 1000;
+            sampleSize = 18;
+            stopCondition = 1340;
         }
         // else, apply adaptive AI and balance the configuration here
         else {
@@ -95,12 +93,8 @@ public class MCTS {
 //            sampleSize = (int) Math.ceil(10*adaptiveVariable);
 //            stopCondition = (int) Math.ceil(5000*adaptiveVariable);
 
-            sampleSize = 2;
-            stopCondition = 1000;
-
-//            System.out.println("sampleSize = " + sampleSize);
-//            System.out.println("stopCondition = " + stopCondition);
-//            System.out.println();
+            sampleSize = 18;
+            stopCondition = 1340;
         }
     }
 
@@ -253,7 +247,7 @@ public class MCTS {
             }
         }
         else if (isPresident) {
-            if (!game.isVictorious(n.getPlayer()) || n.getPlayer().getOpponentNumberCards() == 0) {
+            if (!game.isVictorious(n.getPlayer()) || n.getPlayer().getOpponentNumberCards() > 0) {
                 possibleMoves = new PresidentPossibleMoves(n.getPlayer());
                 if (currentPlayer==this.currentPlayer) {
                     actions = possibleMoves.getPossibleActions();
@@ -286,7 +280,6 @@ public class MCTS {
         }
         else if (isPresident) {
             for (Tuple action : actions) {
-//                Player temp = n.getPlayer();
                 Player temp = new Player(n.getPlayer());
                 temp.isToPlay(n.getPlayer().toPlay());
                 Node child;
@@ -308,7 +301,6 @@ public class MCTS {
                     int randomIndex = (int) (Math.random() * ((max)));
                     Simulation(getChildren(n).get(randomIndex), Util.changeCurrentPlayer(currentPlayer));
                 } else {
-//                    Player temp = n.getPlayer();
                     Player temp = new Player(n.getPlayer());
                     temp.setGameState(new Tuple(0, 0));
                     temp.isToPlay(false);
@@ -336,7 +328,6 @@ public class MCTS {
                 int actualPlayer = currentPlayer;
                 int countMoves = 0;
                 int[][] actualBoard = n.getBoardState();
-
                 while (!game.isDone(actualBoard)) {
                     ArrayList<int[][]> children = new ArrayList<>();
                     PossibleMoves possibleMoves;
@@ -358,37 +349,37 @@ public class MCTS {
                             randomIndex = (int) ((Math.random() * max / 3) + Math.floor((double) 2 * max / 3));
                         }
                     }
-
                     if (children.size() > 0) {
                         actualBoard = children.get(randomIndex);
                     }
                     actualPlayer = Util.changeCurrentPlayer(actualPlayer);
                     countMoves++;
                 }
-//            EvaluationFunction eval;
                 if (game.isVictorious(actualBoard, this.currentPlayer)) {
-//                eval = new CheckersEvalFunction(actualBoard, this.currentPlayer);
-//                simulationScore+=eval.evaluate();
                     simulationScore++;
                 } else {
-//                eval = new CheckersEvalFunction(actualBoard, Util.changeCurrentPlayer(this.currentPlayer));
-//                simulationScore-=eval.evaluate();
                     simulationScore--;
                 }
             }
             else {
                 int countActions = 0;
-//                Player actualPlayer = n.getPlayer();
                 Player actualPlayer = new Player(n.getPlayer());
-
                 while (!game.isVictorious(actualPlayer) && actualPlayer.getOpponentNumberCards() > 0) {
-//                    System.out.println("1: " + actualPlayer.toPlay());
                     PossibleMoves possibleMoves = new PresidentPossibleMoves(actualPlayer);
                     ArrayList<Tuple> actions;
                     int maxIndex;
                     int randomIndex;
                     if (actualPlayer.toPlay()) {
                         actions = possibleMoves.getPossibleActions();
+                        ArrayList<Tuple> temp = new ArrayList<>(actions);
+                        if (actions.size() > 1) {
+                            for (Tuple tuple : actions) {
+                                if (tuple.getOccurrence() == 0) {
+                                    temp.remove(tuple);
+                                }
+                            }
+                            actions = temp;
+                        }
                         if (actions.size() > 0) {
                             maxIndex = actions.size();
                             randomIndex = (int) (Math.random() * (maxIndex));
@@ -402,6 +393,15 @@ public class MCTS {
                     else {
                         ArrayList<Card> ISdeck = possibleMoves.computeInformationSetCards();
                         actions = possibleMoves.getInformationSet(ISdeck);
+                        ArrayList<Tuple> temp = new ArrayList<>(actions);
+                        if (actions.size() > 1) {
+                            for (Tuple tuple : actions) {
+                                if (tuple.getOccurrence() == 0) {
+                                    temp.remove(tuple);
+                                }
+                            }
+                            actions = temp;
+                        }
                         if (actions.size() > 0) {
                             maxIndex = actions.size();
                             randomIndex = (int) (Math.random() * (maxIndex));
@@ -412,41 +412,17 @@ public class MCTS {
                             actualPlayer.isToPlay(true);
                         }
                     }
-//                    System.out.println("2: " + actualPlayer.toPlay());
-//                    System.out.println(actualPlayer.getDeck().size());
-//                    System.out.println(actualPlayer.getOpponentNumberCards());
-//                    System.out.println(actualPlayer.getGameState().getNumber() + " -> " + actualPlayer.getGameState().getOccurrence());
-//                    System.out.println();
                 }
-//                System.out.println("------");
-
                 if (game.isVictorious(actualPlayer)) {
-                    if (this.currentPlayer == 1) {
-                        simulationScore += 5;
-                    }
-                    else {
-                        simulationScore++;
-                    }
+                    simulationScore++;
                 }
                 else {
-                    if (this.currentPlayer == 1) {
-                        simulationScore--;
-                    }
-                    else {
-                        simulationScore -= 5;
-                    }
+                    simulationScore--;
                 }
             }
         }
-//        System.out.println();
-//        System.out.println("simulationScore = " + simulationScore);
-//        System.out.println("-----");
-//        System.out.println();
-//        n.setTotalSimulation(n.getTotalSimulation() + 1);
         n.setTotalSimulation(n.getTotalSimulation() + sampleSize);
-//        n.setTotalWin(n.getTotalScore() + simulationScore);
         n.setTotalWin(n.getTotalScore() + (simulationScore/n.getDepth()));
-//        backPropagation(n, simulationScore);
         backPropagation(n, (simulationScore/n.getDepth()));
     }
 
@@ -521,5 +497,13 @@ public class MCTS {
      */
     public ArrayList<Node> getFourBestNodes() {
         return fourBestNodes;
+    }
+
+    public void setSampleSize(int sampleSize) {
+        this.sampleSize = sampleSize;
+    }
+
+    public void setStopCondition(double stopCondition) {
+        this.stopCondition = stopCondition;
     }
 }

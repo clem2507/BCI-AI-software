@@ -3,15 +3,21 @@ package AI.AlphaBetaTreeSearch;
 import AI.EvaluationFunction.Abalone.AbaloneEvalFunction;
 import AI.EvaluationFunction.EvaluationFunction;
 import AI.EvaluationFunction.Checkers.CheckersEvalFunction;
+import AI.EvaluationFunction.President.PresidentEvalFunction;
 import AI.GameSelector;
 import AI.PossibleMoves.AbaloneGetPossibleMoves;
 import AI.PossibleMoves.PossibleMoves;
+import AI.PossibleMoves.PresidentPossibleMoves;
 import AI.TreeStructure.Edge;
 import AI.TreeStructure.Node;
 import AI.Util;
 import AI.PossibleMoves.CheckersPossibleMoves;
 import Abalone.Game.Abalone;
 import Checkers.Game.Checkers;
+import President.Game.Card;
+import President.Game.Player;
+import President.Game.President;
+import President.Game.Tuple;
 
 import java.util.*;
 
@@ -34,9 +40,11 @@ public class ABTS {
     /** current player to play */
     private int currentPlayer;
     /** boolean variable to recognize the current game */
-    private boolean isCheckers, isAbalone;
+    private boolean isCheckers, isAbalone, isPresident;
     /** maximum depth of tree search */
     private int depth;
+
+    private ArrayList<Card> opponentDeck;
 
     /**
      * class constructor
@@ -58,6 +66,19 @@ public class ABTS {
             isAbalone = true;
             root = new Node(game.getAbaloneBoard().getGameBoard(), 0);
             nodes.add(root);
+        }
+        else {
+            if (game.getPlayer1().toPlay()) {
+                this.root = new Node(game.getPlayer1(), 0);
+                nodes.add(root);
+                this.currentPlayer = 1;
+            }
+            else {
+                this.root = new Node(game.getPlayer2(), 0);
+                nodes.add(root);
+                this.currentPlayer = 2;
+            }
+            isPresident = true;
         }
     }
 
@@ -84,6 +105,19 @@ public class ABTS {
             root = new Node(game.getAbaloneBoard().getGameBoard(), 0);
             nodes.add(root);
         }
+        else {
+            if (game.getPlayer1().toPlay()) {
+                this.root = new Node(game.getPlayer1(), 0);
+                nodes.add(root);
+                this.currentPlayer = 1;
+            }
+            else {
+                this.root = new Node(game.getPlayer2(), 0);
+                nodes.add(root);
+                this.currentPlayer = 2;
+            }
+            isPresident = true;
+        }
     }
 
     /**
@@ -95,12 +129,15 @@ public class ABTS {
         int count = 0;
         if (this.currentPlayer == 1) {
             while (fourBestNodes.size() < 4) {
-                if (count < moveChoiceLimit || count == 0) {
+                if (count < moveChoiceLimit) {
                     rootChildrenNodes = new ArrayList<>();
                     double currScore = Double.NEGATIVE_INFINITY;
                     if (isCheckers) {
                         currScore = findBestNode(root, depth, true, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
                     } else if (isAbalone) {
+                        currScore = findBestNode(root, depth, true, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                    }
+                    else if (isPresident) {
                         currScore = findBestNode(root, depth, true, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
                     }
                     if (fourBestNodes.size() == 0 && rootChildrenNodes.size() < 4) {
@@ -116,15 +153,26 @@ public class ABTS {
                 } else {
                     fourBestNodes.add(fourBestNodes.get(fourBestNodes.size() - 1));
                 }
+                if (moveChoiceLimit==0) {
+                    Player player = new Player(null, null, new Tuple(0, 0), 0, false, 0);
+                    fourBestNodes.add(new Node(player, 0));
+                    fourBestNodes.add(new Node(player, 0));
+                    fourBestNodes.add(new Node(player, 0));
+                    fourBestNodes.add(new Node(player, 0));
+                    break;
+                }
             }
         }
         else {
             rootChildrenNodes = new ArrayList<>();
             double currScore = Double.NEGATIVE_INFINITY;
-            depth = (int) Math.min(5, Math.ceil(game.getAdaptiveVariable()*5));
+//            depth = (int) Math.min(5, Math.ceil(game.getAdaptiveVariable()*5));
             if (isCheckers) {
                 currScore = findBestNode(root, depth, true, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
             } else if (isAbalone) {
+                currScore = findBestNode(root, depth, true, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+            }
+            else if (isPresident) {
                 currScore = findBestNode(root, depth, true, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
             }
             for (Node n : rootChildrenNodes) {
@@ -132,6 +180,10 @@ public class ABTS {
                     fourBestNodes.add(n);
                     break;
                 }
+            }
+            if (fourBestNodes.size() == 0) {
+                Player player = new Player(null, null, new Tuple(0, 0), 0, false, 0);
+                fourBestNodes.add(new Node(player, 0));
             }
         }
     }
@@ -155,25 +207,50 @@ public class ABTS {
             player = Util.changeCurrentPlayer(currentPlayer);
         }
 
-        ArrayList<int[][]> children;
+        ArrayList<int[][]> children = new ArrayList<>();
+        ArrayList<Tuple> actions = new ArrayList<>();
         if (depth == 0) {
             return parent.getScore();
         }
         else {
-            if (game.isDone(parent.getBoardState())) {
-                if (getParent(parent) == nodes.get(0)) {
-                    Node node = new Node(parent.getBoardState(), parent.getScore());
-                    rootChildrenNodes.add(node);
+            if (isCheckers || isAbalone) {
+                if (game.isDone(parent.getBoardState())) {
+                    if (getParent(parent) == nodes.get(0)) {
+                        Node node = new Node(parent.getBoardState(), parent.getScore());
+                        rootChildrenNodes.add(node);
+                    }
+                    return parent.getScore();
                 }
-                return parent.getScore();
+                children = getPossibleMoves(parent.getBoardState(), player);
+                if (parent == nodes.get(0)) {
+                    for (int i = 0; i < fourBestNodes.size(); i++) {
+                        for (int[][] b : children) {
+                            if (Util.isEqual(b, fourBestNodes.get(i).getBoardState())) {
+                                children.remove(b);
+                                break;
+                            }
+                        }
+                    }
+                }
             }
-            children = getPossibleMoves(parent.getBoardState(), player);
-            if (parent == nodes.get(0)) {
-                for (int i = 0; i < fourBestNodes.size(); i++) {
-                    for (int[][] b : children) {
-                        if (Util.isEqual(b, fourBestNodes.get(i).getBoardState())) {
-                            children.remove(b);
-                            break;
+            else if (isPresident) {
+                if (game.isVictorious(parent.getPlayer()) || parent.getPlayer().getOpponentNumberCards() <= 0) {
+                    if (getParent(parent) == nodes.get(0)) {
+                        Player temp = new Player(parent.getPlayer());
+                        Node child = new Node(temp, parent.getScore());
+                        rootChildrenNodes.add(child);
+                    }
+                    return parent.getScore();
+                }
+                actions = getPossibleMoves(parent.getPlayer());
+                if (parent == nodes.get(0)) {
+                    for (int i = 0; i < fourBestNodes.size(); i++) {
+                        for (Tuple tuple : actions) {
+                            if (tuple.getNumber() == fourBestNodes.get(i).getPlayer().getGameState().getNumber()
+                            && tuple.getOccurrence() == fourBestNodes.get(i).getPlayer().getGameState().getOccurrence()) {
+                                actions.remove(tuple);
+                                break;
+                            }
                         }
                     }
                 }
@@ -182,39 +259,94 @@ public class ABTS {
 
         if (maximizingPlayer) {
             double maxEvaluation = Double.NEGATIVE_INFINITY;
-            for (int[][] board : children) {
-                double score = evaluateNode(board, player);
-                Node child = new Node(board, score);
-                nodes.add(child);
-                Edge edge = new Edge(parent, child);
-                edges.add(edge);
-                double evaluation = findBestNode(child, depth-1, false, alpha, beta);
-                maxEvaluation = Double.max(maxEvaluation, evaluation);
-                alpha = Math.max(alpha, evaluation);
-                if (beta <= alpha) {
-                    break;
+            if (isCheckers || isAbalone) {
+                for (int[][] board : children) {
+                    double score = evaluateNode(board, player, configuration);
+                    Node child = new Node(board, score);
+                    nodes.add(child);
+                    Edge edge = new Edge(parent, child);
+                    edges.add(edge);
+                    double evaluation = findBestNode(child, depth - 1, false, alpha, beta);
+                    maxEvaluation = Double.max(maxEvaluation, evaluation);
+                    alpha = Math.max(alpha, evaluation);
+                    if (beta <= alpha) {
+                        break;
+                    }
+                }
+            }
+            else if (isPresident) {
+                for (Tuple action : actions) {
+                    Player temp = new Player(parent.getPlayer());
+                    temp.isToPlay(parent.getPlayer().toPlay());
+                    if (temp.toPlay()) {
+                        temp.takeAction(action, temp.getDeck());
+                    }
+                    else {
+                        temp.takeAction(action, opponentDeck);
+                    }
+                    double score = evaluateNode(temp, configuration);
+                    Node child = new Node(temp, score);
+                    nodes.add(child);
+                    Edge edge = new Edge(parent, child);
+                    edges.add(edge);
+                    double evaluation = findBestNode(child, depth - 1, false, alpha, beta);
+                    maxEvaluation = Double.max(maxEvaluation, evaluation);
+                    alpha = Math.max(alpha, evaluation);
+                    if (beta <= alpha) {
+                        break;
+                    }
                 }
             }
             return maxEvaluation;
         }
         else {
             double minEvaluation = Double.POSITIVE_INFINITY;
-            for (int[][] board : children) {
-                double score = evaluateNode(board, player);
-                Node child = new Node(board, score);
-                nodes.add(child);
-                Edge edge = new Edge(parent, child);
-                edges.add(edge);
-                double evaluation = findBestNode(child, depth-1, true, alpha, beta);
-                minEvaluation = Double.min(minEvaluation, evaluation);
-                beta = Math.min(beta, evaluation);
-                if (beta <= alpha) {
-                    break;
+            if (isCheckers || isAbalone) {
+                for (int[][] board : children) {
+                    double score = evaluateNode(board, player, configuration);
+                    Node child = new Node(board, score);
+                    nodes.add(child);
+                    Edge edge = new Edge(parent, child);
+                    edges.add(edge);
+                    double evaluation = findBestNode(child, depth - 1, true, alpha, beta);
+                    minEvaluation = Double.min(minEvaluation, evaluation);
+                    beta = Math.min(beta, evaluation);
+                    if (beta <= alpha) {
+                        break;
+                    }
+                }
+                if (depth == this.depth - 1) {
+                    Node node = new Node(parent.getBoardState(), minEvaluation);
+                    rootChildrenNodes.add(node);
                 }
             }
-            if (depth == this.depth-1) {
-                Node node = new Node(parent.getBoardState(), minEvaluation);
-                rootChildrenNodes.add(node);
+            else if (isPresident) {
+                for (Tuple action : actions) {
+                    Player temp = new Player(parent.getPlayer());
+                    temp.isToPlay(parent.getPlayer().toPlay());
+                    if (temp.toPlay()) {
+                        temp.takeAction(action, temp.getDeck());
+                    }
+                    else {
+                        temp.takeAction(action, opponentDeck);
+                    }
+                    double score = evaluateNode(temp, configuration);
+                    Node child = new Node(temp, score);
+                    nodes.add(child);
+                    Edge edge = new Edge(parent, child);
+                    edges.add(edge);
+                    double evaluation = findBestNode(child, depth - 1, true, alpha, beta);
+                    minEvaluation = Double.min(minEvaluation, evaluation);
+                    beta = Math.min(beta, evaluation);
+                    if (beta <= alpha) {
+                        break;
+                    }
+                }
+                if (depth == this.depth - 1) {
+                    Player temp = new Player(parent.getPlayer());
+                    Node node = new Node(temp, minEvaluation);
+                    rootChildrenNodes.add(node);
+                }
             }
             return minEvaluation;
         }
@@ -226,17 +358,44 @@ public class ABTS {
      * @param player to play
      * @return board evaluation
      */
-    public double evaluateNode(int[][] board, int player) {
+    public double evaluateNode(int[][] board, int player, double[] configuration) {
 
         EvaluationFunction eval;
         double score = 0;
-        if (isCheckers) {
-            eval = new CheckersEvalFunction(board, player);
-            score = eval.evaluate();
+        if (configuration == null) {
+            if (isCheckers) {
+                eval = new CheckersEvalFunction(board, player);
+                score = eval.evaluate();
+            } else if (isAbalone) {
+                eval = new AbaloneEvalFunction(board, player);
+                score = eval.evaluate();
+            }
         }
-        else if (isAbalone) {
-            eval = new AbaloneEvalFunction(board, player);
-            score = eval.evaluate();
+        else {
+            if (isCheckers) {
+                eval = new CheckersEvalFunction(board, player, configuration);
+                score = eval.evaluate();
+            } else if (isAbalone) {
+                eval = new AbaloneEvalFunction(board, player, configuration);
+                score = eval.evaluate();
+            }
+        }
+        return score;
+    }
+
+    /**
+     * Evaluation function for a certain Player object
+     * @param player current player to play
+     * @return game evaluation
+     */
+    public double evaluateNode(Player player, double[] configuration) {
+
+        double score;
+        if (configuration == null) {
+            score = new PresidentEvalFunction(player).evaluate();
+        }
+        else {
+            score = new PresidentEvalFunction(player, configuration).evaluate();
         }
         return score;
     }
@@ -258,6 +417,29 @@ public class ABTS {
         else if (isAbalone){
             moves = new AbaloneGetPossibleMoves(board, player);
             out = moves.getPossibleMoves();
+        }
+        return out;
+    }
+
+    public ArrayList<Tuple> getPossibleMoves(Player player) {
+
+        ArrayList<Tuple> out;
+        PossibleMoves possibleMoves = new PresidentPossibleMoves(player);
+        if (player.toPlay()) {
+            out = possibleMoves.getPossibleActions();
+        }
+        else {
+            opponentDeck = possibleMoves.computeInformationSetCards();
+            out = possibleMoves.getInformationSet(opponentDeck);
+        }
+        ArrayList<Tuple> temp = new ArrayList<>(out);
+        if (out.size() > 1) {
+            for (Tuple tuple : out) {
+                if (tuple.getOccurrence() == 0) {
+                    temp.remove(tuple);
+                }
+            }
+            out = temp;
         }
         return out;
     }

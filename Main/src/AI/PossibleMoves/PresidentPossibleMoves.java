@@ -36,7 +36,7 @@ public class PresidentPossibleMoves extends PossibleMoves {
 
     public ArrayList<Tuple> computeActions(ArrayList<Card> deck) {
 
-        if (gameState.getNumber() == 2 && gameState.getOccurrence() == 0) {
+        if (gameState.getNumber() == 2 && gameState.getOccurrence() == 1) {
             return player.getSortedDeck(deck);
         }
         ArrayList<Tuple> out = new ArrayList<>();

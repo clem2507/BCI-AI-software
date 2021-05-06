@@ -1,5 +1,6 @@
 package President.Game;
 
+import AI.AlphaBetaTreeSearch.ABTS;
 import AI.GameSelector;
 import AI.MonteCarloTreeSearch.MCTS;
 import AI.TreeStructure.Node;
@@ -37,9 +38,9 @@ public class President extends GameSelector {
         this.deck.clear();
     }
 
-    public void runMCTS() {
+    public void runMCTS(double adaptiveVariable) {
 
-        MCTS mcts = new MCTS(this);
+        MCTS mcts = new MCTS(this, adaptiveVariable);
         mcts.start();
         fourBestActions = mcts.getFourBestNodes();
         UserInterface.readyText.setText("Ready!\n\nChoose between action\n1, 2, 3 or 4\n\nPress SPACE to update game");
@@ -47,6 +48,10 @@ public class President extends GameSelector {
 
     public void runABTS() {
 
+        ABTS abts = new ABTS(this, 5);
+        abts.start();
+        fourBestActions = abts.getFourBestNodes();
+        UserInterface.readyText.setText("Ready!\n\nChoose between action\n1, 2, 3 or 4\n\nPress SPACE to update game");
     }
 
     public static ArrayList<Card> initializeDeck() {
@@ -94,7 +99,7 @@ public class President extends GameSelector {
     }
 
     @Override
-    public double getAdaptiveVariable() {
+    public double getAdaptiveVariable(int player) {
         return 0;
     }
 
