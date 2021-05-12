@@ -1,6 +1,7 @@
 package Output;
 
 import AI.AlphaBetaTreeSearch.ABTS;
+import AI.EvaluationFunction.Adaptive.AdaptiveFunction;
 import AI.EvaluationFunction.Checkers.CheckersEvalFunction;
 import AI.EvaluationFunction.EvaluationFunction;
 import AI.EvaluationFunction.President.PresidentEvalFunction;
@@ -207,11 +208,13 @@ public class Test {
 //        }
 //        System.out.println();
 
-        ABTS abts = new ABTS(president, 3);
-        abts.start();
-        for (Node node : abts.getFourBestNodes()) {
-            System.out.println(node.getPlayer().getGameState().getNumber() + " -> " + node.getPlayer().getGameState().getOccurrence());
-        }
-        System.out.println();
+//        ABTS abts = new ABTS(president, 3);
+//        abts.start();
+//        for (Node node : abts.getFourBestNodes()) {
+//            System.out.println(node.getPlayer().getGameState().getNumber() + " -> " + node.getPlayer().getGameState().getOccurrence());
+//        }
+//        System.out.println();
+
+        AdaptiveFunction adaptiveFunction = new AdaptiveFunction(new Checkers(null));
     }
 }

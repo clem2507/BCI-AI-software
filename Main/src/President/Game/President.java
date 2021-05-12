@@ -38,9 +38,9 @@ public class President extends GameSelector {
         this.deck.clear();
     }
 
-    public void runMCTS(double adaptiveVariable) {
+    public void runMCTS(double[] configuration) {
 
-        MCTS mcts = new MCTS(this, adaptiveVariable);
+        MCTS mcts = new MCTS(this, configuration);
         mcts.start();
         fourBestActions = mcts.getFourBestNodes();
         UserInterface.readyText.setText("Ready!\n\nChoose between action\n1, 2, 3 or 4\n\nPress SPACE to update game");

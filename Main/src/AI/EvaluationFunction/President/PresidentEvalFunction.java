@@ -27,14 +27,14 @@ public class PresidentEvalFunction extends EvaluationFunction {
 
         this.player = player;
         this.possibleMoves = new PresidentPossibleMoves(player);
-        if (player.toPlay()) {
+//        if (player.toPlay()) {
             this.playerDeck = player.getDeck();
             this.actions = possibleMoves.getPossibleActions();
-        }
-        else {
-            this.playerDeck = possibleMoves.computeInformationSetCards();
-            this.actions = possibleMoves.getInformationSet(playerDeck);
-        }
+//        }
+//        else {
+//            this.playerDeck = possibleMoves.computeInformationSetCards();
+//            this.actions = possibleMoves.getInformationSet(playerDeck);
+//        }
 //        double[] bestConfigNotComplete = new double[]{0.7747813139987886, 0.6160252690314191, 0.6488176227531302};
         double[] bestConfigNotComplete = new double[]{0.8777166075606919, 0.706566807355142, 0.04648898522118283};
         setWeights(bestConfigNotComplete);
@@ -45,14 +45,14 @@ public class PresidentEvalFunction extends EvaluationFunction {
         this.player = player;
         this.possibleMoves = new PresidentPossibleMoves(player);
         this.configuration = configuration;
-        if (player.toPlay()) {
+//        if (player.toPlay()) {
             this.playerDeck = player.getDeck();
             this.actions = possibleMoves.getPossibleActions();
-        }
-        else {
-            this.playerDeck = possibleMoves.computeInformationSetCards();
-            this.actions = possibleMoves.getInformationSet(playerDeck);
-        }
+//        }
+//        else {
+//            this.playerDeck = possibleMoves.computeInformationSetCards();
+//            this.actions = possibleMoves.getInformationSet(playerDeck);
+//        }
         setWeights(configuration);
     }
 
@@ -60,14 +60,19 @@ public class PresidentEvalFunction extends EvaluationFunction {
     public double evaluate() {
 
         int h1;
-        if (player.toPlay()) {
+//        if (player.toPlay()) {
+//            h1 = player.getOpponentNumberCards() - player.getDeck().size();
+//        }
+//        else {
             h1 = player.getOpponentNumberCards() - player.getDeck().size();
-        }
-        else {
-            h1 = player.getDeck().size() - player.getOpponentNumberCards();
-        }
+//        }
         int h2 = count2Cards();
         int h3 = computeCardValues();
+
+//        System.out.println();
+//        for (Tuple tuple : player.getSortedDeck(player.getDeck())) {
+//            System.out.println(tuple.getNumber() + " -> " + tuple.getOccurrence());
+//        }
 
 //        System.out.println();
 //        System.out.println("h1 = " + (w1*h1));

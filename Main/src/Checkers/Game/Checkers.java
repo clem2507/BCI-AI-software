@@ -30,9 +30,9 @@ public class Checkers extends GameSelector {
         this.board = board;
     }
 
-    public void runMCTS() {
+    public void runMCTS(double[] configuration) {
 
-        MCTS mcts = new MCTS(this, 1);
+        MCTS mcts = new MCTS(this, configuration);
         mcts.start();
         fourBestMoves = mcts.getFourBestNodes();
         board.drawAllMarbles();
@@ -61,8 +61,8 @@ public class Checkers extends GameSelector {
             sum+=x;
         }
         this.adaptiveVariable = sum / adaptiveVariableStack.size();
-        System.out.println("adaptiveVariable = " + adaptiveVariable);
-        System.out.println();
+//        System.out.println("adaptiveVariable = " + adaptiveVariable);
+//        System.out.println();
     }
 
     @Override

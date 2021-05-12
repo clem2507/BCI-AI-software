@@ -1,5 +1,6 @@
 package Checkers.GUI;
 
+import AI.EvaluationFunction.Adaptive.AdaptiveFunction;
 import AI.TreeStructure.Node;
 import AI.Util;
 import Checkers.Game.Board;
@@ -67,12 +68,17 @@ public class GameUI extends Application {
 
     private Board board;
     private Checkers checkers;
+    private AdaptiveFunction adaptiveFunction;
 
     private boolean flag = false;
     private boolean done = true;
     private boolean completeBoard;
 
     private int choice;
+    private int ruleIndex;
+
+    private double globalAdaptive1;
+    private double globalAdaptive2;
 
     public GameUI(int boardSize, boolean completeBoard) {
 
@@ -87,6 +93,8 @@ public class GameUI extends Application {
 
         this.board = new Board(numberOfMarblesOnBoard, completeBoard);
         this.checkers = new Checkers(this.board);
+
+        this.adaptiveFunction = new AdaptiveFunction(checkers);
 
         setBackground();
         displayBoard();
@@ -304,8 +312,12 @@ public class GameUI extends Application {
                         new Thread(() -> {
                             readyText.setText("...");
                             board.isSelectable = false;
-                            checkers.runMCTS();
                             if (checkers.getCurrentPlayer()==2) {
+                                adaptiveFunction.updateAdaptiveVariable();
+                                globalAdaptive1 = adaptiveFunction.getGlobalAdaptiveFunction();
+                                adaptiveFunction.updateWeights(adaptiveFunction.getGlobalAdaptiveFunction());
+                                ruleIndex = adaptiveFunction.getRuleIndex();
+                                checkers.runMCTS(adaptiveFunction.getRuleBase().get(ruleIndex).getConfiguration());
                                 makeMoveWithAI(0);
                                 board.isSelectable = true;
                                 turnCounter++;
@@ -314,6 +326,7 @@ public class GameUI extends Application {
                                 Platform.runLater(this::checkWin);
                             }
                             else {
+                                checkers.runMCTS(new double[] {1, 500});
                                 done = false;
                                 flag = true;
                             }
@@ -422,6 +435,11 @@ public class GameUI extends Application {
 
         board.setBoard(checkers.getFourBestMoves().get(index).getBoardState());
         board.drawAllMarbles();
+        adaptiveFunction.updateAdaptiveVariable();
+        globalAdaptive2 = adaptiveFunction.getGlobalAdaptiveFunction();
+        double outcome = globalAdaptive2 - globalAdaptive1;
+        adaptiveFunction.getRuleBase().get(ruleIndex).setScore(adaptiveFunction.getRuleBase().get(ruleIndex).getScore() + outcome);
+        adaptiveFunction.updateFile();
         box1.setSelected(false);
         box2.setSelected(false);
         box3.setSelected(false);

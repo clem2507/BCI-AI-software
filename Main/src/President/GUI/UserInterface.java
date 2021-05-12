@@ -1,6 +1,7 @@
 package President.GUI;
 
-import AI.EvaluationFunction.AdaptiveFunction;
+import AI.EvaluationFunction.Adaptive.AdaptiveFunction;
+import AI.EvaluationFunction.Adaptive.Rule;
 import AI.TreeStructure.Node;
 import Checkers.GUI.GameUI;
 import Checkers.Game.Checkers;
@@ -12,7 +13,6 @@ import President.Game.Tuple;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
-import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -20,7 +20,6 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -86,6 +85,11 @@ public class UserInterface extends Application {
     private int choice = -1;
     private int deckSize;
 
+    private double globalAdaptive1;
+    private double globalAdaptive2;
+
+    private int ruleIndex;
+
     public UserInterface(int deckSize) {
 
         this.deckSize = deckSize;
@@ -101,10 +105,7 @@ public class UserInterface extends Application {
         president = new President(deckSize);
 
         adaptiveFunction = new AdaptiveFunction(president);
-//        System.out.println(adaptiveFunction.getAdaptiveVariable(1));
-//        System.out.println(adaptiveFunction.getAdaptiveVariable(2));
-//        System.out.println("--> " + adaptiveFunction.getGlobalAdaptiveFunction());
-//        System.out.println();
+//        System.out.println("adaptive variable = " + adaptiveFunction.getGlobalAdaptiveFunction());
 
         setArrow(president.getPlayer1().toPlay());
 
@@ -282,11 +283,17 @@ public class UserInterface extends Application {
                         if (isMCTS.isSelected()) {
                             new Thread(() -> {
                                 readyText.setText("...");
-                                president.runMCTS(adaptiveFunction.getGlobalAdaptiveFunction());
                                 if (president.getPlayer1().toPlay()) {
+                                    president.runMCTS(new double[]{1, 500});
                                     whosePlaying.setText("Player 1");
                                     flag = true;
                                 } else {
+//                                    globalAdaptive1 = adaptiveFunction.getGlobalAdaptiveFunction();
+                                    globalAdaptive1 = adaptiveFunction.getAdaptiveVariable(2);
+//                                    System.out.println("globalAdaptive1 = " + globalAdaptive1);
+                                    adaptiveFunction.updateWeights(adaptiveFunction.getGlobalAdaptiveFunction());
+                                    ruleIndex = adaptiveFunction.getRuleIndex();
+                                    president.runMCTS(adaptiveFunction.getRuleBase().get(ruleIndex).getConfiguration());
                                     whosePlaying.setText("Player 2");
                                     Platform.runLater(this::takeActionWithAI);
                                     flag = false;
@@ -383,11 +390,32 @@ public class UserInterface extends Application {
             president.getPlayer1().setGameDeck(president.getPlayer2().getGameDeck());
             updateDeckUI(president.getPlayer2());
             updateGameStateUI(president.getFourBestActions().get(0).getPlayer().getGameState());
+            adaptiveFunction.updateAdaptiveVariable();
+//            globalAdaptive2 = adaptiveFunction.getGlobalAdaptiveFunction();
+            globalAdaptive2 = adaptiveFunction.getAdaptiveVariable(2);
+//            double outcome = Math.abs(globalAdaptive1) - Math.abs(globalAdaptive2);
+            double outcome = globalAdaptive2 - globalAdaptive1;
+//            System.out.println("globalAdaptive2 = " + globalAdaptive2);
+//            System.out.println("outcome = " + outcome);
+//            System.out.println();
+//            if (adaptiveFunction.getRuleBase().get(ruleIndex).getScore() + outcome > 0) {
+//                adaptiveFunction.getRuleBase().get(ruleIndex).setScore(adaptiveFunction.getRuleBase().get(ruleIndex).getScore() + outcome);
+//            }
+//            else {
+//                adaptiveFunction.getRuleBase().get(ruleIndex).setScore(0);
+//            }
+//            if (outcome > 0) {
+                adaptiveFunction.getRuleBase().get(ruleIndex).setScore(adaptiveFunction.getRuleBase().get(ruleIndex).getScore() + outcome);
+//            }
+            adaptiveFunction.updateFile();
+//            for (Rule rule : adaptiveFunction.getRuleBase()) {
+//                System.out.println(rule.getScore());
+//            }
+//            System.out.println();
         }
         turnNumberText.setText("Turn number " + turnCounter);
         checkWin();
         setArrow(president.getPlayer1().toPlay());
-        adaptiveFunction.updateAdaptiveVariable();
     }
 
     public void updateDeckUI(Player player) {

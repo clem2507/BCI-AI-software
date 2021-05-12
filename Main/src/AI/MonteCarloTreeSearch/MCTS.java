@@ -51,10 +51,9 @@ public class MCTS {
      * main constructor for the MCTS algorithm
      * @param game current game to play with
      */
-    public MCTS(GameSelector game, double adaptiveVariable) {
+    public MCTS(GameSelector game, double[] configuration) {
 
         this.game = game;
-        this.adaptiveVariable = adaptiveVariable;
         if (game.getClass().isInstance(new Checkers(null))) {
             this.root = new Node(this.game.getCheckersBoard().getGameBoard(), 1, 0, 0);
             isCheckers = true;
@@ -77,38 +76,43 @@ public class MCTS {
             isPresident = true;
         }
         this.nodes.add(root);
-        setBestConfiguration();
+        this.sampleSize = (int) configuration[0];
+        this.stopCondition = configuration[1];
+//        setBestConfiguration();
     }
 
-    // TODO: find a way to balance the MCTS configuration
-    public void setBestConfiguration() {
-
-        if (this.currentPlayer == 1) {
-            if (isPresident) {
-                sampleSize = 18;
-                stopCondition = 1340;
-            }
-            else {
-                sampleSize = 5;
-                stopCondition = 2000;
-            }
-        }
-        // else, apply adaptive AI and balance the configuration here
-        else {
-//            double adaptiveVariable = game.getAdaptiveVariable();
-//            sampleSize = (int) Math.ceil(10*adaptiveVariable);
-//            stopCondition = (int) Math.ceil(5000*adaptiveVariable);
-
-            if (isPresident) {
-                sampleSize = 18;
-                stopCondition = 1340;
-            }
-            else {
-                sampleSize = 5;
-                stopCondition = 2000;
-            }
-        }
-    }
+//    public void setBestConfiguration() {
+//
+//        if (this.currentPlayer == 1) {
+//            if (isPresident) {
+////                sampleSize = 18;
+////                stopCondition = 1340;
+//                sampleSize = 5;
+//                stopCondition = 1000;
+//            }
+//            else {
+//                sampleSize = 5;
+//                stopCondition = 200;
+//            }
+//        }
+//        // else, apply adaptive AI and balance the configuration here
+//        else {
+////            double adaptiveVariable = game.getAdaptiveVariable();
+////            sampleSize = (int) Math.ceil(10*adaptiveVariable);
+////            stopCondition = (int) Math.ceil(5000*adaptiveVariable);
+//
+//            if (isPresident) {
+////                sampleSize = 18;
+////                stopCondition = 1340;
+//                sampleSize = 5;
+//                stopCondition = 1000;
+//            }
+//            else {
+//                sampleSize = 5;
+//                stopCondition = 200;
+//            }
+//        }
+//    }
 
     /**
      * start method that launches the algorithm
@@ -435,7 +439,8 @@ public class MCTS {
                 }
             }
         }
-        n.setTotalSimulation(n.getTotalSimulation() + sampleSize);
+//        n.setTotalSimulation(n.getTotalSimulation() + sampleSize);
+        n.setTotalSimulation(n.getTotalSimulation() + 1);
         n.setTotalWin(n.getTotalScore() + (simulationScore/n.getDepth()));
         backPropagation(n, (simulationScore/n.getDepth()));
     }
@@ -459,7 +464,8 @@ public class MCTS {
                 getParent(n).setIsDoneInSubTree(true);
             }
             n = getParent(n);
-            n.setTotalSimulation(n.getTotalSimulation() + sampleSize);
+//            n.setTotalSimulation(n.getTotalSimulation() + sampleSize);
+            n.setTotalSimulation(n.getTotalSimulation() + 1);
             n.setTotalWin(n.getTotalScore() + simulationScore);
             back++;
         }

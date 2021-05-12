@@ -38,7 +38,7 @@ public class Abalone extends GameSelector {
 
     public void runMCTS() {
 
-        MCTS mcts = new MCTS(this, 1);
+        MCTS mcts = new MCTS(this, new double[]{5, 500});
         mcts.start();
         fourBestMoves = mcts.getFourBestNodes();
         board.drawAllCells();
