@@ -6,10 +6,6 @@ import AI.PossibleMoves.PresidentPossibleMoves;
 import AI.TreeStructure.Edge;
 import AI.TreeStructure.Node;
 import AI.Util;
-import Abalone.GUI.Hexagon;
-import Abalone.Game.Abalone;
-import AI.PossibleMoves.AbaloneGetPossibleMoves;
-import Checkers.GUI.GameUI;
 import Checkers.Game.Checkers;
 import AI.PossibleMoves.CheckersPossibleMoves;
 import President.Game.Card;
@@ -31,11 +27,10 @@ public class MCTS {
     private int sampleSize;
     /** stop condition to let the algorithm knows when it is done with computation */
     private double stopCondition;
-
+    /** boolean variable that tells the class if the actual game is checkers */
     private boolean isCheckers = false;
-    private boolean isAbalone = false;
+    /** boolean variable that tells the class if the actual game is president */
     private boolean isPresident = false;
-
     /** root node of the tree */
     private Node root;
     /** list of all edges in the game tree */
@@ -44,10 +39,8 @@ public class MCTS {
     private ArrayList<Node> nodes = new ArrayList<>();
     /** list that contains the four best nodes after the algorithm is done running */
     private ArrayList<Node> fourBestNodes = new ArrayList<>();
+    /** list that contains the actions ordered by strength after the algorithm is done running */
     private ArrayList<Node> actionsOrdered = new ArrayList<>();
-
-    private int count = 0;
-    private double adaptiveVariable;
 
     /**
      * main constructor for the MCTS algorithm
@@ -59,11 +52,6 @@ public class MCTS {
         if (game.getClass().isInstance(new Checkers(null))) {
             this.root = new Node(this.game.getCheckersBoard().getGameBoard(), 1, 0, 0);
             isCheckers = true;
-            this.currentPlayer = this.game.getCurrentPlayer();
-        }
-        else if (game.getClass().isInstance(new Abalone(null))) {
-            this.root = new Node(this.game.getAbaloneBoard().getGameBoard(), 1, 0, 0);
-            isAbalone = true;
             this.currentPlayer = this.game.getCurrentPlayer();
         }
         else {
@@ -80,41 +68,7 @@ public class MCTS {
         this.nodes.add(root);
         this.sampleSize = (int) configuration[0];
         this.stopCondition = configuration[1];
-//        setBestConfiguration();
     }
-
-//    public void setBestConfiguration() {
-//
-//        if (this.currentPlayer == 1) {
-//            if (isPresident) {
-////                sampleSize = 18;
-////                stopCondition = 1340;
-//                sampleSize = 5;
-//                stopCondition = 1000;
-//            }
-//            else {
-//                sampleSize = 5;
-//                stopCondition = 200;
-//            }
-//        }
-//        // else, apply adaptive AI and balance the configuration here
-//        else {
-////            double adaptiveVariable = game.getAdaptiveVariable();
-////            sampleSize = (int) Math.ceil(10*adaptiveVariable);
-////            stopCondition = (int) Math.ceil(5000*adaptiveVariable);
-//
-//            if (isPresident) {
-////                sampleSize = 18;
-////                stopCondition = 1340;
-//                sampleSize = 5;
-//                stopCondition = 1000;
-//            }
-//            else {
-//                sampleSize = 5;
-//                stopCondition = 200;
-//            }
-//        }
-//    }
 
     /**
      * start method that launches the algorithm
@@ -123,12 +77,7 @@ public class MCTS {
 
         long b_time = System.currentTimeMillis();
         while ((System.currentTimeMillis() - b_time) < stopCondition) {
-//        while (nodes.get(0).getTotalSimulation() < stopCondition) {
             Selection();
-//            for (Node n : nodes) {
-//                System.out.print(n.getTotalSimulation() + ", ");
-//            }
-//            System.out.println();
             iterations++;
         }
         ArrayList<Node> rootChildren = getChildren(root);
@@ -166,7 +115,6 @@ public class MCTS {
             Collections.shuffle(fourBestNodes);
         }
         else {
-//            System.out.println("MCTS 2");
             int size = rootChildren.size();
             while (actionsOrdered.size() < size) {
                 Node bestChild = null;
@@ -180,11 +128,7 @@ public class MCTS {
                 actionsOrdered.add(bestChild);
                 rootChildren.remove(bestChild);
             }
-//            System.out.println(actionsOrdered.size());
         }
-//        System.out.println("Simulations = " + nodes.get(0).getTotalSimulation());
-//        System.out.println("Repetition count = " + count);
-//        System.out.println();
     }
 
     /**
@@ -217,7 +161,7 @@ public class MCTS {
     public Node findBestNodeWithUCT(Node n) {
 
         Node bestNode = null;
-        if (isCheckers || isAbalone) {
+        if (isCheckers) {
             bestNode = new Node((int[][]) null, 0, 0, 0);
         }
         else if (isPresident) {
@@ -267,11 +211,6 @@ public class MCTS {
                 possibleMoves = new CheckersPossibleMoves(n.getBoardState(), currentPlayer);
                 children = possibleMoves.getPossibleMoves();
             }
-        } else if (isAbalone) {
-            if (!game.isDone(n.getBoardState())) {
-                possibleMoves = new AbaloneGetPossibleMoves(n.getBoardState(), currentPlayer);
-                children = possibleMoves.getPossibleMoves();
-            }
         }
         else if (isPresident) {
             if (!game.isVictorious(n.getPlayer()) || n.getPlayer().getOpponentNumberCards() > 0) {
@@ -288,7 +227,7 @@ public class MCTS {
             }
         }
 
-        if (isCheckers || isAbalone) {
+        if (isCheckers) {
             for (int[][] child : children) {
                 Node childNode = new Node(child, n.getDepth() + 1, 0, 0);
                 nodes.add(childNode);
@@ -301,7 +240,6 @@ public class MCTS {
                 int randomIndex = (int) (Math.random() * ((max)));
                 Simulation(getChildren(n).get(randomIndex), Util.changeCurrentPlayer(currentPlayer));
             } else {
-                count++;
                 Simulation(n, Util.changeCurrentPlayer(currentPlayer));
             }
         }
@@ -317,9 +255,7 @@ public class MCTS {
                 edges.add(edge);
             }
 
-            // CARRY WHEN NOT POSSIBLE TO PLAY FOR THE OTHER PLAYER
             if (isDone) {
-                count++;
                 Simulation(n, currentPlayer);
             }
             else {
@@ -351,9 +287,8 @@ public class MCTS {
 
         double simulationScore = 0;
         for (int i = 0; i < sampleSize; i++) {
-            if (isCheckers || isAbalone) {
+            if (isCheckers) {
                 int actualPlayer = currentPlayer;
-                int countMoves = 0;
                 int[][] actualBoard = n.getBoardState();
                 while (!game.isDone(actualBoard)) {
                     ArrayList<int[][]> children = new ArrayList<>();
@@ -365,22 +300,11 @@ public class MCTS {
                         children = possibleMoves.getPossibleMoves();
                         max = children.size();
                         randomIndex = (int) (Math.random() * (max));
-                    } else if (isAbalone) {
-                        possibleMoves = new AbaloneGetPossibleMoves(actualBoard, actualPlayer);
-                        children = possibleMoves.getPossibleMoves();
-                        max = children.size();
-                        double rand = Math.random();
-                        if (rand < 0.7) {
-                            randomIndex = (int) (Math.random() * Math.floor((double) max / 3));
-                        } else {
-                            randomIndex = (int) ((Math.random() * max / 3) + Math.floor((double) 2 * max / 3));
-                        }
                     }
                     if (children.size() > 0) {
                         actualBoard = children.get(randomIndex);
                     }
                     actualPlayer = Util.changeCurrentPlayer(actualPlayer);
-                    countMoves++;
                 }
                 if (game.isVictorious(actualBoard, this.currentPlayer)) {
                     simulationScore++;
@@ -389,7 +313,6 @@ public class MCTS {
                 }
             }
             else {
-                int countActions = 0;
                 Player actualPlayer = new Player(n.getPlayer());
                 while (!game.isVictorious(actualPlayer) && actualPlayer.getOpponentNumberCards() > 0) {
                     PossibleMoves possibleMoves = new PresidentPossibleMoves(actualPlayer);
@@ -448,7 +371,6 @@ public class MCTS {
                 }
             }
         }
-//        n.setTotalSimulation(n.getTotalSimulation() + sampleSize);
         n.setTotalSimulation(n.getTotalSimulation() + 1);
         n.setTotalWin(n.getTotalScore() + (simulationScore/n.getDepth()));
         backPropagation(n, (simulationScore/n.getDepth()));
@@ -462,7 +384,6 @@ public class MCTS {
      */
     public void backPropagation(Node n, double simulationScore) {
 
-        int back = 0;
         boolean check = false;
         if (game.isDone(n.getBoardState())) {
             check = true;
@@ -473,12 +394,9 @@ public class MCTS {
                 getParent(n).setIsDoneInSubTree(true);
             }
             n = getParent(n);
-//            n.setTotalSimulation(n.getTotalSimulation() + sampleSize);
             n.setTotalSimulation(n.getTotalSimulation() + 1);
             n.setTotalWin(n.getTotalScore() + simulationScore);
-            back++;
         }
-//        System.out.println("back = " + back);
 
         ArrayList<Node> rootChildren = getChildren(root);
         double sumScore = 0;
@@ -530,10 +448,6 @@ public class MCTS {
 
     public void setSampleSize(int sampleSize) {
         this.sampleSize = sampleSize;
-    }
-
-    public void setStopCondition(double stopCondition) {
-        this.stopCondition = stopCondition;
     }
 
     public ArrayList<Node> getActionsOrdered() {

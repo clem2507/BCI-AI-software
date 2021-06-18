@@ -6,17 +6,22 @@ public class Item {
     private double[] genotype;
     /** winner boolean variable that defines the current tournament item status */
     private boolean winner;
-
+    /** variable that keep track the score of an Item */
     private int score;
 
     /**
      * item main constructor
-     * @param genotype double array
+     * @param genotype double array weights
      */
     public Item(double[] genotype) {
         this.genotype = genotype;
     }
 
+    /**
+     * item second main constructor
+     * @param genotype double array weights
+     * @param score of the item so far in the iteration
+     */
     public Item(double[] genotype, int score){
         this.genotype = genotype;
         this.score = score;
@@ -54,10 +59,18 @@ public class Item {
         this.winner = winner;
     }
 
+    /**
+     * getter for the score variable
+     * @return score
+     */
     public int getScore() {
         return score;
     }
 
+    /**
+     * setter for the score
+     * @param score to set
+     */
     public void setScore(int score) {
         this.score = score;
     }

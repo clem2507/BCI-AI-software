@@ -1,6 +1,5 @@
-package Output;
+package HomePage;
 
-import Abalone.GUI.Hexagon;
 import Checkers.GUI.GameUI;
 import President.GUI.UserInterface;
 import javafx.application.Application;
@@ -58,7 +57,7 @@ public class HomePage extends Application {
         startButton.setTranslateY(305);
         pane.getChildren().add(startButton);
 
-        updateUsernamesBox("/Users/clemdetry/Documents/Documents – Clem's MacBook Pro/UM/Thesis Karim/Code/Main/res/players_level_checkers.txt");
+        updateUsernamesBox("Main/res/players_level_checkers.txt");
 
         TextField usernameInput = new TextField();
         usernameInput.setPromptText("username...");
@@ -69,7 +68,6 @@ public class HomePage extends Application {
 
         ComboBox<String> choiceBox = new ComboBox<>();
         choiceBox.getItems().add("Checkers");
-//        choiceBox.getItems().add("Abalone");
         choiceBox.getItems().add("President");
         choiceBox.setTranslateX(120);
         choiceBox.setTranslateY(100);
@@ -152,12 +150,12 @@ public class HomePage extends Application {
                     String path_win = "";
                     switch (choiceBox.getValue()) {
                         case "Checkers":
-                            path = "/Users/clemdetry/Documents/Documents – Clem's MacBook Pro/UM/Thesis Karim/Code/Main/res/players_level_checkers.txt";
-                            path_win = "/Users/clemdetry/Documents/Documents – Clem's MacBook Pro/UM/Thesis Karim/Code/Main/res/players_win_rate_checkers.txt";
+                            path = "Main/res/players_level_checkers.txt";
+                            path_win = "Main/res/players_win_rate_checkers.txt";
                             break;
                         case "President":
-                            path = "/Users/clemdetry/Documents/Documents – Clem's MacBook Pro/UM/Thesis Karim/Code/Main/res/players_level_president.txt";
-                            path_win = "/Users/clemdetry/Documents/Documents – Clem's MacBook Pro/UM/Thesis Karim/Code/Main/res/players_win_rate_president.txt";
+                            path = "Main/res/players_level_president.txt";
+                            path_win = "Main/res/players_win_rate_president.txt";
                             break;
                     }
                     File file = new File(path);
@@ -197,9 +195,6 @@ public class HomePage extends Application {
                     }
                     GameUI gameUI = new GameUI(numMarblesOnBoard, completeBoard.isSelected());
                     gameUI.start(primaryStage);
-                } else if (choiceBox.getValue().equals("Abalone")) {
-                    Hexagon hexagon = new Hexagon();
-                    hexagon.start(primaryStage);
                 } else if (choiceBox.getValue().equals("President")) {
                     int deckSize;
                     if (cardSize.getValue() == null) {
@@ -230,7 +225,7 @@ public class HomePage extends Application {
 
         switch (item) {
             case "Checkers":
-                updateUsernamesBox("/Users/clemdetry/Documents/Documents – Clem's MacBook Pro/UM/Thesis Karim/Code/Main/res/players_level_checkers.txt");
+                updateUsernamesBox("Main/res/players_level_checkers.txt");
                 if (visited) {
                     pane.getChildren().add(boardSize);
                     pane.getChildren().add(partialBoard);
@@ -243,19 +238,8 @@ public class HomePage extends Application {
                     }
                 }
                 break;
-            case "Abalone":
-                visited = true;
-                pane.getChildren().remove(boardSize);
-                pane.getChildren().remove(partialBoard);
-                pane.getChildren().remove(partialBoardText);
-                pane.getChildren().remove(completeBoard);
-                pane.getChildren().remove(completeBoardText);
-                if (visited2) {
-                    pane.getChildren().remove(cardSize);
-                }
-                break;
             case "President":
-                updateUsernamesBox("/Users/clemdetry/Documents/Documents – Clem's MacBook Pro/UM/Thesis Karim/Code/Main/res/players_level_president.txt");
+                updateUsernamesBox("Main/res/players_level_president.txt");
                 if (!visited || visited1) {
                     pane.getChildren().remove(boardSize);
                     pane.getChildren().remove(partialBoard);
@@ -291,12 +275,9 @@ public class HomePage extends Application {
         namesBox = new ComboBox<>();
         try (BufferedReader br = new BufferedReader(new FileReader(path))) {
             String line = br.readLine();
-//            int count = 0;
-//            while (count < 4) {
             while (line!=null) {
                 names.add(line.split(", ")[0]);
                 line = br.readLine();
-//                count++;
             }
         } catch (IOException e) {
             System.out.println("Problem reading file.");

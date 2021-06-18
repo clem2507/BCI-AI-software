@@ -1,22 +1,18 @@
 package AI.AlphaBetaTreeSearch;
 
-import AI.EvaluationFunction.Abalone.AbaloneEvalFunction;
 import AI.EvaluationFunction.EvaluationFunction;
 import AI.EvaluationFunction.Checkers.CheckersEvalFunction;
 import AI.EvaluationFunction.President.PresidentEvalFunction;
 import AI.GameSelector;
-import AI.PossibleMoves.AbaloneGetPossibleMoves;
 import AI.PossibleMoves.PossibleMoves;
 import AI.PossibleMoves.PresidentPossibleMoves;
 import AI.TreeStructure.Edge;
 import AI.TreeStructure.Node;
 import AI.Util;
 import AI.PossibleMoves.CheckersPossibleMoves;
-import Abalone.Game.Abalone;
 import Checkers.Game.Checkers;
 import President.Game.Card;
 import President.Game.Player;
-import President.Game.President;
 import President.Game.Tuple;
 
 import java.util.*;
@@ -40,10 +36,10 @@ public class ABTS {
     /** current player to play */
     private int currentPlayer;
     /** boolean variable to recognize the current game */
-    private boolean isCheckers, isAbalone, isPresident;
+    private boolean isCheckers, isPresident;
     /** maximum depth of tree search */
     private int depth;
-
+    /** opponent player card deck */
     private ArrayList<Card> opponentDeck;
 
     /**
@@ -60,11 +56,6 @@ public class ABTS {
         if (game.getClass().isInstance(new Checkers(null))) {
             isCheckers = true;
             root = new Node(game.getCheckersBoard().getGameBoard(), 0);
-            nodes.add(root);
-        }
-        else if (game.getClass().isInstance(new Abalone(null))) {
-            isAbalone = true;
-            root = new Node(game.getAbaloneBoard().getGameBoard(), 0);
             nodes.add(root);
         }
         else {
@@ -100,11 +91,6 @@ public class ABTS {
             root = new Node(game.getCheckersBoard().getGameBoard(), 0);
             nodes.add(root);
         }
-        else if (game.getClass().isInstance(new Abalone(null))) {
-            isAbalone = true;
-            root = new Node(game.getAbaloneBoard().getGameBoard(), 0);
-            nodes.add(root);
-        }
         else {
             if (game.getPlayer1().toPlay()) {
                 this.root = new Node(game.getPlayer1(), 0);
@@ -133,8 +119,6 @@ public class ABTS {
                     rootChildrenNodes = new ArrayList<>();
                     double currScore = Double.NEGATIVE_INFINITY;
                     if (isCheckers) {
-                        currScore = findBestNode(root, depth, true, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-                    } else if (isAbalone) {
                         currScore = findBestNode(root, depth, true, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
                     }
                     else if (isPresident) {
@@ -167,10 +151,7 @@ public class ABTS {
         else {
             rootChildrenNodes = new ArrayList<>();
             double currScore = Double.NEGATIVE_INFINITY;
-//            depth = (int) Math.min(5, Math.ceil(game.getAdaptiveVariable()*5));
             if (isCheckers) {
-                currScore = findBestNode(root, depth, true, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-            } else if (isAbalone) {
                 currScore = findBestNode(root, depth, true, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
             }
             else if (isPresident) {
@@ -214,7 +195,7 @@ public class ABTS {
             return parent.getScore();
         }
         else {
-            if (isCheckers || isAbalone) {
+            if (isCheckers) {
                 if (game.isDone(parent.getBoardState())) {
                     if (getParent(parent) == nodes.get(0)) {
                         Node node = new Node(parent.getBoardState(), parent.getScore());
@@ -260,7 +241,7 @@ public class ABTS {
 
         if (maximizingPlayer) {
             double maxEvaluation = Double.NEGATIVE_INFINITY;
-            if (isCheckers || isAbalone) {
+            if (isCheckers) {
                 for (int[][] board : children) {
                     double score = evaluateNode(board, player, configuration);
                     Node child = new Node(board, score);
@@ -302,7 +283,7 @@ public class ABTS {
         }
         else {
             double minEvaluation = Double.POSITIVE_INFINITY;
-            if (isCheckers || isAbalone) {
+            if (isCheckers) {
                 for (int[][] board : children) {
                     double score = evaluateNode(board, player, configuration);
                     Node child = new Node(board, score);
@@ -367,17 +348,11 @@ public class ABTS {
             if (isCheckers) {
                 eval = new CheckersEvalFunction(board, player);
                 score = eval.evaluate();
-            } else if (isAbalone) {
-                eval = new AbaloneEvalFunction(board, player);
-                score = eval.evaluate();
             }
         }
         else {
             if (isCheckers) {
                 eval = new CheckersEvalFunction(board, player, configuration);
-                score = eval.evaluate();
-            } else if (isAbalone) {
-                eval = new AbaloneEvalFunction(board, player, configuration);
                 score = eval.evaluate();
             }
         }
@@ -402,7 +377,7 @@ public class ABTS {
     }
 
     /**
-     * Method that returns the possible moves from a given state
+     * Method that returns the possible moves from a given board state
      * @param board current state
      * @param player to play
      * @return the list of 2D integer board
@@ -415,13 +390,14 @@ public class ABTS {
             moves = new CheckersPossibleMoves(board, player);
             out = moves.getPossibleMoves();
         }
-        else if (isAbalone){
-            moves = new AbaloneGetPossibleMoves(board, player);
-            out = moves.getPossibleMoves();
-        }
         return out;
     }
 
+    /**
+     * Method that returns the possible actions from a given card deck
+     * @param player state
+     * @return the whole actions tuple
+     */
     public ArrayList<Tuple> getPossibleMoves(Player player) {
 
         ArrayList<Tuple> out;
@@ -445,25 +421,13 @@ public class ABTS {
         return out;
     }
 
-//    /**
-//     * method used to backtrack the win or loss information in subtree util the children of the root
-//     * @param n starting node
-//     */
-//    public void backtrackWinOrLoss(Node n) {
-//
-//        while (getParent(n) != null) {
-//            n.setIsDoneInSubTree(true);
-//            n = getParent(n);
-//        }
-//    }
-
     /**
      * method to get the children in the tree of a certain node
      * @param v current node
      * @return a list a children
      */
-    public ArrayList<Node> getChildren(Node v) { // String vertex
-        // Returns all neighbours of a given vertex
+    public ArrayList<Node> getChildren(Node v) {
+
         ArrayList<Node> children = new ArrayList<>();
         for (Edge e : edges){
             if(e.getSource() == v) {

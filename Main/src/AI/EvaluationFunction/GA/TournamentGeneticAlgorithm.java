@@ -3,17 +3,11 @@ package AI.EvaluationFunction.GA;
 import AI.GameSelector;
 import AI.AlphaBetaTreeSearch.ABTS;
 import AI.MonteCarloTreeSearch.MCTS;
-import AI.PossibleMoves.PossibleMoves;
-import AI.PossibleMoves.PresidentPossibleMoves;
 import AI.Util;
-import Abalone.Game.Abalone;
-import Abalone.Game.BoardUI;
 import Checkers.Game.Board;
 import Checkers.Game.Checkers;
 import Output.OutputCSV;
-import President.Game.Card;
 import President.Game.President;
-import President.Game.Tuple;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -51,8 +45,9 @@ public class TournamentGeneticAlgorithm {
     private double crossoverRate;
     /** boolean variable that tells the simulation method if the board is complete or simplified */
     private boolean completeBoard = false;
-
+    /** integer variable for the deck size */
     private int deckSize;
+    /** variable that defines the number of participant in the whole league */
     private int numberOfParticipantsInLeague;
 
     /**
@@ -68,7 +63,7 @@ public class TournamentGeneticAlgorithm {
         this.generationSize = generationSize+startingGeneration;
         this.totalGenerationNumber = startingGeneration;
         this.numberOfTournaments = numberOfTournaments;
-        this.numberOfParticipantsPerTournament = (int) Math.pow(2, 5);
+        this.numberOfParticipantsPerTournament = (int) Math.pow(2, 6);
         this.populationSize = (numberOfParticipantsPerTournament*numberOfTournaments);
         this.mutationRate = mutationRate;
         this.crossoverRate = crossoverRate;
@@ -80,7 +75,7 @@ public class TournamentGeneticAlgorithm {
      */
     public TournamentGeneticAlgorithm(String fileName, GameSelector game, int generationSize, int startingGeneration, int numberOfTournaments, double mutationRate, double crossoverRate) {
 
-        this.dataPopulation = fileParser("/Users/clemdetry/Documents/Documents – Clem's MacBook Pro/UM/Thesis Karim/Code/Main/"+fileName);
+        this.dataPopulation = fileParser("Main/"+fileName);
         this.game = game;
         this.deckSize = game.getPlayer1().getDeck().size();
         this.random = new Random();
@@ -89,13 +84,16 @@ public class TournamentGeneticAlgorithm {
         this.generationSize = generationSize+startingGeneration;
         this.totalGenerationNumber = startingGeneration;
         this.numberOfTournaments = numberOfTournaments;
-        this.numberOfParticipantsPerTournament = (int) Math.pow(2, 4);
+        this.numberOfParticipantsPerTournament = (int) Math.pow(2, 6);
         this.populationSize = (numberOfParticipantsPerTournament*numberOfTournaments);
         this.mutationRate = mutationRate;
         this.crossoverRate = crossoverRate;
         initializePopulation(dataPopulation);
     }
 
+    /**
+     * Class constructor to start the GA for the president game
+     */
     public TournamentGeneticAlgorithm(GameSelector game, int genotypeSize, int numberOfParticipantsInLeague) {
 
         this.game = game;
@@ -159,7 +157,10 @@ public class TournamentGeneticAlgorithm {
         System.out.println();
         
     }
-    
+
+    /**
+     * starting method to simulate one generation of a league of genotypes
+     */
     public void simulateLeague() {
 
         int counter = 0;
@@ -249,12 +250,9 @@ public class TournamentGeneticAlgorithm {
     public double[] createRandomGenotype() {
 
         double[] genotype = new double[genotypeSize];
-//        for (int i = 0; i < genotypeSize; i++) {
-//            genotype[i] = random.nextDouble();
-//        }
-        Random random = new Random();
-        genotype[0] = Math.ceil(random.nextDouble()*100);
-        genotype[1] = Math.ceil(random.nextDouble()*20000)+100;
+        for (int i = 0; i < genotypeSize; i++) {
+            genotype[i] = random.nextDouble();
+        }
         return genotype;
     }
 
@@ -338,20 +336,14 @@ public class TournamentGeneticAlgorithm {
     public void simulateGames(Item participant1, Item participant2) {
 
         Board board = null;
-        BoardUI boardUI = null;
         if (game.getClass().isInstance(new Checkers(null))) {
             board = new Board(6, completeBoard);
             game = new Checkers(board);
-        }
-        else if (game.getClass().isInstance(new Abalone(null))) {
-            boardUI = new BoardUI();
-            game = new Abalone(boardUI);
         }
         else if (game.getClass().isInstance(new President(0))) {
             game = new President(deckSize);
         }
         int currentPlayer = random.nextInt(2)+1;
-        //while (!game.isDone(boardUI.getGameBoard())) {
         if (!game.getClass().isInstance(new President(0))) {
             while (!game.isDone(board.getGameBoard())) {
                 ABTS ABTS;
@@ -365,28 +357,23 @@ public class TournamentGeneticAlgorithm {
                 double moveChoice = random.nextDouble();
                 if (moveChoice < 0.55) {
                     if (ABTS.getFourBestNodes().get(0) != null) {
-                        //boardUI.setBoard(ABTS.getFourBestNodes().get(0).getBoardState());
                         board.setBoard(ABTS.getFourBestNodes().get(0).getBoardState());
                     }
                 } else if (moveChoice < 0.75) {
                     if (ABTS.getFourBestNodes().get(1) != null) {
-                        //boardUI.setBoard(ABTS.getFourBestNodes().get(1).getBoardState());
                         board.setBoard(ABTS.getFourBestNodes().get(1).getBoardState());
                     }
                 } else if (moveChoice < 0.9) {
                     if (ABTS.getFourBestNodes().get(2) != null) {
-                        //boardUI.setBoard(ABTS.getFourBestNodes().get(2).getBoardState());
                         board.setBoard(ABTS.getFourBestNodes().get(2).getBoardState());
                     }
                 } else {
                     if (ABTS.getFourBestNodes().get(3) != null) {
-                        //boardUI.setBoard(ABTS.getFourBestNodes().get(3).getBoardState());
                         board.setBoard(ABTS.getFourBestNodes().get(3).getBoardState());
                     }
                 }
                 currentPlayer = Util.changeCurrentPlayer(currentPlayer);
             }
-            //if (game.isVictorious(boardUI.getGameBoard(), 1)) {
             if (game.isVictorious(board.getGameBoard(), 1)) {
                 participant1.setWinner(true);
                 participant2.setWinner(false);

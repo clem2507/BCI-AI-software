@@ -1,17 +1,14 @@
 package President.Game;
 
 import AI.AlphaBetaTreeSearch.ABTS;
-import AI.EvaluationFunction.Checkers.CheckersEvalFunction;
 import AI.EvaluationFunction.EvaluationFunction;
 import AI.EvaluationFunction.President.PresidentEvalFunction;
 import AI.GameSelector;
 import AI.MonteCarloTreeSearch.MCTS;
 import AI.TreeStructure.Node;
 import AI.Util;
-import Abalone.Game.BoardUI;
-import Checkers.GUI.GameUI;
 import Checkers.Game.Board;
-import Output.HomePage;
+import HomePage.HomePage;
 import President.GUI.UserInterface;
 
 import java.io.BufferedReader;
@@ -27,9 +24,7 @@ public class President extends GameSelector {
     private ArrayList<Card> deck;
     private ArrayList<Node> fourBestActions;
     private ArrayList<Node> actions;
-    private static ArrayList<Double> adaptiveVariableStack = new ArrayList<>();
     private static double adaptiveVariable;
-    private static double globalAdaptiveVariable;
 
     private Player player1;
     private Player player2;
@@ -102,33 +97,11 @@ public class President extends GameSelector {
     @Override
     public void updateAdaptiveVariable(Player previousPlayer1State, Player previousPlayer2State, Player currentPlayer1State, Player currentPlayer2State) {
 
-//        System.out.println(previousGameState.getPlayer1().getGameState().getNumber() + " --> " + previousGameState.getPlayer1().getGameState().getOccurrence());
-//        System.out.println(previousGameState.getPlayer2().getGameState().getNumber() + " --> " + previousGameState.getPlayer2().getGameState().getOccurrence());
-//        System.out.println(currentGameState.getPlayer1().getGameState().getNumber() + " --> " + currentGameState.getPlayer1().getGameState().getOccurrence());
-//        System.out.println(currentGameState.getPlayer2().getGameState().getNumber() + " --> " + currentGameState.getPlayer2().getGameState().getOccurrence());
-
         EvaluationFunction currPlayerEval1 = new PresidentEvalFunction(previousPlayer1State);
         EvaluationFunction currPlayerEval2 = new PresidentEvalFunction(currentPlayer1State);
-        EvaluationFunction oppPlayerEval1 = new PresidentEvalFunction(previousPlayer2State);
-        EvaluationFunction oppPlayerEval2 = new PresidentEvalFunction(currentPlayer2State);
 
-//        if (HomePage.username.equals("Username") || HomePage.username.equals("")) {
-//            adaptiveVariableStack.add(weightingFunction(currPlayerEval1.evaluate(), currPlayerEval2.evaluate(), oppPlayerEval1.evaluate(), oppPlayerEval2.evaluate()));
-//            double sum = 0;
-//            for (double x : adaptiveVariableStack) {
-//                sum+=x;
-//            }
-//            adaptiveVariable = sum / adaptiveVariableStack.size();
-//        }
-//        else {
-            Util.updateNameAdaptiveVar("/Users/clemdetry/Documents/Documents – Clem's MacBook Pro/UM/Thesis Karim/Code/Main/res/players_level_president.txt", HomePage.username, weightingFunction(currPlayerEval1.evaluate(), currPlayerEval2.evaluate(), oppPlayerEval1.evaluate(), oppPlayerEval2.evaluate()));
-            adaptiveVariable = Util.getNameAdaptiveVariable("/Users/clemdetry/Documents/Documents – Clem's MacBook Pro/UM/Thesis Karim/Code/Main/res/players_level_president.txt", HomePage.username);
-//        }
-
-        globalAdaptiveVariable = currPlayerEval2.evaluate() - oppPlayerEval2.evaluate();
-//        System.out.println("adaptiveVariable = " + adaptiveVariable);
-//        System.out.println("globalAdaptiveVariable = " + globalAdaptiveVariable);
-//        System.out.println();
+        Util.updateNameAdaptiveVar("Main/res/players_level_president.txt", HomePage.username, weightingFunction(currPlayerEval1.evaluate(), currPlayerEval2.evaluate()));
+        adaptiveVariable = Util.getNameAdaptiveVariable("Main/res/players_level_president.txt", HomePage.username);
     }
 
     @Override
@@ -179,10 +152,8 @@ public class President extends GameSelector {
         }
     }
 
-    // TODO - improve the adaptive variable computation
-    public double weightingFunction(double x1, double x2, double y1, double y2) {
+    public double weightingFunction(double x1, double x2) {
 
-//        return (x2 - x1) + (y1 - y2);
         return (x2 - x1);
     }
 
@@ -222,11 +193,6 @@ public class President extends GameSelector {
     }
 
     @Override
-    public BoardUI getAbaloneBoard() {
-        return null;
-    }
-
-    @Override
     public Board getCheckersBoard() {
         return null;
     }
@@ -244,10 +210,6 @@ public class President extends GameSelector {
     @Override
     public ArrayList<Card> getGameDeck() {
         return deck;
-    }
-
-    public void setGameState(Tuple gameState) {
-        this.gameState = gameState;
     }
 
     public ArrayList<Node> getFourBestActions() {

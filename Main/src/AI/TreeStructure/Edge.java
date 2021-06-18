@@ -38,5 +38,4 @@ public class Edge  {
         return source + " " + destination;
     }
 
-
 }

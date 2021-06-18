@@ -265,8 +265,4 @@ public class Board {
     public int[][] getGameBoard() {
         return gameBoard;
     }
-
-    public boolean[][] getSelected() {
-        return selected;
-    }
 }

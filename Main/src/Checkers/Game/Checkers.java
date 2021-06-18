@@ -9,12 +9,10 @@ import AI.PossibleMoves.CheckersPossibleMoves;
 import AI.PossibleMoves.PossibleMoves;
 import AI.TreeStructure.Node;
 import AI.Util;
-import Abalone.Game.BoardUI;
 import Checkers.GUI.GameUI;
-import Output.HomePage;
+import HomePage.HomePage;
 import President.Game.Card;
 import President.Game.Player;
-import President.Game.President;
 import President.Game.Tuple;
 
 import java.io.BufferedReader;
@@ -29,9 +27,7 @@ public class Checkers extends GameSelector {
     public static int currentPlayer = 1;
     private ArrayList<Node> fourBestMoves;
     private ArrayList<Node> actions;
-    private static ArrayList<Double> adaptiveVariableStack = new ArrayList<>();
     private static double adaptiveVariable;
-    private static double globalAdaptiveVariable;
 
     public Checkers(Board board) {
 
@@ -62,33 +58,9 @@ public class Checkers extends GameSelector {
 
         EvaluationFunction currPlayerEval1 = new CheckersEvalFunction(previousBoard, Util.changeCurrentPlayer(currentPlayer));
         EvaluationFunction currPlayerEval2 = new CheckersEvalFunction(currentBoard, Util.changeCurrentPlayer(currentPlayer));
-        EvaluationFunction oppPlayerEval1 = new CheckersEvalFunction(previousBoard, currentPlayer);
-        EvaluationFunction oppPlayerEval2 = new CheckersEvalFunction(currentBoard, currentPlayer);
 
-//        if (HomePage.username.equals("Username") || HomePage.username.equals("")) {
-//            adaptiveVariableStack.add(weightingFunction(currPlayerEval1.evaluate(), currPlayerEval2.evaluate(), oppPlayerEval1.evaluate(), oppPlayerEval2.evaluate()));
-//            double sum = 0;
-//            for (double x : adaptiveVariableStack) {
-//                sum+=x;
-//            }
-//            adaptiveVariable = sum / adaptiveVariableStack.size();
-//        }
-//        else {
-
-
-//            Util.updateNameAdaptiveVar("/Users/clemdetry/Documents/Documents – Clem's MacBook Pro/UM/Thesis Karim/Code/Main/res/players_level_checkers.txt", HomePage.username, weightingFunction(currPlayerEval1.evaluate(), currPlayerEval2.evaluate(), oppPlayerEval1.evaluate(), oppPlayerEval2.evaluate()));
-//            adaptiveVariable = Util.getNameAdaptiveVariable("/Users/clemdetry/Documents/Documents – Clem's MacBook Pro/UM/Thesis Karim/Code/Main/res/players_level_checkers.txt", HomePage.username);
-
-        Util.updateNameAdaptiveVar("/Users/clemdetry/Documents/Documents – Clem's MacBook Pro/UM/Thesis Karim/Code/Main/res/players_level_checkers.txt", HomePage.username, weightingFunction(currPlayerEval1.evaluate(), currPlayerEval2.evaluate(), oppPlayerEval1.evaluate(), oppPlayerEval2.evaluate()));
-        adaptiveVariable = Util.getNameAdaptiveVariable("/Users/clemdetry/Documents/Documents – Clem's MacBook Pro/UM/Thesis Karim/Code/Main/res/players_level_checkers.txt", HomePage.username);
-
-
-//        }
-
-        globalAdaptiveVariable = currPlayerEval2.evaluate() - oppPlayerEval2.evaluate();
-//        System.out.println("adaptiveVariable = " + adaptiveVariable);
-//        System.out.println("globalAdaptiveVariable = " + globalAdaptiveVariable);
-//        System.out.println();
+        Util.updateNameAdaptiveVar("Main/res/players_level_checkers.txt", HomePage.username, weightingFunction(currPlayerEval1.evaluate(), currPlayerEval2.evaluate()));
+        adaptiveVariable = Util.getNameAdaptiveVariable("Main/res/players_level_checkers.txt", HomePage.username);
     }
 
     @Override
@@ -147,16 +119,14 @@ public class Checkers extends GameSelector {
         return currPlayerEval.evaluate() - oppPlayerEval.evaluate();
     }
 
+    public double weightingFunction(double x1, double x2) {
+
+        return (x2 - x1);
+    }
+
     @Override
     public void updateAdaptiveVariable(Player previousPlayer1State, Player previousPlayer2State, Player currentPlayer1State, Player currentPlayer2State) {
 
-    }
-
-    // TODO - improve the adaptive variable computation
-    public double weightingFunction(double x1, double x2, double y1, double y2) {
-
-//        return (x2 - x1) + (y1 - y2);
-        return (x2 - x1);
     }
 
     @Override
@@ -214,10 +184,6 @@ public class Checkers extends GameSelector {
         return adaptiveVariable;
     }
 
-    public static double getGlobalAdaptiveVariable() {
-        return globalAdaptiveVariable;
-    }
-
     public ArrayList<Node> getActions() {
         return actions;
     }
@@ -254,11 +220,6 @@ public class Checkers extends GameSelector {
     @Override
     public Board getCheckersBoard() {
         return board;
-    }
-
-    @Override
-    public BoardUI getAbaloneBoard() {
-        return null;
     }
 
     @Override

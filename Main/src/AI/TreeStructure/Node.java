@@ -1,10 +1,6 @@
 package AI.TreeStructure;
 
-import President.Game.Card;
 import President.Game.Player;
-import President.Game.Tuple;
-
-import java.util.ArrayList;
 
 public class Node{
 
@@ -20,11 +16,11 @@ public class Node{
     private double score;
     /** variable that checks if there is a win or a loss in the subtree starting at this node n */
     private boolean isDoneInSubTree;
-
+    /** Player variable hold by the Node */
     private Player player;
 
     /**
-     * node constructor for MCTS
+     * node constructor for MCTS checkers
      * @param boardState that corresponds to the node
      * @param depth is the current depth in the tree for node n
      * @param totalSimulation in node
@@ -38,7 +34,7 @@ public class Node{
     }
 
     /**
-     * node constructor for ABTS
+     * node constructor for ABTS checkers
      * @param boardState that corresponds to the node
      * @param score for the node
      */
@@ -47,6 +43,13 @@ public class Node{
         this.score = score;
     }
 
+    /**
+     * node constructor for MCTS president
+     * @param player state
+     * @param depth is the current depth in the tree for node n
+     * @param totalSimulation in node
+     * @param totalScore for the node
+     */
     public Node(Player player, int depth, int totalSimulation, double totalScore) {
         this.player = player;
         this.depth = depth;
@@ -54,11 +57,20 @@ public class Node{
         this.totalScore = totalScore;
     }
 
+    /**
+     * node constructor for ABTS president
+     * @param player state
+     * @param score for the node
+     */
     public Node(Player player, double score) {
         this.player = player;
         this.score = score;
     }
 
+    /**
+     * getter for the player state
+     * @return the player state
+     */
     public Player getPlayer() {
         return player;
     }

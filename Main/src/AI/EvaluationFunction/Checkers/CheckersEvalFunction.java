@@ -3,9 +3,8 @@ package AI.EvaluationFunction.Checkers;
 import AI.EvaluationFunction.EvaluationFunction;
 import AI.PossibleMoves.CheckersPossibleMoves;
 import AI.PossibleMoves.PossibleMoves;
-import AI.TreeStructure.Node;
 import AI.Util;
-import Abalone.Game.MoveDirection;
+import Checkers.Game.MoveDirection;
 
 import java.util.ArrayList;
 
@@ -47,16 +46,13 @@ public class CheckersEvalFunction extends EvaluationFunction {
 
         this.board = board;
         this.currentPlayer = currentPlayer;
-
-//        double[] bestConfigNotComplete = new double[]{0.3676439321801084, 0.34927666124021406, -0.5096797020134634, 0.9393348144299724, 0.39430677233420064, 0.5610948160176769};
-//        double[] bestConfigNotComplete = new double[]{0.7392273693202003, 0.9755557531174306, -0.8348697914571227, 0.6731809818844702, 0.8584611325785556, 0.8077705395767066};
-        double[] bestConfigNotComplete = new double[]{0.6471705360866706, 0.3, 0.2, 0.8227407520078385, 0.44559445326033087, 0.7313818909336706, 0.5238725061974904, 0.6250817564796307};
-        setWeights(bestConfigNotComplete);
-
-//        double[] bestConfigComplete = new double[]{0.43513680781989394, 0.16110031633119282, -0.29187530553211827, 0.9050849723766596, 0.10650690656051254, 0.6613394768774338};
-//        setWeights(bestConfigComplete);
+        double[] bestConfig = new double[]{0.6471705360866706, 0.3, 0.2, 0.8227407520078385, 0.44559445326033087, 0.7313818909336706, 0.5238725061974904, 0.6250817564796307};
+        setWeights(bestConfig);
     }
 
+    /**
+     * @return the evaluation score from the state
+     */
     @Override
     public double evaluate() {
 
@@ -160,6 +156,11 @@ public class CheckersEvalFunction extends EvaluationFunction {
         return count;
     }
 
+    /**
+     * counter or possible next state winning position
+     * @param currentPlayer to play
+     * @return the actual count
+     */
     private int possibleVictoriousPositionCount(int currentPlayer) {
 
         PossibleMoves possibleMoves = new CheckersPossibleMoves(board, currentPlayer);
@@ -173,6 +174,11 @@ public class CheckersEvalFunction extends EvaluationFunction {
         return count;
     }
 
+    /**
+     * counter or possible next state lost position
+     * @param currentPlayer to play
+     * @return the actual count
+     */
     private int possibleDefeatPositionCount(int currentPlayer) {
 
         PossibleMoves possibleMoves = new CheckersPossibleMoves(board, Util.changeCurrentPlayer(currentPlayer));

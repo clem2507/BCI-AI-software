@@ -1,14 +1,11 @@
-package AI.EvaluationFunction.Adaptive;
+package AI;
 
 import AI.EvaluationFunction.Checkers.CheckersEvalFunction;
 import AI.EvaluationFunction.EvaluationFunction;
 import AI.EvaluationFunction.President.PresidentEvalFunction;
-import AI.GameSelector;
-import AI.Util;
-import Abalone.Game.BoardUI;
 import Checkers.Game.Board;
 import Checkers.Game.Checkers;
-import Output.HomePage;
+import HomePage.HomePage;
 import President.Game.Card;
 import President.Game.Player;
 import President.Game.President;
@@ -16,68 +13,63 @@ import President.Game.Tuple;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class AdaptiveFunction extends GameSelector {
 
+    /** game to adapt the AI on */
     private GameSelector game;
-
-    private double adaptiveVariablePlayer1;
-    private double adaptiveVariablePlayer2;
-
-//    private double[] regularization_terms = new double[50];
+    /** array list that holds the current values for the regulatization terms */
     private ArrayList<double[]> regularization_terms = new ArrayList<>();
-
+    /** boolean variable that tells the class if the actual game is checkers */
     private boolean isCheckers = false;
+    /** boolean variable that tells the class if the actual game is president */
     private boolean isPresident = false;
-
-    private ArrayList<Rule> ruleBase;
-
+    /** different String variable for access paths */
     private String path = "";
     private String path_avg = "";
     private String path_win = "";
 
+    /**
+     * main class constructor
+     * @param game to adapt the AI on
+     */
     public AdaptiveFunction(GameSelector game) {
 
         this.game = game;
         if (game.getClass().isInstance(new President(0))) {
             isPresident = true;
-            path = "/Users/clemdetry/Documents/Documents – Clem's MacBook Pro/UM/Thesis Karim/Code/Main/res/regularization_terms_president.txt";
-            path_avg = "/Users/clemdetry/Documents/Documents – Clem's MacBook Pro/UM/Thesis Karim/Code/Main/res/regularization_terms_president_avg.txt";
-            path_win = "/Users/clemdetry/Documents/Documents – Clem's MacBook Pro/UM/Thesis Karim/Code/Main/res/players_win_rate_president.txt";
+            path = "Main/res/regularization_terms_president.txt";
+            path_avg = "Main/res/regularization_terms_president_avg.txt";
+            path_win = "Main/res/players_win_rate_president.txt";
         }
         else if (game.getClass().isInstance(new Checkers(null))) {
             isCheckers = true;
-            path = "/Users/clemdetry/Documents/Documents – Clem's MacBook Pro/UM/Thesis Karim/Code/Main/res/regularization_terms_checkers.txt";
-            path_avg = "/Users/clemdetry/Documents/Documents – Clem's MacBook Pro/UM/Thesis Karim/Code/Main/res/regularization_terms_checkers_avg.txt";
-            path_win = "/Users/clemdetry/Documents/Documents – Clem's MacBook Pro/UM/Thesis Karim/Code/Main/res/players_win_rate_checkers.txt";
+            path = "Main/res/regularization_terms_checkers.txt";
+            path_avg = "Main/res/regularization_terms_checkers_avg.txt";
+            path_win = "Main/res/players_win_rate_checkers.txt";
         }
-//        updateAdaptiveVariable();
         createRegularizationVector();
-//        updateWeights(getGlobalAdaptiveFunction());
     }
 
-//    public void updateAdaptiveVariable() {
-//
-//        EvaluationFunction evaluationFunction;
-//        if (game.getClass().isInstance(new President(0))) {
-//            evaluationFunction = new PresidentEvalFunction(game.getPlayer1());
-//            adaptiveVariablePlayer1 = evaluationFunction.evaluate();
-//            evaluationFunction = new PresidentEvalFunction(game.getPlayer2());
-//            adaptiveVariablePlayer2 = evaluationFunction.evaluate();
-//        }
-//    }
-
+    /**
+     * getter for the current human player adaptive variable
+     * @return the values that corresponds to the level of the player
+     */
     public double getAdaptiveVariable() {
 
         if (isCheckers) {
             return Checkers.getAdaptiveVariable();
         }
-        else {
+        else if (isPresident){
             return President.getAdaptiveVariable();
         }
+        return 0;
     }
 
+    /**
+     * getter for the current state global variable
+     * @return the value of it
+     */
     public double getGlobalAdaptiveVariable() {
 
         if (isCheckers) {
@@ -85,21 +77,24 @@ public class AdaptiveFunction extends GameSelector {
             EvaluationFunction evalFunction2 = new CheckersEvalFunction(game.getCheckersBoard().getGameBoard(), 2);
             return evalFunction1.evaluate() - evalFunction2.evaluate();
         }
-        else {
+        else if (isPresident){
             EvaluationFunction evalFunction1 = new PresidentEvalFunction(game.getPlayer1());
             EvaluationFunction evalFunction2 = new PresidentEvalFunction(game.getPlayer2());
             return evalFunction1.evaluate() - evalFunction2.evaluate();
         }
+        return 0;
     }
 
+    /**
+     * method that finds the index of the next action to pick
+     * @param globalVar of the current state
+     * @param adaptiveVar of player 1
+     * @param numOfActions for that given state
+     * @return the action index to choose
+     */
     public int getActionIndex(double globalVar, double adaptiveVar, int numOfActions) {
 
-//        System.out.println("globalVar = " + globalVar);
-//        System.out.println("adaptiveVar = " + adaptiveVar);
-//        System.out.println("numOfActions = " + numOfActions);
         if (numOfActions == 1) {
-//            System.out.println("index = " + 0);
-//            System.out.println();
             return 0;
         }
         double mean;
@@ -107,17 +102,12 @@ public class AdaptiveFunction extends GameSelector {
         double x1_bound = -0.4999;
         double x_middle = ((double) numOfActions)/2;
         double x2_bound = (numOfActions-1) + 0.4999;
-//        double regularization_term = regularization_terms.get(numOfActions-1)[regularization_terms.get(numOfActions-1).length];
         double regularization_term = Util.getArrayAverage(regularization_terms.get(numOfActions-1));
-//        System.out.println("regularization_term = " + regularization_term);
-
         double win_ratio = 0.5;
+
         try (BufferedReader br = new BufferedReader(new FileReader(path_win))) {
             String line = br.readLine();
             while (line!=null) {
-//                System.out.println(line.split(", ")[0]);
-//                System.out.println("HomePage.username = " + HomePage.username);
-//                if (line.split(", ")[0].equals(HomePage.username)) {
                 if (line.split(", ")[0].equals(HomePage.username)) {
                     if (!line.split(", ")[2].equals("0.0")) {
                         win_ratio = Double.parseDouble(line.split(", ")[3]);
@@ -130,27 +120,18 @@ public class AdaptiveFunction extends GameSelector {
             e.printStackTrace();
         }
 
-//        System.out.println("win_ratio = " + win_ratio);
         int index = -1;
         if (globalVar >= 0) {
-//            mean = x_middle - (Math.sqrt(globalVar)/2) - (Math.sqrt(numOfActions)*adaptiveVar);
             mean = (x_middle-1) - (((Math.sqrt(globalVar)/2) + (adaptiveVar*(2*win_ratio))) * regularization_term);
-//            mean = (x_middle-1) - (((Math.sqrt(globalVar)/2) + (adaptiveVar*(2*win_ratio))) * Math.sqrt(numOfActions));
         }
         else {
-//            mean = x_middle + (Math.sqrt(-globalVar)/2) - (Math.sqrt(numOfActions)*adaptiveVar);
             mean = (x_middle-1) + (((Math.sqrt(-globalVar)/2) - (adaptiveVar*(2*win_ratio))) * regularization_term);
-//            mean = (x_middle-1) + (((Math.sqrt(-globalVar)/2) - (adaptiveVar*(2*win_ratio))) * Math.sqrt(numOfActions));
         }
-//        System.out.println("mean = " + mean);
+
         if (mean < x1_bound) {
-//            System.out.println("index = " + 0);
-//            System.out.println();
             return 0;
         }
         else if (mean > x2_bound) {
-//            System.out.println("index = " + (numOfActions-1));
-//            System.out.println();
             return numOfActions-1;
         }
         else {
@@ -158,26 +139,19 @@ public class AdaptiveFunction extends GameSelector {
                 index = (int) Math.round(Util.getGaussian(mean, std));
             }
         }
-//        System.out.println("index = " + index);
-//        System.out.println();
+
         return index;
     }
 
+    /**
+     * method that creates the regularization vector from the text file
+     */
     public void createRegularizationVector() {
 
-//        ArrayList<Rule> out = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(path))) {
             String line = br.readLine();
             while (line!=null) {
-//                System.out.println(line);
-//            for (int i = 0; i < 50; i++) {
-//            Rule rule = new Rule(new double[]{1, 100*i}, i);
-//            double score;
-//            int count = 0;
-//            try (BufferedReader br = new BufferedReader(new FileReader(path))) {
-//                while (count < i) {
                 String[] lineTemp = line.split(", ");
-//                System.out.println(Arrays.toString(lineTemp));
                 double[] temp = new double[lineTemp.length];
                 for (int j = 0; j < lineTemp.length; j++) {
                     if (lineTemp[j].charAt(lineTemp[j].length()-1) == ',') {
@@ -191,32 +165,18 @@ public class AdaptiveFunction extends GameSelector {
                 }
                 regularization_terms.add(temp);
                 line = br.readLine();
-//                System.out.println(line);
-//                regularization_terms[i] = Double.parseDouble(line);
-//                    count++;
-//                }
-//            score = Double.parseDouble(line);
-//            rule.setScore(score);
-//            out.add(rule);
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-//        this.ruleBase = out;
     }
 
-//    public void updateVector(double penalty, int index) {
-//
-//        System.out.println("penalty = " + penalty);
-//        System.out.println();
-//        double[] temp = new double[regularization_terms.get(index).length+1];
-//        for (int i = 0; i < regularization_terms.get(index).length; i++) {
-//            temp[i] = regularization_terms.get(index)[i];
-//        }
-//        temp[regularization_terms.get(index).length] = regularization_terms.get(index)[regularization_terms.get(index).length-1]-penalty;
-//        regularization_terms.set(index, temp);
-//    }
-
+    /**
+     * method for updating the vector based on the direct feedback it gets
+     * @param globalVariableBefore its value before the actions is taken
+     * @param globalVariableAfter its value after the action is taken
+     * @param index of the action previously taken
+     */
     public void updateVector(double globalVariableBefore, double globalVariableAfter, int index) {
 
         double penalty = 0;
@@ -245,9 +205,6 @@ public class AdaptiveFunction extends GameSelector {
             }
         }
 
-//        System.out.println("penalty = " + penalty);
-//        System.out.println();
-
         if (penalty != 0) {
             double[] temp = new double[regularization_terms.get(index).length + 1];
             for (int i = 0; i < regularization_terms.get(index).length; i++) {
@@ -259,22 +216,9 @@ public class AdaptiveFunction extends GameSelector {
         }
     }
 
-    // TODO - Improve the computation of the temporary score
-    public double computeTempScore(double score, double globalAdaptiveVariable) {
-
-        if (globalAdaptiveVariable > 0) {
-            if (score > 0) {
-                return globalAdaptiveVariable * score;
-            }
-        }
-        else {
-            if (score < 0) {
-                return globalAdaptiveVariable * score;
-            }
-        }
-        return 0.0001;
-    }
-
+    /**
+     * method to update the file where the regularization factors are stored
+     */
     public void updateFile() {
 
         try {
@@ -323,23 +267,6 @@ public class AdaptiveFunction extends GameSelector {
         }
     }
 
-    public int getRuleIndex() {
-
-        double sum = 0;
-        double randomNumber = Math.random();
-        for (int i = 0; i < ruleBase.size(); i++) {
-            sum+=ruleBase.get(i).getWeight();
-            if (randomNumber <= sum) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    public ArrayList<Rule> getRuleBase() {
-        return ruleBase;
-    }
-
     @Override
     public int getCurrentPlayer() {
         return 0;
@@ -347,11 +274,6 @@ public class AdaptiveFunction extends GameSelector {
 
     @Override
     public Tuple getCurrentGameState() {
-        return null;
-    }
-
-    @Override
-    public BoardUI getAbaloneBoard() {
         return null;
     }
 

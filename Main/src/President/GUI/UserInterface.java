@@ -1,10 +1,10 @@
 package President.GUI;
 
-import AI.EvaluationFunction.Adaptive.AdaptiveFunction;
+import AI.AdaptiveFunction;
 import AI.TreeStructure.Node;
 import Checkers.GUI.GameUI;
 import Checkers.Game.Checkers;
-import Output.HomePage;
+import HomePage.HomePage;
 import President.Game.Card;
 import President.Game.Player;
 import President.Game.President;
@@ -55,12 +55,10 @@ public class UserInterface extends Application {
     private Card[] gameStateCardUI;
 
     private ImageView[] symbols1DeckUI;
-    private ImageView[] symbols2DeckUI;
     private ImageView[] symbolsGameDeck;
     private ImageView arrowImage = new ImageView();
 
     private Text[] player1DeckNumbers;
-    private Text[] player2DeckNumbers;
     private Text[] gameStateTextNumber;
     private Text move1;
     private Text move2;
@@ -85,9 +83,6 @@ public class UserInterface extends Application {
     private int deckSize;
 
     private double globalVariableBefore;
-//    private double globalAdaptive2;
-
-    private int ruleIndex;
 
     public UserInterface(int deckSize) {
 
@@ -104,7 +99,6 @@ public class UserInterface extends Application {
         president = new President(deckSize);
 
         adaptiveFunction = new AdaptiveFunction(president);
-//        System.out.println("adaptive variable = " + adaptiveFunction.getGlobalAdaptiveFunction());
 
         setArrow(president.getPlayer1().toPlay());
 
@@ -283,26 +277,14 @@ public class UserInterface extends Application {
                             new Thread(() -> {
                                 readyText.setText("...");
                                 if (president.getPlayer1().toPlay()) {
-                                    president.runMCTS(new double[]{1, 1000});
+                                    president.runMCTS(new double[]{1, 2500});
                                     whosePlaying.setText("Player 1");
                                     flag = true;
                                 } else {
-//                                    globalAdaptive1 = adaptiveFunction.getGlobalAdaptiveFunction();
-//                                    globalAdaptive1 = adaptiveFunction.getAdaptiveVariable(2);
-//                                    System.out.println("globalAdaptive1 = " + globalAdaptive1);
-//                                    adaptiveFunction.updateWeights(adaptiveFunction.getGlobalAdaptiveVariable());
-//                                    ruleIndex = adaptiveFunction.getRuleIndex();
-//                                    president.runMCTS(adaptiveFunction.getRuleBase().get(ruleIndex).getConfiguration());
-                                    president.runMCTS(new double[]{1, 1000});
+                                    president.runMCTS(new double[]{1, 2500});
                                     whosePlaying.setText("Player 2");
-//                                    Player previousPlayer1State = new Player(president.getPlayer1());
-//                                    Player previousPlayer2State = new Player(president.getPlayer2());
                                     globalVariableBefore = adaptiveFunction.getGlobalAdaptiveVariable();
-//                                    System.out.println("globalVariableBefore = " + globalVariableBefore);
                                     Platform.runLater(this::takeActionWithAI);
-//                                    System.out.println("globalVariableAfter = " + globalVariableAfter);
-//                                    Player currentPlayer1State = new Player(president.getPlayer1());
-//                                    Player currentPlayer2State = new Player(president.getPlayer2());
                                     flag = false;
                                     done = true;
                                 }
@@ -329,15 +311,10 @@ public class UserInterface extends Application {
                     if (flag) {
                         Player previousPlayer1State = new Player(president.getPlayer1());
                         Player previousPlayer2State = new Player(president.getPlayer2());
-//                        System.out.println(previousPlayer1State.getGameState().getNumber() + " --> " + previousPlayer1State.getGameState().getOccurrence());
-//                        System.out.println(previousPlayer2State.getGameState().getNumber() + " --> " + previousPlayer2State.getGameState().getOccurrence());
                         takeActionWithAI();
                         Player currentPlayer1State = new Player(president.getPlayer1());
                         Player currentPlayer2State = new Player(president.getPlayer2());
-//                        System.out.println(currentPlayer1State.getGameState().getNumber() + " --> " + currentPlayer1State.getGameState().getOccurrence());
-//                        System.out.println(currentPlayer2State.getGameState().getNumber() + " --> " + currentPlayer2State.getGameState().getOccurrence());
                         if (president.getPlayer2().toPlay()) {
-//                            president.updateAdaptiveVariable(previousGameState, president);
                             president.updateAdaptiveVariable(previousPlayer1State, previousPlayer2State, currentPlayer1State, currentPlayer2State);
                         }
                         if (president.getPlayer1().toPlay()) {
@@ -407,39 +384,15 @@ public class UserInterface extends Application {
             if (president.getActions().get(index).getPlayer().getGameState().getNumber() != 0) {
                 turnCounter++;
             }
-//            Tuple action = president.getActions().get(adaptiveFunction.getRuleIndex()).getPlayer().getGameState();
             president.getPlayer2().takeAction(president.getActions().get(index).getPlayer().getGameState(), president.getPlayer2().getDeck());
             president.getPlayer1().setOpponentNumberCards(president.getPlayer2().getDeck().size());
             president.getPlayer1().setGameState(president.getActions().get(index).getPlayer().getGameState());
             president.getPlayer1().isToPlay(!president.getPlayer2().toPlay());
             president.getPlayer1().setGameDeck(president.getPlayer2().getGameDeck());
             updateDeckUI(president.getPlayer2());
-//            updateGameStateUI(president.getFourBestActions().get(0).getPlayer().getGameState());
             updateGameStateUI(president.getActions().get(index).getPlayer().getGameState());
             double globalVariableAfter = adaptiveFunction.getGlobalAdaptiveVariable();
             adaptiveFunction.updateVector(globalVariableBefore, globalVariableAfter, (president.getActions().size())-1);
-//            adaptiveFunction.updateAdaptiveVariable();
-//            globalAdaptive2 = adaptiveFunction.getGlobalAdaptiveFunction();
-//            globalAdaptive2 = adaptiveFunction.getAdaptiveVariable(2);
-//            double outcome = Math.abs(globalAdaptive1) - Math.abs(globalAdaptive2);
-//            double outcome = globalAdaptive2 - globalAdaptive1;
-//            System.out.println("globalAdaptive2 = " + globalAdaptive2);
-//            System.out.println("outcome = " + outcome);
-//            System.out.println();
-//            if (adaptiveFunction.getRuleBase().get(ruleIndex).getScore() + outcome > 0) {
-//                adaptiveFunction.getRuleBase().get(ruleIndex).setScore(adaptiveFunction.getRuleBase().get(ruleIndex).getScore() + outcome);
-//            }
-//            else {
-//                adaptiveFunction.getRuleBase().get(ruleIndex).setScore(0);
-//            }
-//            if (outcome > 0) {
-//                adaptiveFunction.getRuleBase().get(ruleIndex).setScore(adaptiveFunction.getRuleBase().get(ruleIndex).getScore() + outcome);
-//            }
-//            adaptiveFunction.updateFile();
-//            for (Rule rule : adaptiveFunction.getRuleBase()) {
-//                System.out.println(rule.getScore());
-//            }
-//            System.out.println();
         }
         turnNumberText.setText("Turn number " + turnCounter);
         checkWin();
@@ -591,13 +544,13 @@ public class UserInterface extends Application {
             if (president.isVictorious(president.getPlayer1())) {
                 System.out.println("Player 1 won");
                 readyText.setText("Player 1 won");
-                president.updateWinnerFile("/Users/clemdetry/Documents/Documents – Clem's MacBook Pro/UM/Thesis Karim/Code/Main/res/players_win_rate_president.txt", HomePage.username, true);
+                president.updateWinnerFile("Main/res/players_win_rate_president.txt", HomePage.username, true);
                 createPopUpWindow(1);
             }
             else {
                 System.out.println("Player 2 won");
                 readyText.setText("Player 2 won");
-                president.updateWinnerFile("/Users/clemdetry/Documents/Documents – Clem's MacBook Pro/UM/Thesis Karim/Code/Main/res/players_win_rate_president.txt", HomePage.username, false);
+                president.updateWinnerFile("Main/res/players_win_rate_president.txt", HomePage.username, false);
                 createPopUpWindow(2);
             }
         }

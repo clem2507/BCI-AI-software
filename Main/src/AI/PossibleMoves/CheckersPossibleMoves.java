@@ -1,6 +1,5 @@
 package AI.PossibleMoves;
 
-import AI.Util;
 import Checkers.Game.Checkers;
 import Checkers.Game.Move;
 import Checkers.Game.MoveDirection;

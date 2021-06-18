@@ -38,7 +38,6 @@ public class Player {
         ArrayList<Card> temp1 = new ArrayList<>(deck);
         ArrayList<Card> temp2 = new ArrayList<>(this.gameDeck);
         this.gameState = action;
-//        System.out.println("action: " + action.getNumber() + " -> " + action.getOccurrence());
         for (Card card : deck) {
             if (count < action.getOccurrence()) {
                 if (toPlay) {
