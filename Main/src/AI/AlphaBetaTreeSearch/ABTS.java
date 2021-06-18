@@ -162,6 +162,7 @@ public class ABTS {
                     break;
                 }
             }
+            Collections.shuffle(fourBestNodes);
         }
         else {
             rootChildrenNodes = new ArrayList<>();

@@ -171,7 +171,7 @@ public class TournamentGeneticAlgorithm {
                     while (!president.isDone(president.getPlayer1(), president.getPlayer2())) {
                         MCTS mcts;
                         if (president.getPlayer1().toPlay()) {
-                            mcts = new MCTS(president, new double[]{5, 500});
+                            mcts = new MCTS(president, new double[]{1, 2500});
                             mcts.setSampleSize((int) population.get(i).getGenotype()[0]);
                             mcts.setSampleSize((int) population.get(i).getGenotype()[1]);
                             mcts.start();
@@ -182,7 +182,7 @@ public class TournamentGeneticAlgorithm {
                             president.getPlayer2().setGameDeck(president.getPlayer1().getGameDeck());
                         }
                         else {
-                            mcts = new MCTS(president, new double[]{5, 500});
+                            mcts = new MCTS(president, new double[]{1, 2500});
                             mcts.setSampleSize((int) population.get(j).getGenotype()[0]);
                             mcts.setSampleSize((int) population.get(j).getGenotype()[1]);
                             mcts.start();

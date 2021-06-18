@@ -17,6 +17,7 @@ import President.Game.President;
 import President.Game.Tuple;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 public class Test {
 
@@ -167,7 +168,7 @@ public class Test {
 //        }
 //        System.out.println();
 
-        President president = new President(20);
+//        President president = new President(20);
 //        PossibleMoves possibleMoves = new PresidentPossibleMoves(president.getPlayer1());
 //        for (Card card : president.getPlayer1().getDeck()) {
 //            System.out.println(card.getNumber());
@@ -215,6 +216,148 @@ public class Test {
 //        }
 //        System.out.println();
 
-        AdaptiveFunction adaptiveFunction = new AdaptiveFunction(new Checkers(null));
+//        AdaptiveFunction adaptiveFunction = new AdaptiveFunction(new Checkers(null));
+
+//        int count = 100;
+//        OutputCSV outputCSV = new OutputCSV("output.csv");
+//        String[][] data = new String[count][1];
+//        for (int i = 0; i < count; i++) {
+//            data[i][0] = String.valueOf(Util.getGaussian(0.6, 5));
+//        }
+//        outputCSV.writeResume(data);
+
+//        ---------------------------------------------------------------------------------------------------------
+
+        Random random = new Random();
+        int[] config = new int[]{2, 3, 4, 5, 6};
+        int index = 0;
+        int counter = 0;
+        double counterWinP1 = 0;
+        double counterWinP2 = 0;
+        for (int i = 0; i < 100; i++) {
+
+            int currPlayer = 1;
+//            Board board = new Board(6, false);
+            Board board = new Board(8, true);
+            Checkers checkers = new Checkers(board);
+            Checkers.currentPlayer = currPlayer;
+            AdaptiveFunction adaptiveFunction = new AdaptiveFunction(checkers);
+
+            while (!checkers.isDone(board.getGameBoard())) {
+
+//                MCTS mcts = null;
+//                ABTS abts = null;
+//                if (currPlayer == 1) {
+//                    mcts = new MCTS(checkers, new double[]{1, 2500});
+//                    mcts.start();
+//                } else {
+//                    abts = new ABTS(checkers, 5);
+//                    abts.setCurrentPlayer(currPlayer);
+//                    abts.start();
+//                }
+
+                int[][] previousBoard = board.getGameBoard();
+                double globalVariableBefore = checkers.getGlobalAdaptiveVariable(previousBoard);
+
+                MCTS mcts = new MCTS(checkers, new double[]{1, 1000});
+                mcts.start();
+
+                boolean check = false;
+                while (!check) {
+                    double moveChoice = random.nextDouble();
+                    if (currPlayer == 1) {
+                        if (moveChoice < 0.65) {
+                            if (mcts.getFourBestNodes().get(0) != null) {
+                                board.setBoard(mcts.getFourBestNodes().get(0).getBoardState());
+                                check = true;
+                            }
+                        } else if (moveChoice < 0.8) {
+                            if (mcts.getFourBestNodes().get(1) != null) {
+                                board.setBoard(mcts.getFourBestNodes().get(1).getBoardState());
+                                check = true;
+                            }
+                        } else if (moveChoice < 0.9) {
+                            if (mcts.getFourBestNodes().get(2) != null) {
+                                board.setBoard(mcts.getFourBestNodes().get(2).getBoardState());
+                                check = true;
+                            }
+                        } else {
+                            if (mcts.getFourBestNodes().get(3) != null) {
+                                board.setBoard(mcts.getFourBestNodes().get(3).getBoardState());
+                                check = true;
+                            }
+                        }
+                        checkers.updateAdaptiveVariable(previousBoard, board.getGameBoard());
+                    }
+//                    else {
+//                        if (moveChoice < 0.65) {
+//                            if (abts.getFourBestNodes().get(0) != null) {
+//                                board.setBoard(abts.getFourBestNodes().get(0).getBoardState());
+//                                check = true;
+//                            }
+//                        } else if (moveChoice < 0.8) {
+//                            if (abts.getFourBestNodes().get(1) != null) {
+//                                board.setBoard(abts.getFourBestNodes().get(1).getBoardState());
+//                                check = true;
+//                            }
+//                        } else if (moveChoice < 0.9) {
+//                            if (abts.getFourBestNodes().get(2) != null) {
+//                                board.setBoard(abts.getFourBestNodes().get(2).getBoardState());
+//                                check = true;
+//                            }
+//                        } else {
+//                            if (abts.getFourBestNodes().get(3) != null) {
+//                                board.setBoard(abts.getFourBestNodes().get(3).getBoardState());
+//                                check = true;
+//                            }
+//                        }
+//                    }
+                    else {
+//                        System.out.println(adaptiveFunction.getActionIndex(adaptiveFunction.getGlobalAdaptiveVariable(), adaptiveFunction.getAdaptiveVariable(), mcts.getActionsOrdered().size()));
+                        board.setBoard(mcts.getActionsOrdered().get(adaptiveFunction.getActionIndex(adaptiveFunction.getGlobalAdaptiveVariable(), adaptiveFunction.getAdaptiveVariable(), mcts.getActionsOrdered().size())).getBoardState());
+                        int[][] currentBoard = board.getGameBoard();
+                        double globalVariableAfter = checkers.getGlobalAdaptiveVariable(currentBoard);
+                        adaptiveFunction.updateVector(globalVariableBefore, globalVariableAfter, (mcts.getActionsOrdered().size())-1);
+                        check = true;
+                    }
+                }
+                currPlayer = Util.changeCurrentPlayer(currPlayer);
+                Checkers.currentPlayer = currPlayer;
+//                System.out.println();
+//                Util.printBoard(checkers.getCheckersBoard().getGameBoard());
+//                System.out.println();
+            }
+            counter++;
+            System.out.println();
+            System.out.println("counter = " + counter);
+            System.out.println();
+//            if (counter == 20) {
+//                counter = 0;
+//                System.out.println();
+//                System.out.println("Config = " + config[index]);
+//                System.out.println("P1 win ratio = " + counterWinP1/50);
+//                System.out.println("P2 win ratio = " + counterWinP2/50);
+//                System.out.println();
+//                counterWinP1 = 0;
+//                counterWinP2 = 0;
+//                index++;
+//            }
+            if (Checkers.currentPlayer == 1) {
+                checkers.updateWinnerFile("/Users/clemdetry/Documents/Documents – Clem's MacBook Pro/UM/Thesis Karim/Code/Main/res/players_win_rate_checkers.txt", HomePage.username, false);
+                counterWinP2++;
+            }
+            else {
+                checkers.updateWinnerFile("/Users/clemdetry/Documents/Documents – Clem's MacBook Pro/UM/Thesis Karim/Code/Main/res/players_win_rate_checkers.txt", HomePage.username, true);
+                counterWinP1++;
+            }
+        }
+//        System.out.println();
+//        System.out.println("P1 (MCTS) win ratio = " + counterWinP1/50);
+//        System.out.println("P2 (ABTS) win ratio = " + counterWinP2/50);
+//        ---------------------------------------------------------------------------------------------------------
+
+//        for (int i = 0; i < 10000; i++) {
+//            System.out.print(Util.getGaussian(1, 1) + ", ");
+//        }
     }
 }

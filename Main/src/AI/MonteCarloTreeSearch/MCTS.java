@@ -17,6 +17,7 @@ import President.Game.Player;
 import President.Game.Tuple;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class MCTS {
 
@@ -43,6 +44,7 @@ public class MCTS {
     private ArrayList<Node> nodes = new ArrayList<>();
     /** list that contains the four best nodes after the algorithm is done running */
     private ArrayList<Node> fourBestNodes = new ArrayList<>();
+    private ArrayList<Node> actionsOrdered = new ArrayList<>();
 
     private int count = 0;
     private double adaptiveVariable;
@@ -119,9 +121,9 @@ public class MCTS {
      */
     public void start() {
 
-//        long b_time = System.currentTimeMillis();
-//        while ((System.currentTimeMillis() - b_time) < stopCondition) {
-        while (nodes.get(0).getTotalSimulation() < stopCondition) {
+        long b_time = System.currentTimeMillis();
+        while ((System.currentTimeMillis() - b_time) < stopCondition) {
+//        while (nodes.get(0).getTotalSimulation() < stopCondition) {
             Selection();
 //            for (Node n : nodes) {
 //                System.out.print(n.getTotalSimulation() + ", ");
@@ -161,17 +163,24 @@ public class MCTS {
                 }
                 i++;
             }
+            Collections.shuffle(fourBestNodes);
         }
         else {
-            Node bestChild = null;
-            double maxSimulation = -1;
-            for (Node child : rootChildren) {
-                if (child.getTotalSimulation() > maxSimulation) {
-                    maxSimulation = child.getTotalSimulation();
-                    bestChild = child;
+//            System.out.println("MCTS 2");
+            int size = rootChildren.size();
+            while (actionsOrdered.size() < size) {
+                Node bestChild = null;
+                double maxSimulation = -1;
+                for (Node child : rootChildren) {
+                    if (child.getTotalSimulation() > maxSimulation) {
+                        maxSimulation = child.getTotalSimulation();
+                        bestChild = child;
+                    }
                 }
+                actionsOrdered.add(bestChild);
+                rootChildren.remove(bestChild);
             }
-            fourBestNodes.add(bestChild);
+//            System.out.println(actionsOrdered.size());
         }
 //        System.out.println("Simulations = " + nodes.get(0).getTotalSimulation());
 //        System.out.println("Repetition count = " + count);
@@ -525,5 +534,9 @@ public class MCTS {
 
     public void setStopCondition(double stopCondition) {
         this.stopCondition = stopCondition;
+    }
+
+    public ArrayList<Node> getActionsOrdered() {
+        return actionsOrdered;
     }
 }

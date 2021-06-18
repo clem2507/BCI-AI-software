@@ -1,6 +1,5 @@
 package Output;
 
-import AI.Util;
 import Abalone.GUI.Hexagon;
 import Checkers.GUI.GameUI;
 import President.GUI.UserInterface;
@@ -11,15 +10,18 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.RadioButton;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.File;
+import java.io.*;
+import java.util.ArrayList;
 
 public class HomePage extends Application {
 
@@ -41,6 +43,10 @@ public class HomePage extends Application {
     private boolean visited1 = false;
     private boolean visited2 = false;
 
+    public static String username = "";
+
+    private ComboBox<String> namesBox;
+
     @Override
     public void start(Stage primaryStage) {
 
@@ -49,12 +55,21 @@ public class HomePage extends Application {
         Button startButton = new Button();
         startButton.setText("Start");
         startButton.setTranslateX(220);
-        startButton.setTranslateY(300);
+        startButton.setTranslateY(305);
         pane.getChildren().add(startButton);
+
+        updateUsernamesBox("/Users/clemdetry/Documents/Documents – Clem's MacBook Pro/UM/Thesis Karim/Code/Main/res/players_level_checkers.txt");
+
+        TextField usernameInput = new TextField();
+        usernameInput.setPromptText("username...");
+        usernameInput.setPrefWidth(101);
+        usernameInput.setTranslateX(120);
+        usernameInput.setTranslateY(160);
+        pane.getChildren().add(usernameInput);
 
         ComboBox<String> choiceBox = new ComboBox<>();
         choiceBox.getItems().add("Checkers");
-        choiceBox.getItems().add("Abalone");
+//        choiceBox.getItems().add("Abalone");
         choiceBox.getItems().add("President");
         choiceBox.setTranslateX(120);
         choiceBox.setTranslateY(100);
@@ -83,23 +98,23 @@ public class HomePage extends Application {
 
         partialBoard = new RadioButton();
         partialBoard.setTranslateX(190);
-        partialBoard.setTranslateY(190);
+        partialBoard.setTranslateY(220);
         partialBoard.setSelected(true);
         pane.getChildren().add(partialBoard);
 
         completeBoard = new RadioButton();
         completeBoard.setTranslateX(190);
-        completeBoard.setTranslateY(230);
+        completeBoard.setTranslateY(260);
         pane.getChildren().add(completeBoard);
 
         partialBoardText = new Text("Partial Board");
         partialBoardText.setTranslateX(225);
-        partialBoardText.setTranslateY(203);
+        partialBoardText.setTranslateY(233);
         pane.getChildren().add(partialBoardText);
 
         completeBoardText = new Text("Complete Board");
         completeBoardText.setTranslateX(225);
-        completeBoardText.setTranslateY(243);
+        completeBoardText.setTranslateY(273);
         pane.getChildren().add(completeBoardText);
 
         Scene scene = new Scene(pane ,width, height);
@@ -128,31 +143,73 @@ public class HomePage extends Application {
         });
 
         startButton.setOnAction(event -> {
-            if (choiceBox.getValue().equals("Checkers")) {
-                int numMarblesOnBoard;
-                if (boardSize.getValue() == null) {
-                    numMarblesOnBoard = 6;
+            boolean check = false;
+            if (usernameInput.getText().length() > 0) {
+                check = true;
+                username = usernameInput.getText();
+                if (!namesBox.getItems().contains(usernameInput.getText())) {
+                    String path = "";
+                    String path_win = "";
+                    switch (choiceBox.getValue()) {
+                        case "Checkers":
+                            path = "/Users/clemdetry/Documents/Documents – Clem's MacBook Pro/UM/Thesis Karim/Code/Main/res/players_level_checkers.txt";
+                            path_win = "/Users/clemdetry/Documents/Documents – Clem's MacBook Pro/UM/Thesis Karim/Code/Main/res/players_win_rate_checkers.txt";
+                            break;
+                        case "President":
+                            path = "/Users/clemdetry/Documents/Documents – Clem's MacBook Pro/UM/Thesis Karim/Code/Main/res/players_level_president.txt";
+                            path_win = "/Users/clemdetry/Documents/Documents – Clem's MacBook Pro/UM/Thesis Karim/Code/Main/res/players_win_rate_president.txt";
+                            break;
+                    }
+                    File file = new File(path);
+                    File win_file = new File(path_win);
+                    try (FileWriter fw = new FileWriter(file, true);
+                         BufferedWriter bw = new BufferedWriter(fw);
+                         PrintWriter out = new PrintWriter(bw)) {
+                         out.println(usernameInput.getText() + ", ");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    try (FileWriter fw = new FileWriter(win_file, true);
+                         BufferedWriter bw = new BufferedWriter(fw);
+                         PrintWriter out = new PrintWriter(bw)) {
+                         out.println(usernameInput.getText() + ", 0.0, 0.0, 0.0, ");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            else {
+                if (!namesBox.getValue().equals("Username")) {
+                    username = namesBox.getValue();
+                    check = true;
                 }
                 else {
-                    numMarblesOnBoard = boardSize.getValue();
+                    showWarningText();
                 }
-                GameUI gameUI = new GameUI(numMarblesOnBoard, completeBoard.isSelected());
-                gameUI.start(primaryStage);
             }
-            else if (choiceBox.getValue().equals("Abalone")) {
-                Hexagon hexagon = new Hexagon();
-                hexagon.start(primaryStage);
-            }
-            else if (choiceBox.getValue().equals("President")) {
-                int deckSize;
-                if (cardSize.getValue() == null) {
-                    deckSize = 14;
+            if (check) {
+                if (choiceBox.getValue().equals("Checkers")) {
+                    int numMarblesOnBoard;
+                    if (boardSize.getValue() == null) {
+                        numMarblesOnBoard = 6;
+                    } else {
+                        numMarblesOnBoard = boardSize.getValue();
+                    }
+                    GameUI gameUI = new GameUI(numMarblesOnBoard, completeBoard.isSelected());
+                    gameUI.start(primaryStage);
+                } else if (choiceBox.getValue().equals("Abalone")) {
+                    Hexagon hexagon = new Hexagon();
+                    hexagon.start(primaryStage);
+                } else if (choiceBox.getValue().equals("President")) {
+                    int deckSize;
+                    if (cardSize.getValue() == null) {
+                        deckSize = 14;
+                    } else {
+                        deckSize = cardSize.getValue();
+                    }
+                    UserInterface ui = new UserInterface(deckSize);
+                    ui.start(primaryStage);
                 }
-                else {
-                    deckSize = cardSize.getValue();
-                }
-                UserInterface ui = new UserInterface(deckSize);
-                ui.start(primaryStage);
             }
         });
 
@@ -173,6 +230,7 @@ public class HomePage extends Application {
 
         switch (item) {
             case "Checkers":
+                updateUsernamesBox("/Users/clemdetry/Documents/Documents – Clem's MacBook Pro/UM/Thesis Karim/Code/Main/res/players_level_checkers.txt");
                 if (visited) {
                     pane.getChildren().add(boardSize);
                     pane.getChildren().add(partialBoard);
@@ -197,6 +255,7 @@ public class HomePage extends Application {
                 }
                 break;
             case "President":
+                updateUsernamesBox("/Users/clemdetry/Documents/Documents – Clem's MacBook Pro/UM/Thesis Karim/Code/Main/res/players_level_president.txt");
                 if (!visited || visited1) {
                     pane.getChildren().remove(boardSize);
                     pane.getChildren().remove(partialBoard);
@@ -207,8 +266,49 @@ public class HomePage extends Application {
                 }
                 pane.getChildren().add(cardSize);
                 visited2 = true;
+                visited = true;
                 break;
         }
+    }
+
+    public void showWarningText() {
+
+        Text warningText = new Text("Please enter / select a username");
+        warningText.setTranslateX(155);
+        warningText.setTranslateY(80);
+        warningText.setFill(Color.RED);
+        if (!pane.getChildren().contains(warningText)) {
+            pane.getChildren().add(warningText);
+        }
+    }
+
+    private void updateUsernamesBox(String path) {
+
+        if (namesBox != null) {
+            pane.getChildren().remove(namesBox);
+        }
+        ArrayList<String> names = new ArrayList<>();
+        namesBox = new ComboBox<>();
+        try (BufferedReader br = new BufferedReader(new FileReader(path))) {
+            String line = br.readLine();
+//            int count = 0;
+//            while (count < 4) {
+            while (line!=null) {
+                names.add(line.split(", ")[0]);
+                line = br.readLine();
+//                count++;
+            }
+        } catch (IOException e) {
+            System.out.println("Problem reading file.");
+            e.printStackTrace();
+        }
+        for (String name : names) {
+            namesBox.getItems().add(name);
+        }
+        namesBox.setTranslateX(260);
+        namesBox.setTranslateY(160);
+        namesBox.setValue("Username");
+        pane.getChildren().add(namesBox);
     }
 
     private void setBackground() {

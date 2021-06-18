@@ -6,7 +6,7 @@ import javafx.scene.input.KeyEvent;
 import java.lang.InterruptedException;
 import java.util.Arrays;
 
-public class PlayerH implements Player {
+public class PlayerH implements PlayerInterface {
     private BoardUI board;
     public int turn;
 

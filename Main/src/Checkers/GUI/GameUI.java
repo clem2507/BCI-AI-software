@@ -1,6 +1,7 @@
 package Checkers.GUI;
 
 import AI.EvaluationFunction.Adaptive.AdaptiveFunction;
+import AI.EvaluationFunction.Checkers.CheckersEvalFunction;
 import AI.TreeStructure.Node;
 import AI.Util;
 import Checkers.Game.Board;
@@ -29,11 +30,9 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import javax.imageio.ImageIO;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class GameUI extends Application {
 
@@ -179,18 +178,22 @@ public class GameUI extends Application {
         this.isABTS.setTranslateX(350);
         this.isABTS.setTranslateY(25);
         this.isABTS.setOnAction(event -> {
-            if (board.isSelectable) {
-                if (isMCTS.isSelected() || isABTS.isSelected()) {
-                    isMCTS.setSelected(false);
-                    if (done) {
-                        readyText.setText("Press ENTER to start ABTS");
+            if (checkers.getCurrentPlayer() == 1) {
+                if (board.isSelectable) {
+                    if (isMCTS.isSelected() || isABTS.isSelected()) {
+                        isMCTS.setSelected(false);
+                        if (done) {
+                            readyText.setText("Press ENTER to start ABTS");
+                        }
+                    } else {
+                        isABTS.setSelected(true);
                     }
                 } else {
-                    isABTS.setSelected(true);
+                    isABTS.setSelected(!isABTS.isSelected());
                 }
             }
             else {
-                isABTS.setSelected(!isABTS.isSelected());
+                isABTS.setSelected(false);
             }
         });
 
@@ -297,9 +300,11 @@ public class GameUI extends Application {
                     if (flag) {
                         int[][] previousBoard = board.getGameBoard();
                         makeMoveWithAI();
+                        isABTS.setSelected(false);
+                        isMCTS.setSelected(true);
                         int[][] currentBoard = board.getGameBoard();
                         if (checkers.getCurrentPlayer() == 2) {
-                            checkers.setAdaptiveVariable(previousBoard, currentBoard);
+                            checkers.updateAdaptiveVariable(previousBoard, currentBoard);
                         }
                         board.isSelectable = true;
                         turnCounter++;
@@ -313,12 +318,65 @@ public class GameUI extends Application {
                             readyText.setText("...");
                             board.isSelectable = false;
                             if (checkers.getCurrentPlayer()==2) {
-                                adaptiveFunction.updateAdaptiveVariable();
-                                globalAdaptive1 = adaptiveFunction.getGlobalAdaptiveFunction();
-                                adaptiveFunction.updateWeights(adaptiveFunction.getGlobalAdaptiveFunction());
-                                ruleIndex = adaptiveFunction.getRuleIndex();
-                                checkers.runMCTS(adaptiveFunction.getRuleBase().get(ruleIndex).getConfiguration());
-                                makeMoveWithAI(0);
+//                                adaptiveFunction.updateAdaptiveVariable();
+//                                globalAdaptive1 = adaptiveFunction.getGlobalAdaptiveFunction();
+//                                adaptiveFunction.updateWeights(adaptiveFunction.getGlobalAdaptiveFunction());
+//                                ruleIndex = adaptiveFunction.getRuleIndex();
+//                                ruleIndex = getActionIndex(globalAdaptive1, checkers.getActions().size());
+//                                checkers.runMCTS(adaptiveFunction.getRuleBase().get(ruleIndex).getConfiguration());
+                                int[][] previousBoard = board.getGameBoard();
+                                double globalVariableBefore = checkers.getGlobalAdaptiveVariable(previousBoard);
+//                                double previousEvalFunction1 = new CheckersEvalFunction(previousBoard, 1).evaluate();
+//                                double previousEvalFunction2 = new CheckersEvalFunction(previousBoard, 2).evaluate();
+                                checkers.runMCTS(new double[]{1, 1000});
+                                makeMoveWithAI(adaptiveFunction.getActionIndex(adaptiveFunction.getGlobalAdaptiveVariable(), adaptiveFunction.getAdaptiveVariable(), checkers.getActions().size()));
+                                int[][] currentBoard = board.getGameBoard();
+                                double globalVariableAfter = checkers.getGlobalAdaptiveVariable(currentBoard);
+//                                double afterEvalFunction1 = new CheckersEvalFunction(currentBoard, 1).evaluate();
+//                                double afterEvalFunction2 = new CheckersEvalFunction(currentBoard, 2).evaluate();
+//                                System.out.println("globalVariableAfter = " + globalVariableAfter);
+//                                System.out.println("globalVariableBefore = " + globalVariableBefore);
+//                                if (globalVariableAfter > globalVariableBefore && checkers.getActions().size() > 1) {
+//                                    System.out.println("ok");
+
+
+//                                double penalty = 0;
+//                                if (globalVariableBefore < 0) {
+//                                    if (globalVariableAfter <= 0) {
+//                                        if (globalVariableAfter < globalVariableBefore) {
+//                                            penalty = globalVariableAfter - globalVariableBefore;
+//                                        }
+//                                    }
+//                                    if (globalVariableAfter > 0) {
+//                                        if (globalVariableAfter > Math.abs(globalVariableBefore)) {
+//                                            penalty = globalVariableAfter - globalVariableBefore;
+//                                        }
+//                                    }
+//                                }
+//                                else {
+//                                    if (globalVariableAfter >= 0) {
+//                                        if (globalVariableAfter > globalVariableBefore) {
+//                                            penalty = globalVariableBefore - globalVariableAfter;
+//                                        }
+//                                    }
+//                                    if (globalVariableAfter < 0) {
+//                                        if (Math.abs(globalVariableAfter) > Math.abs(globalVariableBefore)) {
+//                                            penalty = globalVariableBefore + globalVariableAfter;
+//                                        }
+//                                    }
+//                                }
+//                                if (penalty != 0) {
+//                                    adaptiveFunction.updateVector(penalty, (checkers.getActions().size())-1);
+//                                    adaptiveFunction.updateFile();
+//                                }
+//                                else {
+//                                    System.out.println();
+//                                }
+
+//                                IMPORTANT, KEEP THIS LINE
+//                                adaptiveFunction.updateVector(globalVariableBefore, globalVariableAfter, (checkers.getActions().size())-1);
+
+//                                }
                                 board.isSelectable = true;
                                 turnCounter++;
                                 whosePlaying.setText(getCurrentPlayerColor(Checkers.currentPlayer) + " to play");
@@ -326,7 +384,7 @@ public class GameUI extends Application {
                                 Platform.runLater(this::checkWin);
                             }
                             else {
-                                checkers.runMCTS(new double[] {1, 500});
+                                checkers.runMCTS(new double[] {1, 1000});
                                 done = false;
                                 flag = true;
                             }
@@ -337,18 +395,18 @@ public class GameUI extends Application {
                             readyText.setText("...");
                             board.isSelectable = false;
                             checkers.runABTS();
-                            if (checkers.getCurrentPlayer()==2) {
-                                makeMoveWithAI(0);
-                                board.isSelectable = true;
-                                turnCounter++;
-                                whosePlaying.setText(getCurrentPlayerColor(Checkers.currentPlayer) + " to play");
-                                turnNumberText.setText("Turn number " + turnCounter);
-                                Platform.runLater(this::checkWin);
-                            }
-                            else {
+//                            if (checkers.getCurrentPlayer()==1) {
+//                                makeMoveWithAI(choice);
+//                                board.isSelectable = true;
+//                                turnCounter++;
+//                                whosePlaying.setText(getCurrentPlayerColor(Checkers.currentPlayer) + " to play");
+//                                turnNumberText.setText("Turn number " + turnCounter);
+//                                Platform.runLater(this::checkWin);
+//                            }
+//                            else {
                                 done = false;
                                 flag = true;
-                            }
+//                            }
                         }).start();
                     }
                     break;
@@ -359,7 +417,10 @@ public class GameUI extends Application {
                     if (board.isSelected && !flag) {
                         move = new Move(board.xSelected+1, board.ySelected+1, MoveDirection.TOP_LEFT, board.getGameBoard(), Checkers.currentPlayer);
                         if (move.checkMove()) {
+                            int[][] previousBoard = board.getGameBoard();
                             makeMove(move);
+                            int[][] currentBoard = board.getGameBoard();
+                            checkers.updateAdaptiveVariable(previousBoard, currentBoard);
                         }
                     }
                     break;
@@ -367,7 +428,10 @@ public class GameUI extends Application {
                     if (board.isSelected && !flag) {
                         move = new Move(board.xSelected+1, board.ySelected+1, MoveDirection.TOP_RIGHT, board.getGameBoard(), Checkers.currentPlayer);
                         if (move.checkMove()) {
+                            int[][] previousBoard = board.getGameBoard();
                             makeMove(move);
+                            int[][] currentBoard = board.getGameBoard();
+                            checkers.updateAdaptiveVariable(previousBoard, currentBoard);
                         }
                     }
                     break;
@@ -375,7 +439,10 @@ public class GameUI extends Application {
                     if (board.isSelected && !flag) {
                         move = new Move(board.xSelected+1, board.ySelected+1, MoveDirection.BOTTOM_RIGHT, board.getGameBoard(), Checkers.currentPlayer);
                         if (move.checkMove()) {
+                            int[][] previousBoard = board.getGameBoard();
                             makeMove(move);
+                            int[][] currentBoard = board.getGameBoard();
+                            checkers.updateAdaptiveVariable(previousBoard, currentBoard);
                         }
                     }
                     break;
@@ -383,9 +450,16 @@ public class GameUI extends Application {
                     if (board.isSelected && !flag) {
                         move = new Move(board.xSelected+1, board.ySelected+1, MoveDirection.BOTTOM_LEFT, board.getGameBoard(), Checkers.currentPlayer);
                         if (move.checkMove()) {
+                            int[][] previousBoard = board.getGameBoard();
                             makeMove(move);
+                            int[][] currentBoard = board.getGameBoard();
+                            checkers.updateAdaptiveVariable(previousBoard, currentBoard);
                         }
                     }
+                    break;
+                case B:
+                    HomePage homePage = new HomePage();
+                    homePage.start(primaryStage);
                     break;
             }
         });
@@ -418,12 +492,14 @@ public class GameUI extends Application {
         box2.setSelected(false);
         box3.setSelected(false);
         box4.setSelected(false);
-        checkers.getFourBestMoves().clear();
         if (isMCTS.isSelected()) {
             readyText.setText("Press ENTER to start MCTS");
+//            checkers.getActions().clear();
+            checkers.getFourBestMoves().clear();
         }
         else {
             readyText.setText("Press ENTER to start ABTS");
+//            checkers.getFourBestMoves().clear();
         }
         done = true;
         flag = false;
@@ -433,23 +509,32 @@ public class GameUI extends Application {
 
     public void makeMoveWithAI(int index) {
 
-        board.setBoard(checkers.getFourBestMoves().get(index).getBoardState());
+        if (isMCTS.isSelected()) {
+            board.setBoard(checkers.getActions().get(index).getBoardState());
+        }
+        else if (isABTS.isSelected()) {
+            board.setBoard(checkers.getFourBestMoves().get(index).getBoardState());
+        }
         board.drawAllMarbles();
-        adaptiveFunction.updateAdaptiveVariable();
-        globalAdaptive2 = adaptiveFunction.getGlobalAdaptiveFunction();
-        double outcome = globalAdaptive2 - globalAdaptive1;
-        adaptiveFunction.getRuleBase().get(ruleIndex).setScore(adaptiveFunction.getRuleBase().get(ruleIndex).getScore() + outcome);
-        adaptiveFunction.updateFile();
+//        adaptiveFunction.updateAdaptiveVariable();
+
+//        globalAdaptive2 = adaptiveFunction.getGlobalAdaptiveVariable();
+        // UPDATE FUNCTION
+//        double outcome = globalAdaptive2 - globalAdaptive1;
+//        adaptiveFunction.getRuleBase().get(ruleIndex).setScore(adaptiveFunction.getRuleBase().get(ruleIndex).getScore() + outcome);
+//        adaptiveFunction.updateFile();
         box1.setSelected(false);
         box2.setSelected(false);
         box3.setSelected(false);
         box4.setSelected(false);
-        checkers.getFourBestMoves().clear();
         if (isMCTS.isSelected()) {
             readyText.setText("Press ENTER to start MCTS");
+//            checkers.getActions().clear();
+            checkers.getFourBestMoves().clear();
         }
         else {
             readyText.setText("Press ENTER to start ABTS");
+//            checkers.getFourBestMoves().clear();
         }
         done = true;
         flag = false;
@@ -463,11 +548,13 @@ public class GameUI extends Application {
             if (Checkers.currentPlayer == 1) {
                 System.out.println("Player 1 won - white");
                 readyText.setText("Player 1 won - white");
+                checkers.updateWinnerFile("/Users/clemdetry/Documents/Documents – Clem's MacBook Pro/UM/Thesis Karim/Code/Main/res/players_win_rate_checkers.txt", HomePage.username, true);
                 createPopUpWindow(1);
             }
             else {
                 System.out.println("Player 2 won - black");
                 readyText.setText("Player 2 won - black");
+                checkers.updateWinnerFile("/Users/clemdetry/Documents/Documents – Clem's MacBook Pro/UM/Thesis Karim/Code/Main/res/players_win_rate_checkers.txt", HomePage.username, false);
                 createPopUpWindow(2);
             }
         }
